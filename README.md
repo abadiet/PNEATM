@@ -7,3 +7,4 @@ C++ library for evolving neural networks with a modified NEAT that is able to ac
 - [ ] use of multiple kind over one network
 - [ ] allow multiple activation function
 - [ ] allow recurent connection from any level
+- [ ] memory arg on activation functions
