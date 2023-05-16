@@ -9,3 +9,4 @@ C++ library for evolving neural networks with a modified NEAT that is able to ac
 - [ ] allow recurent connection from any level
 - [ ] memory arg on activation functions
 - [ ] normalisation?
+- [ ] polish?
