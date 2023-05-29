@@ -1,4 +1,4 @@
-# Large Recurent Neural Network (RNN) powered by NeuroEvolution of Augmenting Topologies (NEAT)
+# Versatile Recurent Neural Network (RNN) powered by NeuroEvolution of Augmenting Topologies (NEAT)
 C++ library for evolving neural networks with a modified NEAT that is able to access any previous data, allowing any kind of data
 
 ⚠️ *Currently under developement* ⚠️
