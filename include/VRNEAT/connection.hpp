@@ -5,15 +5,16 @@ namespace neat {
 
 class Connection{
 	public:
+		Connection(int innovId, int inNodeId, int outNodeId, int inNodeRecu, float weight, bool enabled);
+		Connection() {};
+
+	protected:
 		int innovId;
 		int inNodeId;
 		int outNodeId;
+		int inNodeRecu;
 		float weight;
 		bool enabled;
-		bool isRecurrent;
-
-		Connection(int innovId, int inNodeId, int outNodeId, float weight, bool enabled, bool isRecurrent);
-		Connection() {};
 };
 
 }

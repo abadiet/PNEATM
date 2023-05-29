@@ -1,74 +1,57 @@
-#include <NEAT/population.hpp>
+#include <LRNEAT/population.hpp>
 
 using namespace neat;
 
-Population::Population(int popSize, int nbInput, int nbOutput, int nbHiddenInit, float probConnInit, bool areRecurrentConnectionsAllowed, float weightExtremumInit, float speciationThreshInit, int threshGensSinceImproved): popSize(popSize), speciationThresh(speciationThreshInit), threshGensSinceImproved(threshGensSinceImproved), nbInput(nbInput), nbOutput(nbOutput), nbHiddenInit(nbHiddenInit), probConnInit(probConnInit), areRecurrentConnectionsAllowed(areRecurrentConnectionsAllowed), weightExtremumInit(weightExtremumInit) {
+Population::Population(int popSize, std::vector<int> nbInput, std::vector<int> nbOutput, std::vector<int> nbHiddenInit, float probConnInit, bool areRecurrentConnectionsAllowed, float weightExtremumInit, float speciationThreshInit, int threshGensSinceImproved): popSize(popSize), speciationThresh(speciationThreshInit), threshGensSinceImproved(threshGensSinceImproved), nbInput(nbInput), nbOutput(nbOutput), nbHiddenInit(nbHiddenInit), probConnInit(probConnInit), areRecurrentConnectionsAllowed(areRecurrentConnectionsAllowed), weightExtremumInit(weightExtremumInit) {
 	generation = 0;
 	lastInnovId = -1;
-	fitterGenomeId = -1;
+	fittergenome_id = -1;
 	for (int i = 0; i < popSize; i++) {
 		genomes.push_back(Genome(nbInput, nbOutput, nbHiddenInit, probConnInit, &innovIds, &lastInnovId, weightExtremumInit));
 	}
 }
 
-void Population::loadInputs(float inputs[]) {
+void Population::loadInputs(void* inputs[]) {
 	for (int i = 0; i < popSize; i++) {
 		genomes[i].loadInputs(inputs);
 	}
 }
 
-void Population::loadInputs(float inputs[], int genomeId) {
-	genomes[genomeId].loadInputs(inputs);
+void Population::loadInputs(void* inputs[], int genome_id) {
+	genomes[genome_id].loadInputs(inputs);
 }
 
-void Population::runNetwork(float activationFn(float input)) {
+void Population::loadInput(void* input, int input_id) {
 	for (int i = 0; i < popSize; i++) {
-		genomes[i].runNetwork(activationFn);
+		genomes[i].loadInput(input, input_id);
 	}
 }
 
-void Population::runNetwork(float activationFn(float input), int genomeId) {
-	genomes[genomeId].runNetwork(activationFn);
+void Population::loadInput(void* input, int input_id, int genome_id) {
+	genomes[genome_id].loadInput(input, input_id);
 }
 
-void Population::getOutputs(float outputs[], int genomeId) {
-	genomes[genomeId].getOutputs(outputs);
-}
-
-void Population::runNetworkAuto(float processFn(float procInputs[], float procoutputs[], void* args), void* args, void initArgsInputs(float inputs[], void* args), float activationFn(float input), int maxIterationThresh, float fitnessOnMaxIteration) {
-	for (int genomeId = 0; genomeId < popSize; genomeId ++) {
-		runNetworkAuto(processFn, args, initArgsInputs, activationFn, maxIterationThresh, fitnessOnMaxIteration, genomeId);
+void Population::runNetwork() {
+	for (int i = 0; i < popSize; i++) {
+		genomes[i].runNetwork(activationFns);
 	}
 }
 
-void Population::runNetworkAuto(float processFn(float procInputs[], float procOutputs[], void* args), void* args, void initArgsInputs(float inputs[], void* args), float activationFn(float input), int maxIterationThresh, float fitnessOnMaxIteration, int genomeId) {
-	// init args and inputs
-	float procOutputs[nbInput];
-    initArgsInputs(procOutputs, args);
-	
-	float procInputs[nbOutput];
-	float result = -1.0f;
-	int iteration = 0;
-	while (iteration < maxIterationThresh && result < 0.0f) {
-		genomes[genomeId].loadInputs(procOutputs);
-		genomes[genomeId].runNetwork(activationFn);
-		genomes[genomeId].getOutputs(procInputs);
-		
-		result = processFn(procInputs, procOutputs, args);
-		
-		iteration ++;
-	}
-	if (result < 0.0f) {
-		genomes[genomeId].fitness = fitnessOnMaxIteration;
-	} else {
-		genomes[genomeId].fitness = result;
-	}
+void Population::runNetwork(int genome_id) {
+	genomes[genome_id].runNetwork(activationFns);
 }
 
-void Population::setFitness(float fitness, int genomeId) {
-	genomes[genomeId].fitness = fitness;
+void Population::getOutputs(void* outputs[], int genome_id) {
+	genomes[genome_id].getOutputs(outputs);
 }
 
+void* Population::getOutput(int output_id, int genome_id) {
+	return genomes[genome_id].getOutput(input_id);
+}
+
+void Population::setFitness(float fitness, int genome_id) {
+	genomes[genome_id].fitness = fitness;
+}
 
 void Population::speciate(int target, int targetThresh, float stepThresh, float a, float b, float c) {
 	// reset species
@@ -87,17 +70,17 @@ void Population::speciate(int target, int targetThresh, float stepThresh, float 
 	}
 	
 	// process the other genomes
-	for (int genomeId = 0; genomeId < popSize; genomeId++) {
-		if (genomes[genomeId].speciesId == -1) {	// if the genome not already belong to a species
+	for (int genome_id = 0; genome_id < popSize; genome_id++) {
+		if (genomes[genome_id].speciesId == -1) {	// if the genome not already belong to a species
 			int speciesId = 0;
-			while (speciesId < (int) species.size() && !(!species[speciesId].isDead && compareGenomes(species[speciesId].members[0], genomeId, a, b, c) < speciationThresh)) {
+			while (speciesId < (int) species.size() && !(!species[speciesId].isDead && compareGenomes(species[speciesId].members[0], genome_id, a, b, c) < speciationThresh)) {
 				speciesId ++;	// the genome cannot belong to this species, let's check the next one
 			}
 			if (speciesId == (int) species.size()) {	// no species found for the current genome, we have to create one new
 				species.push_back(Species(speciesId));
 			}
-			species[speciesId].members.push_back(genomeId);
-			genomes[genomeId].speciesId = speciesId;
+			species[speciesId].members.push_back(genome_id);
+			genomes[genome_id].speciesId = speciesId;
 		}
 	}
 	
@@ -195,14 +178,14 @@ float Population::compareGenomes(int ig1, int ig2, float a, float b, float c) {
 }
 
 void Population::updateFitnesses() {
-	fitterGenomeId = 0;
+	fittergenome_id = 0;
 	avgFitness = 0;
 	avgFitnessAdjusted = 0;
 	for (int i = 0; i < popSize; i++) {
 		avgFitness += genomes[i].fitness;
 		
-		if (genomes[i].fitness > genomes[fitterGenomeId].fitness) {
-			fitterGenomeId = i;
+		if (genomes[i].fitness > genomes[fittergenome_id].fitness) {
+			fittergenome_id = i;
 		}
 	}
 	
@@ -246,9 +229,9 @@ void Population::crossover(bool elitism) {
 	
 	if (elitism) {	// elitism mode on = we conserve during generations the fitter genome
 		Genome newGenome(nbInput, nbOutput, nbHiddenInit, probConnInit, &innovIds, &lastInnovId, weightExtremumInit);
-		newGenome.nodes = genomes[fitterGenomeId].nodes;
-		newGenome.connections = genomes[fitterGenomeId].connections;
-		newGenome.speciesId = genomes[fitterGenomeId].speciesId;
+		newGenome.nodes = genomes[fittergenome_id].nodes;
+		newGenome.connections = genomes[fittergenome_id].connections;
+		newGenome.speciesId = genomes[fittergenome_id].speciesId;
 		newGenomes.push_back(newGenome);
 	}
 	
@@ -314,7 +297,7 @@ void Population::crossover(bool elitism) {
 		}
 	}
 	
-	fitterGenomeId = -1;	// avoid to missuse fitterGenomeId
+	fittergenome_id = -1;	// avoid to missuse fittergenome_id
 	
 	generation ++;
 }
@@ -346,8 +329,8 @@ void Population::mutate(float mutateWeightThresh, float mutateWeightFullChangeTh
 	}
 }
 
-void Population::drawNetwork(int genomeId, sf::Vector2u windowSize, float dotsRadius) {
-	genomes[genomeId].drawNetwork(windowSize, dotsRadius);
+void Population::drawNetwork(int genome_id, sf::Vector2u windowSize, float dotsRadius) {
+	genomes[genome_id].drawNetwork(windowSize, dotsRadius);
 }
 
 void Population::printInfo(bool extendedGlobal, bool printSpecies, bool printGenomes, bool extendedGenomes) {
@@ -356,7 +339,7 @@ void Population::printInfo(bool extendedGlobal, bool printSpecies, bool printGen
 	std::cout << "	" << "Global" << std::endl;
 	std::cout << "	" << "	" << "Average fitness: " << avgFitness << std::endl;
 	std::cout << "	" << "	" << "Average fitness (adjusted): " << avgFitnessAdjusted << std::endl;
-	std::cout << "	" << "	" << "Best fitness: " << genomes[fitterGenomeId].fitness << std::endl;
+	std::cout << "	" << "	" << "Best fitness: " << genomes[fittergenome_id].fitness << std::endl;
 	if (extendedGlobal) {
 		std::cout << "	" << "	" << "Population size: " << popSize << std::endl;
 		std::cout << "	" << "	" << "Number of inputs: " << nbInput << std::endl;
@@ -432,7 +415,7 @@ void Population::save(const std::string filepath){
 		fileobj << generation << "\n";
 		fileobj << avgFitness << "\n";
 		fileobj << avgFitnessAdjusted << "\n";
-		fileobj << fitterGenomeId << "\n";
+		fileobj << fittergenome_id << "\n";
 
 		for (int k = 0; k < (int) genomes.size(); k++){
 			fileobj << genomes[k].fitness << "\n";
@@ -569,7 +552,7 @@ void Population::load(const std::string filepath){
 			throw 0;
 		}
 		if (getline(fileobj, line)){
-			fitterGenomeId = stoi(line);
+			fittergenome_id = stoi(line);
 		} else {
 			std::cout << "Error while loading model" << std::endl;
 			throw 0;

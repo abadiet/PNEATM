@@ -9,8 +9,7 @@ class Species{
 	public:
 		Species(int id);
 
-	private:
-		int id;
+	protected:
 		float avgFitness;
 		float avgFitnessAdjusted;
 		int allowedOffspring;
@@ -18,6 +17,9 @@ class Species{
 		int gensSinceImproved;
 		bool isDead;
 		std::vector<int> members;
+
+	private:
+		int id;
 };
 
 }
