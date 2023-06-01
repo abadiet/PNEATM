@@ -1,6 +1,6 @@
-#include <LRNEAT/population.hpp>
+#include <VRNEAT/population.hpp>
 
-using namespace neat;
+using namespace vrneat;
 
 Population::Population(int popSize, std::vector<int> nbInput, std::vector<int> nbOutput, std::vector<int> nbHiddenInit, float probConnInit, bool areRecurrentConnectionsAllowed, float weightExtremumInit, float speciationThreshInit, int threshGensSinceImproved): popSize(popSize), speciationThresh(speciationThreshInit), threshGensSinceImproved(threshGensSinceImproved), nbInput(nbInput), nbOutput(nbOutput), nbHiddenInit(nbHiddenInit), probConnInit(probConnInit), areRecurrentConnectionsAllowed(areRecurrentConnectionsAllowed), weightExtremumInit(weightExtremumInit) {
 	generation = 0;

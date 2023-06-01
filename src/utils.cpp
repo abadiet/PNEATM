@@ -1,8 +1,8 @@
-#include <LRNEAT/utils.hpp>
+#include <VRNEAT/utils.hpp>
 
-using namespace neat;
+using namespace vrneat;
 
-bool Eq_Float (float a, float b, float epsi = 1e-6) {
+bool Eq_Float (float a, float b, float epsi) {
     return a < b + epsi && a > b - epsi;
 }
 

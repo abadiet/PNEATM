@@ -1,10 +1,10 @@
-#include <LRNEAT/genome.hpp>
+#include <VRNEAT/genome.hpp>
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include <iostream>
 #include <cmath>
 
-using namespace neat;
+using namespace vrneat;
 
 Genome::Genome (std::vector<int> bias_sch, std::vector<int> inputs_sch, std::vector<int> outputs_sch, std::vector<int> hiddens_sch_init, std::vector<void*> bias_init, float probConnInit, std::vector<std::vector<int>>* innovIds, int* lastInnovId, float weightExtremumInit): weightExtremumInit(weightExtremumInit) {
 	speciesId = -1;
@@ -13,7 +13,8 @@ Genome::Genome (std::vector<int> bias_sch, std::vector<int> inputs_sch, std::vec
 	nbBias = 0;
 	for (int i = 0; i < (int) bias_sch.size (); i++) {
 		for (int k = 0; k < bias_sch [i]; k++) {
-			nodes.push_back(Node(nbBias, 0, i, i));
+			int func_id = findFuncId (i, i);
+			nodes.push_back(Node(nbBias, 0, i, i, func_id));
 			nodes.back ().input = bias_init [nbBias];	// init value of the bias node
 			nbBias ++;
 		}
@@ -22,7 +23,8 @@ Genome::Genome (std::vector<int> bias_sch, std::vector<int> inputs_sch, std::vec
 	nbInput = 0;
 	for (int i = 0; i < (int) input_sch.size (); i++) {
 		for (int k = 0; k < input_sch [nbBias + nbInput]; k++) {
-			nodes.push_back(Node(nbBias + nbInput, 0, i, i));
+			int func_id = findFuncId (i, i);
+			nodes.push_back(Node(nbBias + nbInput, 0, i, i, func_id));
 			nbInput ++;
 		}
 	}
@@ -36,7 +38,8 @@ Genome::Genome (std::vector<int> bias_sch, std::vector<int> inputs_sch, std::vec
 	}
 	for (int i = 0; i < (int) outputs_sch.size (); i++) {
 		for (int k = 0; k < outputs_sch [nbOutput]; k++) {
-			nodes.push_back(Node(nbBias + nbInput + nbOutput, outputLayer, i, i));
+			int func_id = findFuncId (i, i);
+			nodes.push_back(Node(nbBias + nbInput + nbOutput, outputLayer, i, i, func_id));
 			nbOutput ++;
 		}
 	}
@@ -44,7 +47,8 @@ Genome::Genome (std::vector<int> bias_sch, std::vector<int> inputs_sch, std::vec
 	int nbHidden = 0;
 	for (int i = 0; i < (int) hiddens_sch_init.size (); i++) {
 		for (int k = 0; k < hiddens_sch_init [nbHidden]; k++) {
-			nodes.push_back(Node(nbBias + nbInput + nbOutput + nbHidden, 1, i, i));
+			int func_id = findFuncId (i, i);
+			nodes.push_back(Node(nbBias + nbInput + nbOutput + nbHidden, 1, i, i, func_id));
 			nbHidden ++;
 		}
 	}

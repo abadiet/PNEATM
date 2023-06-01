@@ -1,15 +1,16 @@
 #ifndef GENOME_HPP
 #define GENOME_HPP
 
-#include <LRNEAT/node.hpp>
-#include <LRNEAT/connection.hpp>
-#include <LRNEAT/utils.hpp>
+#include <VRNEAT/node.hpp>
+#include <VRNEAT/connection.hpp>
+#include <VRNEAT/utils.hpp>
+#include <VRNEAT/activation_fn.hpp>
 #include <vector>
 #include <SFML/Graphics.hpp>
 
-namespace neat {
+namespace vrneat {
 
-class Genome : Connection{
+class Genome {
 	public:
 		Genome (std::vector<int> bias_sch, std::vector<int> inputs_sch, std::vector<int> outputs_sch, std::vector<int> hiddens_sch_init, std::vector<void*> bias_init, float probConnInit, std::vector<std::vector<int>>* innovIds, int* lastInnovId, float weightExtremumInit = 20.0f);
 		void loadInputs (void* inputs []);
@@ -20,11 +21,6 @@ class Genome : Connection{
 		void mutate (std::vector<std::vector<int>>* innovIds, int* lastInnovId, bool areRecurrentConnectionsAllowed = false, float mutateWeightThresh = 0.8f, float mutateWeightFullChangeThresh = 0.1f, float mutateWeightFactor = 1.2f, float addConnectionThresh = 0.05f, int maxIterationsFindConnectionThresh = 20, float reactivateConnectionThresh = 0.25f, float addNodeThresh = 0.03f, int maxIterationsFindNodeThresh = 20);
 		void drawNetwork (sf::Vector2u windowSize = {1300, 800}, float dotsRadius = 6.5f);
 
-	protected:
-		float fitness;
-		int speciesId;
-		std::vector<Connection> connections;
-
 	private:
 		int nbBias;
 		int nbInput;
@@ -32,7 +28,12 @@ class Genome : Connection{
 		std::vector<Node> nodes;
 		std::vector<std::vector<void*>> prevOut;
 		float weightExtremumInit;
+
+		float fitness;
+		int speciesId;
+		std::vector<Connection> connections;
 	
+		int findFuncId (int in_kind, int out_kind);
 		int getInnovId(std::vector<std::vector<int>>* innovIds, int* lastInnovId, int inNodeId, int outNodeId);
 		void mutateWeights(float mutateWeightFullChangeThresh, float mutateWeightFactor);
 		bool addConnection(std::vector<std::vector<int>>* innovIds, int* lastInnovId, int maxIterationsFindConnectionThresh, bool areRecurrentConnectionsAllowed, float reactivateConnectionThresh);

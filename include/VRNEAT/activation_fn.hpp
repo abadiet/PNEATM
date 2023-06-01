@@ -1,17 +1,19 @@
 #ifndef ACTIVATION_FN_HPP
 #define ACTIVATION_FN_HPP
 
-namespace neat {
+#include <functional>
+
+namespace vrneat {
 
 class ActivationFn{
     public:
         ActivationFn (int in_kind, int out_kind, void* func (void* input));
-        use (void* input);
+        void* use (void* input);
 
     private:
         int id;
         int in_kind, out_kind;
-        void* func (void* input);
+        std::function<void* (void*)> func;
 };
 
 }

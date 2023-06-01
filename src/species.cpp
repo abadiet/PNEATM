@@ -1,6 +1,6 @@
-#include <NEAT/species.hpp>
+#include <VRNEAT/species.hpp>
 
-using namespace neat;
+using namespace vrneat;
 
 Species::Species(int id): id(id) {
 	avgFitness = 0;

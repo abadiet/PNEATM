@@ -1,17 +1,17 @@
 #ifndef POPULATION_HPP
 #define POPULATION_HPP
 
-#include <LRNEAT/genome.hpp>
-#include <LRNEAT/species.hpp>
-#include <LRNEAT/activation_fn.hpp>
+#include <VRNEAT/genome.hpp>
+#include <VRNEAT/species.hpp>
+#include <VRNEAT/activation_fn.hpp>
 #include <string>
 #include <fstream>
 #include <iostream>
 #include <limits>
 
-namespace neat {
+namespace vrneat {
 
-class Population : Genome{
+class Population {
 	public:
 		Population (int popSize, std::vector<int> nbInput, std::vector<int> nbOutput, std::vector<int> nbHiddenInit, int bias_kind, void* bias_kind, float probConnInit, bool areRecurrentConnectionsAllowed = false, float weightExtremumInit = 20.0f, float speciationThreshInit = 100.0f, int threshGensSinceImproved = 15);
 		Population (const std::string filepath) {load(filepath);};

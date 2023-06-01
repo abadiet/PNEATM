@@ -3,7 +3,7 @@
 
 #include <vector>
 
-namespace neat {
+namespace vrneat {
 
 class Species{
 	public:
