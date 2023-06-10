@@ -3,7 +3,7 @@
 
 #include <vector>
 
-namespace vrneat {
+namespace pneatm {
 
 class Species{
 	public:

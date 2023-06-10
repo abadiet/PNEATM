@@ -1,10 +1,10 @@
 #ifndef NODE_HPP
 #define NODE_HPP
 
-#include <VRNEAT/Node/node_base.hpp>
+#include <PNEATM/Node/node_base.hpp>
 #include <functional>
 
-namespace vrneat {
+namespace pneatm {
 
 template <typename T_in, typename T_out>
 class Node : public NodeBase {

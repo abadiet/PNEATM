@@ -1,15 +1,15 @@
 #ifndef POPULATION_HPP
 #define POPULATION_HPP
 
-#include <VRNEAT/genome.hpp>
-#include <VRNEAT/species.hpp>
-#include <VRNEAT/activation_fn.hpp>
+#include <PNEATM/genome.hpp>
+#include <PNEATM/species.hpp>
+#include <PNEATM/activation_fn.hpp>
 #include <string>
 #include <fstream>
 #include <iostream>
 #include <limits>
 
-namespace vrneat {
+namespace pneatm {
 
 class Population {
 	public:

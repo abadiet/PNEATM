@@ -1,17 +1,17 @@
 #ifndef GENOME_HPP
 #define GENOME_HPP
 
-#include <VRNEAT/Node/node_base.hpp>
-#include <VRNEAT/Node/node.hpp>
-#include <VRNEAT/Connection/connection.hpp>
-#include <VRNEAT/Connection/innovation.hpp>
-#include <VRNEAT/utils.hpp>
+#include <PNEATM/Node/node_base.hpp>
+#include <PNEATM/Node/node.hpp>
+#include <PNEATM/Connection/connection.hpp>
+#include <PNEATM/Connection/innovation.hpp>
+#include <PNEATM/utils.hpp>
 #include <vector>
 #include <SFML/Graphics.hpp>
 #include <cmath>
 #include <functional>
 
-namespace vrneat {
+namespace pneatm {
 
 template <typename... Args>
 class Genome {

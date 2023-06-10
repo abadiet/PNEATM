@@ -3,7 +3,7 @@
 
 #include <vector>
 
-namespace vrneat {
+namespace pneatm {
 
 typedef struct innovation {
     std::vector<std::vector<std::vector<int>>> connectionIds;

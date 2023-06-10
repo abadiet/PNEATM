@@ -1,6 +1,6 @@
-#include <VRNEAT/utils.hpp>
+#include <PNEATM/utils.hpp>
 
-using namespace vrneat;
+using namespace pneatm;
 
 template <typename T1, typename T2, typename... Args>
 struct CreateNode {

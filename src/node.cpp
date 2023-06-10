@@ -1,6 +1,6 @@
-#include <VRNEAT/Node/node.hpp>
+#include <PNEATM/Node/node.hpp>
 
-using namespace vrneat;
+using namespace pneatm;
 
 template <typename T_in, typename T_out>
 Node<T_in, T_out>::Node (unsigned int ID, unsigned int lay, unsigned int iT_in, unsigned int iT_out, std::function<T_out (T_in)> func, T_in resetValue):

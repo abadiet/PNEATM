@@ -1,6 +1,6 @@
-#include <VRNEAT/genome.hpp>
+#include <PNEATM/genome.hpp>
 
-using namespace vrneat;
+using namespace pneatm;
 
 template <typename... Args>
 Genome<Args...>::Genome (std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_init, std::vector<void*> resetValues, std::vector<std::vector<std::vector<std::function <void* (void*)>>>> activationFns, innovation_t* conn_innov, unsigned int N_ConnInit, float probRecuInit, float weightExtremumInit, unsigned int maxRecuInit) :
@@ -543,7 +543,7 @@ void Genome<Args...>::UpdateLayers (int inNodeId) {
 /*
 template <typename... Args>
 void Genome<Args...>::drawNetwork(sf::Vector2u windowSize, float dotsRadius, std::string& font_path = "/usr/share/fonts/cantarell/Cantarell-VF.otf") {
-	sf::RenderWindow window(sf::VideoMode(windowSize.x, windowSize.y), "VRNEAT - Titofra");
+	sf::RenderWindow window(sf::VideoMode(windowSize.x, windowSize.y), "PNEATM - Titofra");
     
     sf::CircleShape dots[nodes.size()];
 	sf::Text dotsText[nodes.size()];

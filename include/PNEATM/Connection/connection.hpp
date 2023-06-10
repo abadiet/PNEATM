@@ -1,7 +1,7 @@
 #ifndef CONNECTION_HPP
 #define CONNECTION_HPP
 
-namespace vrneat {
+namespace pneatm {
 
 class Connection {
 	public:

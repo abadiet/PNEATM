@@ -3,7 +3,7 @@
 
 #include <functional>
 
-namespace vrneat {
+namespace pneatm {
 
 class NodeBase{
     public:

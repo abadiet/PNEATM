@@ -1,6 +1,6 @@
-#include <VRNEAT/Connection/connection.hpp>
+#include <PNEATM/Connection/connection.hpp>
 
-using namespace vrneat;
+using namespace pneatm;
 
 Connection::Connection(const unsigned int innovId, const unsigned int inNodeId, const unsigned int outNodeId, const unsigned int inNodeRecu, float weight, bool enabled):
     innovId (innovId),

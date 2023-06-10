@@ -1,6 +1,6 @@
-#include <VRNEAT/species.hpp>
+#include <PNEATM/species.hpp>
 
-using namespace vrneat;
+using namespace pneatm;
 
 Species::Species(int id): id(id) {
 	avgFitness = 0;

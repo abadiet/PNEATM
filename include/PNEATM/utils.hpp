@@ -1,11 +1,11 @@
 #ifndef UTILS_HPP
 #define UTILS_HPP
 
-#include <VRNEAT/Node/node_base.hpp>
-#include <VRNEAT/Node/node.hpp>
+#include <PNEATM/Node/node_base.hpp>
+#include <PNEATM/Node/node.hpp>
 #include <memory>
 
-namespace vrneat {
+namespace pneatm {
 
 template <typename T1, typename T2, typename... Args>
 struct CreateNode;
