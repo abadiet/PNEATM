@@ -1,5 +1,5 @@
-# Large Recurent Neural Network (RNN) powered by NeuroEvolution of Augmenting Topologies (NEAT)
-C++ library for evolving neural networks with a modified NEAT that is able to access any previous data, allowing any kind of data
+# Polymorphic NeuroEvolution of Augmenting Topologies with Memory (PNEATM)
+C++ library for evolving neural networks with a modified NEAT that allows any kind of data and that is able to access any previous data.
 
 # TODO
 - [x] NEAT
