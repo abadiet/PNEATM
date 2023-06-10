@@ -3,7 +3,7 @@
 
 #include <PNEATM/genome.hpp>
 #include <PNEATM/species.hpp>
-#include <PNEATM/activation_fn.hpp>
+#include <PNEATM/utils.hpp>
 #include <string>
 #include <fstream>
 #include <iostream>
@@ -11,59 +11,67 @@
 
 namespace pneatm {
 
+template <typename... Args>
 class Population {
 	public:
-		Population (int popSize, std::vector<int> nbInput, std::vector<int> nbOutput, std::vector<int> nbHiddenInit, int bias_kind, void* bias_kind, float probConnInit, bool areRecurrentConnectionsAllowed = false, float weightExtremumInit = 20.0f, float speciationThreshInit = 100.0f, int threshGensSinceImproved = 15);
-		Population (const std::string filepath) {load(filepath);};
+		Population (unsigned int popSize, std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_init, std::vector<void*> resetValues, std::vector<std::vector<std::vector<std::function <void* (void*)>>>> activationFns, unsigned int N_ConnInit, float probRecuInit, float weightExtremumInit, unsigned int maxRecuInit, float speciationThreshInit = 100.0f, int threshGensSinceImproved = 15);
+		//Population (const std::string filepath) {load(filepath);};
 
-		void addKind (int kind);
-		void addActivationFn (void* fn(void* input), int arg_kind, int out_kind);
-		void loadInputs (void* inputs []);
-		void loadInput (void* input, int input_id);
-		void loadInputs (void* inputs [], int genome_id);
-		void loadInput (void* input, int input_id, int genome_id);
+		template <typename T_in>
+		void loadInputs (T_in inputs []);
+		template <typename T_in>
+		void loadInput (T_in input, unsigned int input_id);
+		template <typename T_in>
+		void loadInputs (T_in inputs [], unsigned int genome_id);
+		template <typename T_in>
+		void loadInput (T_in input, unsigned int input_id, unsigned int genome_id);
+
 		void runNetwork ();
-		void runNetwork (int genome_id);
-		void getOutputs (void* outputs [], int genome_id);
-		void* getOutput (int output_id, int genome_id);
-		void setFitness (float fitness, int genome_id);
-		void speciate (int target = 5, int targetThresh = 0, float stepThresh = 0.5f, float a = 1.0f, float b = 1.0f, float c = 0.4f);
+		void runNetwork (unsigned int genome_id);
+
+		template <typename T_out>
+		void getOutputs (T_out outputs [], unsigned int genome_id);
+		template <typename T_out>
+		T_out getOutput (unsigned int output_id, unsigned int genome_id);
+
+		void setFitness (float fitness, unsigned int genome_id);
+		void speciate (unsigned int target = 5, unsigned int targetThresh = 0, float stepThresh = 0.5f, float a = 1.0f, float b = 1.0f, float c = 0.4f);
 		void crossover (bool elitism = false);
-		void mutate (float mutateWeightThresh = 0.8f, float mutateWeightFullChangeThresh = 0.1f, float mutateWeightFactor = 1.2f, float addConnectionThresh = 0.05f, int maxIterationsFindConnectionThresh = 20, float reactivateConnectionThresh = 0.25f, float addNodeThresh = 0.03f, int maxIterationsFindNodeThresh = 20);
-		void drawNetwork (int genome_id, sf::Vector2u windowSize = {1300, 800}, float dotsRadius = 6.5f);
+		void mutate (unsigned int maxRecurrency, float mutateWeightThresh = 0.8f, float mutateWeightFullChangeThresh = 0.1f, float mutateWeightFactor = 1.2f, float addConnectionThresh = 0.05f, unsigned int maxIterationsFindConnectionThresh = 20, float reactivateConnectionThresh = 0.25f, float addNodeThresh = 0.03f, unsigned int maxIterationsFindNodeThresh = 20, float addTranstypeThresh = 0.02f);
+		/*void drawNetwork (unsigned int genome_id, sf::Vector2u windowSize = {1300, 800}, float dotsRadius = 6.5f);
 		void printInfo (bool extendedGlobal = false, bool printSpecies = false, bool printGenomes = false, bool extendedGenomes = false);
 		void save (const std::string filepath = "./neat_backup.txt");
-		void load (const std::string filepath = "./neat_backup.txt");
+		void load (const std::string filepath = "./neat_backup.txt");*/
 	
 	private:
-		int generation;
+		unsigned int generation;
 		float avgFitness;
 		float avgFitnessAdjusted;
-
-		int popSize;
+		unsigned int popSize;
 		float speciationThresh;
-		int threshGensSinceImproved;
-		std::vector<int> nbInput;	// only useful for creating new genome
-		std::vector<int> nbOutput;	// only useful for creating new genome
-		std::vector<int> nbHiddenInit;	// only useful for creating new genome
-		float probConnInit;	// only useful for creating new genome
-		int bias_kind;	// only useful for creating new genome
-		void* bias_init;	// only useful for creating new genome
-		float weightExtremumInit;	// only useful for creating new genome
-		bool areRecurrentConnectionsAllowed;
+		unsigned int threshGensSinceImproved;
+
+		// useful parameters to create new genome
+		std::vector<size_t> bias_sch;
+		std::vector<size_t> inputs_sch;
+		std::vector<size_t> outputs_sch;
+		std::vector<std::vector<size_t>> hiddens_sch_init;
+		std::vector<void*> bias_init;
+		std::vector<void*> resetValues;
+		unsigned int N_ConnInit;
+		float probRecuInit;
+		float weightExtremumInit;
+		unsigned int maxRecuInit;
+
 		int fittergenome_id;
-		std::vector<Genome> genomes;
+		std::vector<Genome<Args...>> genomes;
 		std::vector<Species> species;
-		std::vector<int> kinds;
-		std::vector<ActivationFn> activationFns;
+		std::vector<std::vector<std::vector<std::function <void* (void*)>>>> activationFns;
+		innovation_t conn_innov;
 
-		std::vector<std::vector<int>> connectionIds;
-		int N_connectionId;
-		int getConnectionId (int inNodeId, int outNodeId);
-
-		float compareGenomes(int ig1, int ig2, float a, float b, float c);
-		void updateFitnesses();
-		int selectParent(int iSpe);
+		float CompareGenomes (unsigned int ig1, unsigned int ig2, float a, float b, float c);
+		void UpdateFitnesses ();
+		int SelectParent (unsigned int iSpe);
 };
 
 }

@@ -2,7 +2,7 @@
 
 using namespace pneatm;
 
-Species::Species(int id): id(id) {
+Species::Species(unsigned int id): id(id) {
 	avgFitness = 0;
 	avgFitnessAdjusted = 0;
 	sumFitness = 0;

@@ -5,11 +5,12 @@
 
 namespace pneatm {
 
-class Species{
+class Species {
 	public:
-		Species(int id);
+		Species (unsigned int id);
 
-	protected:
+	private:
+		unsigned int id;
 		float avgFitness;
 		float avgFitnessAdjusted;
 		int allowedOffspring;
@@ -18,8 +19,8 @@ class Species{
 		bool isDead;
 		std::vector<int> members;
 
-	private:
-		int id;
+	template <typename... Args>
+	friend class Population;
 };
 
 }

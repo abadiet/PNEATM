@@ -2,96 +2,134 @@
 
 using namespace pneatm;
 
-Population::Population(int popSize, std::vector<int> nbInput, std::vector<int> nbOutput, std::vector<int> nbHiddenInit, float probConnInit, bool areRecurrentConnectionsAllowed, float weightExtremumInit, float speciationThreshInit, int threshGensSinceImproved): popSize(popSize), speciationThresh(speciationThreshInit), threshGensSinceImproved(threshGensSinceImproved), nbInput(nbInput), nbOutput(nbOutput), nbHiddenInit(nbHiddenInit), probConnInit(probConnInit), areRecurrentConnectionsAllowed(areRecurrentConnectionsAllowed), weightExtremumInit(weightExtremumInit) {
+template <typename... Args>
+Population<Args...>::Population(unsigned int popSize, std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_init, std::vector<void*> resetValues, std::vector<std::vector<std::vector<std::function <void* (void*)>>>> activationFns, unsigned int N_ConnInit, float probRecuInit, float weightExtremumInit, unsigned int maxRecuInit, float speciationThreshInit, int threshGensSinceImproved) :
+	popSize (popSize),
+	speciationThresh (speciationThreshInit),
+	threshGensSinceImproved (threshGensSinceImproved),
+	bias_sch (bias_sch),
+	inputs_sch (inputs_sch),
+	outputs_sch (outputs_sch),
+	hiddens_sch_init (hiddens_sch_init),
+	bias_init (bias_init),
+	weightExtremumInit (weightExtremumInit),
+	activationFns (activationFns),
+	resetValues (resetValues),
+	N_ConnInit (N_ConnInit),
+	maxRecuInit (maxRecuInit)
+{
 	generation = 0;
-	N_connectionId = 0;
 	fittergenome_id = -1;
 	for (int i = 0; i < popSize; i++) {
-		genomes.push_back(Genome(nbInput, nbOutput, nbHiddenInit, probConnInit, &innovIds, &lastInnovId, weightExtremumInit));
+		genomes.push_back (Genome<Args...> (bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, &conn_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit));
 	}
 }
 
-void Population::loadInputs(void* inputs[]) {
+template <typename... Args>
+template <typename T_in>
+void Population<Args...>::loadInputs(T_in inputs []) {
 	for (int i = 0; i < popSize; i++) {
-		genomes[i].loadInputs(inputs);
+		genomes [i].loadInputs (inputs);
 	}
 }
 
-void Population::loadInputs(void* inputs[], int genome_id) {
-	genomes[genome_id].loadInputs(inputs);
+template <typename... Args>
+template <typename T_in>
+void Population<Args...>::loadInputs(T_in inputs [], unsigned int genome_id) {
+	genomes [genome_id].loadInputs (inputs);
 }
 
-void Population::loadInput(void* input, int input_id) {
+template <typename... Args>
+template <typename T_in>
+void Population<Args...>::loadInput(T_in input, unsigned int input_id) {
 	for (int i = 0; i < popSize; i++) {
-		genomes[i].loadInput(input, input_id);
+		genomes [i].loadInput (input, input_id);
 	}
 }
 
-void Population::loadInput(void* input, int input_id, int genome_id) {
-	genomes[genome_id].loadInput(input, input_id);
+template <typename... Args>
+template <typename T_in>
+void Population<Args...>::loadInput(T_in input, unsigned int input_id, unsigned int genome_id) {
+	genomes [genome_id].loadInput (input, input_id);
 }
 
-void Population::runNetwork() {
+template <typename... Args>
+void Population<Args...>::runNetwork() {
 	for (int i = 0; i < popSize; i++) {
-		genomes[i].runNetwork(activationFns);
+		genomes [i].runNetwork ();
 	}
 }
 
-void Population::runNetwork(int genome_id) {
-	genomes[genome_id].runNetwork(activationFns);
+template <typename... Args>
+void Population<Args...>::runNetwork(unsigned int genome_id) {
+	genomes [genome_id].runNetwork ();
 }
 
-void Population::getOutputs(void* outputs[], int genome_id) {
-	genomes[genome_id].getOutputs(outputs);
+template <typename... Args>
+template <typename T_out>
+void Population<Args...>::getOutputs (T_out outputs [], unsigned int genome_id) {
+	genomes [genome_id].getOutputs (outputs);
 }
 
-void* Population::getOutput(int output_id, int genome_id) {
-	return genomes[genome_id].getOutput(input_id);
+template <typename... Args>
+template <typename T_out>
+T_out Population<Args...>::getOutput (unsigned int output_id, unsigned int genome_id) {
+	return genomes [genome_id].getOutput (output_id);
 }
 
-void Population::setFitness(float fitness, int genome_id) {
-	genomes[genome_id].fitness = fitness;
+template <typename... Args>
+void Population<Args...>::setFitness (float fitness, unsigned int genome_id) {
+	genomes [genome_id].fitness = fitness;
 }
 
-void Population::speciate(int target, int targetThresh, float stepThresh, float a, float b, float c) {
+template <typename... Args>
+void Population<Args...>::speciate (unsigned int target, unsigned int targetThresh, float stepThresh, float a, float b, float c) {
 	// reset species
 	for (int i = 0; i < popSize; i++) {
-		genomes[i].speciesId = -1;
+		genomes [i].speciesId = -1;
 	}
-	
+
 	// init species with leaders
-	for (int iSpe = 0; iSpe < (int) species.size(); iSpe++) {
-		if (!species[iSpe].isDead) {	// if the species is still alive
-			int iMainGenome = species[iSpe].members[rand() % (int) species[iSpe].members.size()];	// select a random member to be the main genome of the species
-			species[iSpe].members.clear();
-			species[iSpe].members.push_back(iMainGenome);
-			genomes[iMainGenome].speciesId = iSpe;
+	for (size_t iSpe = 0; iSpe < species.size(); iSpe++) {
+		if (!species [iSpe].isDead) {	// if the species is still alive
+			int iMainGenome = species [iSpe].members[rand() % species [iSpe].members.size ()];	// select a random member to be the main genome of the species
+			species [iSpe].members.clear ();
+			species [iSpe].members.push_back (iMainGenome);
+			genomes [iMainGenome].speciesId = iSpe;
 		}
 	}
-	
+
 	// process the other genomes
-	for (int genome_id = 0; genome_id < popSize; genome_id++) {
-		if (genomes[genome_id].speciesId == -1) {	// if the genome not already belong to a species
+	for (unsigned int genome_id = 0; genome_id < popSize; genome_id++) {
+		if (genomes [genome_id].speciesId == -1) {	// if the genome not already belong to a species
 			int speciesId = 0;
-			while (speciesId < (int) species.size() && !(!species[speciesId].isDead && compareGenomes(species[speciesId].members[0], genome_id, a, b, c) < speciationThresh)) {
+			while (
+				speciesId < species.size()
+				&& !(
+					!species[speciesId].isDead
+					&& CompareGenomes (species [speciesId].members [0], genome_id, a, b, c) < speciationThresh
+					)
+				)
+			{
 				speciesId ++;	// the genome cannot belong to this species, let's check the next one
 			}
-			if (speciesId == (int) species.size()) {	// no species found for the current genome, we have to create one new
-				species.push_back(Species(speciesId));
+			if (speciesId == (int) species.size ()) {
+				// no species found for the current genome, we have to create one new
+				species.push_back (Species (speciesId));
 			}
-			species[speciesId].members.push_back(genome_id);
-			genomes[genome_id].speciesId = speciesId;
+			species [speciesId].members.push_back (genome_id);
+			genomes [genome_id].speciesId = speciesId;
 		}
 	}
-	
+
 	// check how many alive species we have
 	int nbSpeciesAlive = 0;
-	for (int iSpe = 0; iSpe < (int) species.size(); iSpe++) {
-		if (!species[iSpe].isDead) {	// if the species is still alive
+	for (size_t iSpe = 0; iSpe < species.size (); iSpe++) {
+		if (!species [iSpe].isDead) {	// if the species is still alive
 			nbSpeciesAlive ++;
 		}
 	}
-	
+
 	// update speciationThresh
 	if (nbSpeciesAlive < target - targetThresh) {
 		speciationThresh -= stepThresh;
@@ -100,67 +138,62 @@ void Population::speciate(int target, int targetThresh, float stepThresh, float 
 			speciationThresh += stepThresh;
 		}
 	}
-	
+
 	// update all the fitness
-	updateFitnesses();
+	UpdateFitnesses ();
 }
 
-int Population::getConnectionId (int inNodeId, int outNodeId) {
-	while ((int) connectionIds.size () < inNodeId) {
-		connectionIds.push_back ({-1});
-	}
-	while ((int) connectionIds [inNodeId].size () < outNodeId) {
-		connectionIds [inNodeId].push_back (-1);
-	}
-	if (connectionIds [inNodeId][outNodeId] == -1) {
-		connectionIds [inNodeId][outNodeId] = N_connectionId;
-		N_connectionId ++;
-	}
-	return connectionIds [inNodeId][outNodeId];
-}
-
-float Population::compareGenomes(int ig1, int ig2, float a, float b, float c) {
-	int maxInnovId1 = 0;
-	std::vector<int> connEnabled1;
-	for (int i = 0; i < (int) genomes[ig1].connections.size(); i++) {
-		if (genomes[ig1].connections[i].enabled) {
+template <typename... Args>
+float Population<Args...>::CompareGenomes (unsigned int ig1, unsigned int ig2, float a, float b, float c) {
+	// get enabled connections and maxInnovId for genome 1
+	unsigned int maxInnovId1 = 0;
+	std::vector<size_t> connEnabled1;
+	for (size_t i = 0; i < genomes [ig1].connections.size (); i++) {
+		if (genomes [ig1].connections [i].enabled) {
 			connEnabled1.push_back(i);
-			if (genomes[ig1].connections[i].innovId > maxInnovId1) {
-				maxInnovId1 = genomes[ig1].connections[i].innovId;
+			if (genomes [ig1].connections [i].innovId > maxInnovId1) {
+				maxInnovId1 = genomes [ig1].connections [i].innovId;
 			}
 		}
 	}
-	
-	int maxInnovId2 = 0;
-	std::vector<int> connEnabled2;
-	for (int i = 0; i < (int) genomes[ig2].connections.size(); i++) {
-		if (genomes[ig2].connections[i].enabled) {
-			connEnabled2.push_back(i);
-			if (genomes[ig2].connections[i].innovId > maxInnovId2) {
-				maxInnovId2 = genomes[ig2].connections[i].innovId;
+
+	// get enabled connections and maxInnovId for genome 2
+	unsigned int maxInnovId2 = 0;
+	std::vector<size_t> connEnabled2;
+	for (size_t i = 0; i < genomes [ig2].connections.size (); i++) {
+		if (genomes [ig2].connections [i].enabled) {
+			connEnabled2.push_back (i);
+			if (genomes [ig2].connections [i].innovId > maxInnovId2) {
+				maxInnovId2 = genomes [ig2].connections [i].innovId;
 			}
 		}
 	}
-	
-	int excessGenes = 0;
-	int disjointGenes = 0;
+
+	unsigned int excessGenes = 0;
+	unsigned int disjointGenes = 0;
 	float sumDiffWeights = 0.0f;
-	int nbCommonGenes = 0;
-	
-	for (int i1 = 0; i1 < (int) connEnabled1.size(); i1++) {
-		if (genomes[ig1].connections[connEnabled1[i1]].innovId > maxInnovId2) {
+	unsigned int nbCommonGenes = 0;
+
+	for (size_t i1 = 0; i1 < connEnabled1.size (); i1++) {
+		// for each enabled connection of the first genome
+		if (genomes [ig1].connections [connEnabled1 [i1]].innovId > maxInnovId2) {
+			// if connection's innovId is over the maximum one of second genome's connections
+			// it is an excess genes
 			excessGenes += 1;
 		} else {
-			int i2 = 0;
+			size_t i2 = 0;
 			
-			while (i2 < (int) connEnabled2.size() && genomes[ig2].connections[connEnabled2[i2]].innovId != genomes[ig1].connections[connEnabled1[i1]].innovId) {
-				i2++;
+			while (i2 < connEnabled2.size () && genomes [ig2].connections [connEnabled2 [i2]].innovId != genomes [ig1].connections [connEnabled1 [i1]].innovId) {
+				i2 ++;
 			}
-			if (i2 == (int) connEnabled2.size()) {
+			if (i2 == connEnabled2.size ()) {
+				// no connection with the same innovation id have been found in the second genome
+				// it is a disjoint gene
 				disjointGenes += 1;
 			} else {
+				// one connection has the same innovation id
 				nbCommonGenes += 1;
-				float diff = genomes[ig2].connections[connEnabled2[i2]].weight - genomes[ig1].connections[connEnabled1[i1]].weight;
+				float diff = genomes [ig2].connections [connEnabled2 [i2]].weight - genomes [ig1].connections [connEnabled1 [i1]].weight;
 				if (diff > 0) {
 					sumDiffWeights += diff;
 				} else {
@@ -170,184 +203,209 @@ float Population::compareGenomes(int ig1, int ig2, float a, float b, float c) {
 		}
 	}
 	
-	for (int i2 = 0; i2 < (int) connEnabled2.size(); i2++) {
-		if (genomes[ig2].connections[connEnabled2[i2]].innovId > maxInnovId1) {
+	for (size_t i2 = 0; i2 < connEnabled2.size (); i2++) {
+		// for each enabled connection of the second genome
+		if (genomes [ig2].connections [connEnabled2 [i2]].innovId > maxInnovId1) {
+			// if connection's innovId is over the maximum one of first genome's connections
+			// it is an excess genes
 			excessGenes += 1;
 		} else {
-			int i1 = 0;
-			while (i1 < (int) connEnabled1.size() && genomes[ig2].connections[connEnabled2[i2]].innovId != genomes[ig1].connections[connEnabled1[i1]].innovId) {
-				i1++;
+			size_t i1 = 0;
+			while (i1 < connEnabled1.size () && genomes [ig2].connections [connEnabled2 [i2]].innovId != genomes [ig1].connections [connEnabled1 [i1]].innovId) {
+				i1 ++;
 			}
-			if (i1 == (int) connEnabled1.size()) {
+			if (i1 == connEnabled1.size ()) {
+				// no connection with the same innovation id have been found in the first genome
+				// it is a disjoint gene
 				disjointGenes += 1;
-			}
+			}	// else, the weight's difference has already been processed in the previous for loop
 		}
 	}
-	
+
 	if (nbCommonGenes > 0) {
-		return (a * (float) excessGenes + b * (float) disjointGenes) / (float) std::max((int) connEnabled1.size(), (int) connEnabled2.size()) + c * sumDiffWeights / (float) nbCommonGenes;
+		return (
+			(a * (float) excessGenes + b * (float) disjointGenes) / (float) std::max(connEnabled1.size (), connEnabled2.size ())
+			+ c * sumDiffWeights / (float) nbCommonGenes
+		);
 	} else {
-		return std::numeric_limits<float>::max();	// TODO: is there a better way?
+		// there si no common genes between genomes
+		// let's return the maximum float as they might be very differents
+		return std::numeric_limits<float>::max();
 	}
 }
 
-void Population::updateFitnesses() {
+template <typename... Args>
+void Population<Args...>::UpdateFitnesses () {
 	fittergenome_id = 0;
 	avgFitness = 0;
 	avgFitnessAdjusted = 0;
+
+	// process avgFitness and found fittergenome_id
 	for (int i = 0; i < popSize; i++) {
-		avgFitness += genomes[i].fitness;
+		avgFitness += genomes [i].fitness;
 		
-		if (genomes[i].fitness > genomes[fittergenome_id].fitness) {
+		if (genomes [i].fitness > genomes [fittergenome_id].fitness) {
 			fittergenome_id = i;
 		}
 	}
-	
 	avgFitness /= (float) popSize;
-	
-	for (int i = 0; i < (int) species.size(); i++) {
-		if (!species[i].isDead) {
-			species[i].sumFitness = 0;
-			for (int j = 0; j < (int) species[i].members.size(); j++) {
-				species[i].sumFitness += genomes[species[i].members[j]].fitness;
+
+	// process avgFitnessAdjusted
+	for (size_t i = 0; i < species.size (); i++) {
+		if (!species [i].isDead) {
+			// process species' sumFitness
+			species [i].sumFitness = 0;
+			for (size_t j = 0; j < species [i].members.size (); j++) {
+				species [i].sumFitness += genomes [species [i].members [j]].fitness;
 			}
-			
-			if (species[i].sumFitness / (float) species[i].members.size() > species[i].avgFitness) {	// the avgFitness of the species has increased
-				species[i].gensSinceImproved  = 0;
+
+			// update species' gensSinceImproved
+			if (species [i].sumFitness / (float) species[i].members.size () > species [i].avgFitness) {
+				// the avgFitness of the species has increased
+				species [i].gensSinceImproved  = 0;
 			} else {
-				species[i].gensSinceImproved ++;
+				species [i].gensSinceImproved ++;
 			}
-			
-			species[i].avgFitness = species[i].sumFitness / (float) species[i].members.size();
-			species[i].avgFitnessAdjusted = species[i].avgFitness / (float) species[i].members.size();
-			
-			avgFitnessAdjusted += species[i].avgFitness;
+
+			// process species' avgFitness and avgFitnessAdjusted
+			species [i].avgFitness = species [i].sumFitness / (float) species [i].members.size ();
+			species [i].avgFitnessAdjusted = species [i].avgFitness / (float) species [i].members.size ();
+
+			avgFitnessAdjusted += species [i].avgFitness;
 		}
 	}
-	
 	avgFitnessAdjusted /= (float) popSize;
-	
-	for (int i = 0; i < (int) species.size(); i++) {
-		if (!species[i].isDead) {
-			if (species[i].gensSinceImproved < threshGensSinceImproved) {
-				species[i].allowedOffspring = (int) ((float) species[i].members.size() * species[i].avgFitnessAdjusted / (avgFitnessAdjusted + std::numeric_limits<float>::min()));	// note that (int) 0.9f == 0.0f	// numeric_limits<float>::min() = minimum positive value of float
+
+	// process offsprings
+	for (size_t i = 0; i < species.size (); i ++) {
+		if (!species [i].isDead) {
+			if (species [i].gensSinceImproved < threshGensSinceImproved) {
+				// the species can have offsprings
+				species [i].allowedOffspring = (int) (
+					(float) species [i].members.size ()
+					* species [i].avgFitnessAdjusted
+					/ (avgFitnessAdjusted + std::numeric_limits<float>::min ())
+				);	// note that (int) 0.9f == 0.0f
 			} else {
+				// the species cannot have offsprings it has not iproved for a long time
 				species[i].allowedOffspring = 0;
 			}
 		}
 	}
 }
 
-void Population::crossover(bool elitism) {
-	std::vector<Genome> newGenomes;
-	
+template <typename... Args>
+void Population<Args...>::crossover (bool elitism) {
+	std::vector<Genome<Args...>> newGenomes;
+
 	if (elitism) {	// elitism mode on = we conserve during generations the fitter genome
-		Genome newGenome(nbInput, nbOutput, nbHiddenInit, probConnInit, &innovIds, &lastInnovId, weightExtremumInit);
-		newGenome.nodes = genomes[fittergenome_id].nodes;
-		newGenome.connections = genomes[fittergenome_id].connections;
-		newGenome.speciesId = genomes[fittergenome_id].speciesId;
-		newGenomes.push_back(newGenome);
+		Genome<Args...> newGenome (bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, &conn_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit);
+		newGenome.nodes = genomes [fittergenome_id].nodes;
+		newGenome.connections = genomes [fittergenome_id].connections;
+		newGenome.speciesId = genomes [fittergenome_id].speciesId;
+		newGenomes.push_back (newGenome);
 	}
-	
-	for (int iSpe = 0; iSpe < (int) species.size() ; iSpe++) {
-		for (int k = 0; k < species[iSpe].allowedOffspring; k++) {
+
+	for (int iSpe = 0; iSpe < (int) species.size() ; iSpe ++) {
+		for (int k = 0; k < species [iSpe].allowedOffspring; k++) {
+			Genome<Args...> newGenome (bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, &conn_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit);
+
 			// choose pseudo-randomly two parents. Don't care if they're identical as the child will be mutated...
-			int iParent1 = selectParent(iSpe);
-			int iParent2 = selectParent(iSpe);
-			
+			unsigned int iParent1 = SelectParent (iSpe);
+			unsigned int iParent2 = SelectParent (iSpe);
+
 			// clone the fitter
-			Genome newGenome(nbInput, nbOutput, nbHiddenInit, probConnInit, &innovIds, &lastInnovId, weightExtremumInit);
-			int iMainParent;
-			int iSecondParent;
-			if (genomes[iParent1].fitness > genomes[iParent2].fitness) {
+			unsigned int iMainParent;
+			unsigned int iSecondParent;
+			if (genomes [iParent1].fitness > genomes [iParent2].fitness) {
 				iMainParent = iParent1;
 				iSecondParent = iParent2;
 			} else {
 				iMainParent = iParent2;
 				iSecondParent = iParent1;
 			}
-			newGenome.nodes = genomes[iMainParent].nodes;
-			
-			newGenome.connections = genomes[iMainParent].connections;
+			newGenome.nodes = genomes [iMainParent].nodes;
+			newGenome.connections = genomes [iMainParent].connections;
 			newGenome.speciesId = iSpe;
-			
+
 			// connections shared by both of the parents must be randomly wheighted
-			for (int iMainParentConn = 0; iMainParentConn < (int) genomes[iMainParent].connections.size(); iMainParentConn++) {
-				for (int iSecondParentConn = 0; iSecondParentConn < (int) genomes[iSecondParent].connections.size(); iSecondParentConn++) {
-					if (genomes[iMainParent].connections[iMainParentConn].innovId == genomes[iSecondParent].connections[iSecondParentConn].innovId) {
-						if (rand() % 2 == 0) {	// 50 % of chance for each parent, newGenome already have the wheight of MainParent
-							newGenome.connections[iMainParentConn].weight = genomes[iSecondParent].connections[iSecondParentConn].weight;
+			for (size_t iMainParentConn = 0; iMainParentConn < genomes [iMainParent].connections.size (); iMainParentConn ++) {
+				for (size_t iSecondParentConn = 0; iSecondParentConn < genomes [iSecondParent].connections.size (); iSecondParentConn ++) {
+					if (genomes [iMainParent].connections [iMainParentConn].innovId == genomes [iSecondParent].connections [iSecondParentConn].innovId) {
+						if (Random_Float (0.0f, 1.0f, true, false) < 0.5f) {	// 50 % of chance for each parent, newGenome already have the wheight of MainParent
+							newGenome.connections [iMainParentConn].weight = genomes [iSecondParent].connections [iSecondParentConn].weight;
 						}
 					}
 				}
 			}
-			
-			newGenomes.push_back(newGenome);
+
+			// the new genome is ready!
+			newGenomes.push_back (newGenome);
 		}
 	}
-	
+
 	int previousSize = (int) newGenomes.size();
 	// add genomes if some are missing
 	for (int k = 0; k < popSize - previousSize; k++) {
-		newGenomes.push_back(Genome(nbInput, nbOutput, nbHiddenInit, probConnInit, &innovIds, &lastInnovId, weightExtremumInit));
+		newGenomes.push_back (Genome<Args...> (bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, &conn_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit));
 	}
-	
+
 	// or remove some genomes if there is too many genomes
 	for (int k = 0; k < previousSize - popSize; k++) {
-		newGenomes.pop_back();
+		newGenomes.pop_back ();
 	}
-	
+
 	genomes = newGenomes;
-	
+
 	// reset species members
-	for (int i = 0; i < (int) species.size(); i++) {
-		species[i].members.clear();
-		species[i].isDead = true;
+	for (size_t i = 0; i < species.size(); i++) {
+		species [i].members.clear ();
+		species [i].isDead = true;
 	}
 	for (int i = 0; i < popSize; i++) {
-		if (genomes[i].speciesId > -1) {
-			species[genomes[i].speciesId].members.push_back(i);
-			species[genomes[i].speciesId].isDead = false;	// empty species will stay to isDead = true
+		if (genomes [i].speciesId > -1) {
+			species [genomes [i].speciesId].members.push_back (i);
+			species [genomes [i].speciesId].isDead = false;	// empty species will stay to isDead = true
 		}
 	}
-	
-	fittergenome_id = -1;	// avoid to missuse fittergenome_id
-	
+
+	fittergenome_id = -1;	// avoid a missuse of fittergenome_id
+
 	generation ++;
 }
 
-int Population::selectParent(int iSpe) {
-	/* Chooses player from the population to return randomly(considering fitness). This works by randomly choosing a value between 0 and the sum of all the fitnesses then go through all the dots and add their fitness to a running sum and if that sum is greater than the random value generated that dot is chosen since players with a higher fitness function add more to the running sum then they have a higher chance of being chosen */
-	// build a random threshold in [0, sumFitness)
-	float randThresh = (float) rand()/(float) (RAND_MAX);
-	while (randThresh < 1.0f + 1e-10 && randThresh > 1.0f - 1e-10) {	// == 1
-		randThresh = (float) rand()/(float) (RAND_MAX);
-	}
-	randThresh *= species[iSpe].sumFitness;
-	
+template <typename... Args>
+int Population<Args...>::SelectParent (unsigned int iSpe) {
+	/* Chooses player from the population to return randomly(considering fitness).
+	This works by randomly choosing a value between 0 and the sum of all the fitnesses then go through all the genomes
+	and add their fitness to a running sum and if that sum is greater than the random value generated,
+	that genome is chosen since players with a higher fitness function add more to the running sum then they have a higher chance of being chosen */
+
+	float randThresh = Random_Float (0.0f, species[iSpe].sumFitness, true, false);
 	float runningSum = 0.0f;
-	
-	for (int i = 0; i < (int) species[iSpe].members.size(); i++) {
-		runningSum += genomes[species[iSpe].members[i]].fitness;
+	for (size_t i = 0; i < species [iSpe].members.size (); i++) {
+		runningSum += genomes [species [iSpe].members [i]].fitness;
 		if (runningSum > randThresh) {
-			return species[iSpe].members[i];
+			return species [iSpe].members [i];
 		}
 	}
-	std::cout << "Error : don't find a parent during crossover." << std::endl;
 	return -1;	// impossible
 }
 
-void Population::mutate(float mutateWeightThresh, float mutateWeightFullChangeThresh, float mutateWeightFactor, float addConnectionThresh, int maxIterationsFindConnectionThresh, float reactivateConnectionThresh, float addNodeThresh, int maxIterationsFindNodeThresh) {
+template <typename... Args>
+void Population<Args...>::mutate (unsigned int maxRecurrency, float mutateWeightThresh, float mutateWeightFullChangeThresh, float mutateWeightFactor, float addConnectionThresh, unsigned int maxIterationsFindConnectionThresh, float reactivateConnectionThresh, float addNodeThresh, unsigned int maxIterationsFindNodeThresh, float addTranstypeThresh) {
 	for (int i = 0; i < popSize; i++) {
-		genomes[i].mutate(&innovIds, &lastInnovId, areRecurrentConnectionsAllowed, mutateWeightThresh, mutateWeightFullChangeThresh, mutateWeightFactor, addConnectionThresh, maxIterationsFindConnectionThresh, reactivateConnectionThresh, addNodeThresh, maxIterationsFindNodeThresh);
+		genomes[i].mutate (&conn_innov, maxRecurrency, mutateWeightThresh, mutateWeightFullChangeThresh, mutateWeightFactor, addConnectionThresh, maxIterationsFindConnectionThresh, reactivateConnectionThresh, addNodeThresh, maxIterationsFindNodeThresh, addTranstypeThresh);
 	}
 }
-
-void Population::drawNetwork(int genome_id, sf::Vector2u windowSize, float dotsRadius) {
+/*
+template <typename... Args>
+void Population<Args...>::drawNetwork(unsigned int genome_id, sf::Vector2u windowSize, float dotsRadius) {
 	genomes[genome_id].drawNetwork(windowSize, dotsRadius);
 }
 
-void Population::printInfo(bool extendedGlobal, bool printSpecies, bool printGenomes, bool extendedGenomes) {
+template <typename... Args>
+void Population<Args...>::printInfo(bool extendedGlobal, bool printSpecies, bool printGenomes, bool extendedGenomes) {
 	std::cout << "GENERATION " << generation << std::endl;
 	
 	std::cout << "	" << "Global" << std::endl;
@@ -404,7 +462,8 @@ void Population::printInfo(bool extendedGlobal, bool printSpecies, bool printGen
 	}
 }
 
-void Population::save(const std::string filepath){
+template <typename... Args>
+void Population<Args...>::save(const std::string filepath){
 	std::ofstream fileobj(filepath);
 
 	if (fileobj.is_open()){
@@ -459,7 +518,8 @@ void Population::save(const std::string filepath){
 	}
 }
 
-void Population::load(const std::string filepath){
+template <typename... Args>
+void Population<Args...>::load(const std::string filepath){
 	std::ifstream fileobj(filepath);
 
 	if (fileobj.is_open()){
@@ -684,3 +744,4 @@ void Population::load(const std::string filepath){
 		throw 0;
 	}
 }
+*/

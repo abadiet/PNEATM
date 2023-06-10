@@ -215,7 +215,7 @@ T_out Genome<Args...>::getOutput (int output_id) {
 }
 
 template <typename... Args>
-void Genome<Args...>::mutate(innovation_t* conn_innov, unsigned int maxRecurrency, float mutateWeightThresh, float mutateWeightFullChangeThresh, float mutateWeightFactor, float addConnectionThresh, int maxIterationsFindConnectionThresh, float reactivateConnectionThresh, float addNodeThresh, int maxIterationsFindNodeThresh, float addTranstypeThresh) {
+void Genome<Args...>::mutate(innovation_t* conn_innov, unsigned int maxRecurrency, float mutateWeightThresh, float mutateWeightFullChangeThresh, float mutateWeightFactor, float addConnectionThresh, unsigned int maxIterationsFindConnectionThresh, float reactivateConnectionThresh, float addNodeThresh, int maxIterationsFindNodeThresh, float addTranstypeThresh) {
 	// WEIGHTS
 	if (Random_Float (0.0f, 1.0f, true, false) < mutateWeightThresh) {
 		MutateWeights (mutateWeightFullChangeThresh, mutateWeightFactor);
