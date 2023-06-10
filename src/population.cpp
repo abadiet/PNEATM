@@ -4,7 +4,7 @@ using namespace vrneat;
 
 Population::Population(int popSize, std::vector<int> nbInput, std::vector<int> nbOutput, std::vector<int> nbHiddenInit, float probConnInit, bool areRecurrentConnectionsAllowed, float weightExtremumInit, float speciationThreshInit, int threshGensSinceImproved): popSize(popSize), speciationThresh(speciationThreshInit), threshGensSinceImproved(threshGensSinceImproved), nbInput(nbInput), nbOutput(nbOutput), nbHiddenInit(nbHiddenInit), probConnInit(probConnInit), areRecurrentConnectionsAllowed(areRecurrentConnectionsAllowed), weightExtremumInit(weightExtremumInit) {
 	generation = 0;
-	lastInnovId = -1;
+	N_connectionId = 0;
 	fittergenome_id = -1;
 	for (int i = 0; i < popSize; i++) {
 		genomes.push_back(Genome(nbInput, nbOutput, nbHiddenInit, probConnInit, &innovIds, &lastInnovId, weightExtremumInit));
@@ -103,6 +103,20 @@ void Population::speciate(int target, int targetThresh, float stepThresh, float 
 	
 	// update all the fitness
 	updateFitnesses();
+}
+
+int Population::getConnectionId (int inNodeId, int outNodeId) {
+	while ((int) connectionIds.size () < inNodeId) {
+		connectionIds.push_back ({-1});
+	}
+	while ((int) connectionIds [inNodeId].size () < outNodeId) {
+		connectionIds [inNodeId].push_back (-1);
+	}
+	if (connectionIds [inNodeId][outNodeId] == -1) {
+		connectionIds [inNodeId][outNodeId] = N_connectionId;
+		N_connectionId ++;
+	}
+	return connectionIds [inNodeId][outNodeId];
 }
 
 float Population::compareGenomes(int ig1, int ig2, float a, float b, float c) {

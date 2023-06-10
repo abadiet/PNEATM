@@ -1,145 +1,185 @@
 #include <VRNEAT/genome.hpp>
-#include <SFML/Graphics.hpp>
-#include <vector>
-#include <iostream>
-#include <cmath>
 
 using namespace vrneat;
 
-Genome::Genome (std::vector<int> bias_sch, std::vector<int> inputs_sch, std::vector<int> outputs_sch, std::vector<int> hiddens_sch_init, std::vector<void*> bias_init, float probConnInit, std::vector<std::vector<int>>* innovIds, int* lastInnovId, float weightExtremumInit): weightExtremumInit(weightExtremumInit) {
+template <typename... Args>
+Genome<Args...>::Genome (std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_init, std::vector<void*> resetValues, std::vector<std::vector<std::vector<std::function <void* (void*)>>>> activationFns, innovation_t* conn_innov, unsigned int N_ConnInit, float probRecuInit, float weightExtremumInit, unsigned int maxRecuInit) :
+	weightExtremumInit (weightExtremumInit),
+	activationFns (activationFns),
+	resetValues (resetValues)
+
+{
+	N_types = (unsigned int) activationFns.size ();
 	speciesId = -1;
+
 	// NODES
 	// bias
 	nbBias = 0;
-	for (int i = 0; i < (int) bias_sch.size (); i++) {
-		for (int k = 0; k < bias_sch [i]; k++) {
-			int func_id = findFuncId (i, i);
-			nodes.push_back(Node(nbBias, 0, i, i, func_id));
-			nodes.back ().input = bias_init [nbBias];	// init value of the bias node
+	for (size_t i = 0; i < bias_sch.size (); i++) {
+		for (size_t k = 0; k < bias_sch [i]; k++) {
+			// get Node<T_in, T_out>
+			nodes.push_back(CreateNode<Args...>::get (i, i));
+
+			// input Nodes' activation's functions are the identity
+			std::function<void* (void*)> generic_func = [] (void* input) {return input;};
+			
+			// setup the node
+			nodes.back ()->id = nbBias;
+			nodes.back ()->layer = 0;
+			nodes.back ()->index_T_in = i;
+			nodes.back ()->index_T_out = i;
+			nodes.back ()->setActivationFn (generic_func);
+			nodes.back ()->setResetValue (bias_init [i]);	// for bias nodes, init and reset value are the same
+			nodes.back ()->reset ();	// set the init value
+
 			nbBias ++;
 		}
 	}
 	// input
 	nbInput = 0;
-	for (int i = 0; i < (int) input_sch.size (); i++) {
-		for (int k = 0; k < input_sch [nbBias + nbInput]; k++) {
-			int func_id = findFuncId (i, i);
-			nodes.push_back(Node(nbBias + nbInput, 0, i, i, func_id));
+	for (size_t i = 0; i < inputs_sch.size (); i++) {
+		for (size_t k = 0; k < inputs_sch [nbBias + nbInput]; k++) {
+			// get Node<T_in, T_out>
+			nodes.push_back(CreateNode<Args...>::get (i, i));
+
+			// input Nodes' activation's functions are the identity
+			std::function<void* (void*)> generic_func = [] (void* input) {return input;};
+			
+			// setup the node
+			nodes.back ()->id = nbBias + nbInput;
+			nodes.back ()->layer = 0;
+			nodes.back ()->index_T_in = i;
+			nodes.back ()->index_T_out = i;
+			nodes.back ()->setActivationFn (generic_func);
+			nodes.back ()->setResetValue (resetValues [i]);
+
 			nbInput ++;
 		}
 	}
 	// output
 	nbOutput = 0;
 	int outputLayer;
-	if ((int) nbHiddenInit.size () > 0) {
+	if (hiddens_sch_init.size () > 0) {
 		outputLayer = 2;
 	} else {
 		outputLayer = 1;
 	}
-	for (int i = 0; i < (int) outputs_sch.size (); i++) {
-		for (int k = 0; k < outputs_sch [nbOutput]; k++) {
-			int func_id = findFuncId (i, i);
-			nodes.push_back(Node(nbBias + nbInput + nbOutput, outputLayer, i, i, func_id));
+	for (size_t i = 0; i < outputs_sch.size (); i++) {
+		for (size_t k = 0; k < outputs_sch [nbOutput]; k++) {
+			// get Node<T_in, T_out>
+			nodes.push_back(CreateNode<Args...>::get (i, i));
+
+			// output Nodes' activation's functions are the identity
+			std::function<void* (void*)> generic_func = [] (void* input) {return input;};
+			
+			// setup the node
+			nodes.back ()->id = nbBias + nbInput + nbOutput;
+			nodes.back ()->layer = outputLayer;
+			nodes.back ()->index_T_in = i;
+			nodes.back ()->index_T_out = i;
+			nodes.back ()->setActivationFn (generic_func);
+			nodes.back ()->setResetValue (resetValues [i]);
+
 			nbOutput ++;
 		}
 	}
 	// hidden
-	int nbHidden = 0;
-	for (int i = 0; i < (int) hiddens_sch_init.size (); i++) {
-		for (int k = 0; k < hiddens_sch_init [nbHidden]; k++) {
-			int func_id = findFuncId (i, i);
-			nodes.push_back(Node(nbBias + nbInput + nbOutput + nbHidden, 1, i, i, func_id));
-			nbHidden ++;
+	unsigned int nbHidden = 0;
+	for (size_t i = 0; i < hiddens_sch_init.size (); i++) {
+		for (size_t j = 0; j < hiddens_sch_init [i].size (); j++) {
+			for (size_t k = 0; k < hiddens_sch_init [i][nbHidden]; k++) {
+				// get Node<T_in, T_out>
+				nodes.push_back(CreateNode<Args...>::get (i, j));
+
+				// activation function for the hidden node
+				std::function<void* (void*)> generic_func = activationFns [i][j][
+					rand () % activationFns [i][j].size ()
+				];
+
+				// setup the node
+				nodes.back ()->id = nbBias + nbInput + nbOutput + nbHidden;
+				nodes.back ()->layer = 1;
+				nodes.back ()->index_T_in = i;
+				nodes.back ()->index_T_out = j;
+				nodes.back ()->setActivationFn (generic_func);
+				nodes.back ()->setResetValue (resetValues [i]);
+
+				nbHidden ++;
+			}
 		}
 	}
 	
 	// CONNECTIONS
-	// input -> hidden
-	for (int inNodeId = 0; inNodeId < nbBias + nbInput; inNodeId++) {	// input
-		for (int outNodeId = nbBias + nbInput + nbOutput; outNodeId < nbBias + nbInput  + nbOutput + nbHiddenInit; outNodeId++) {	// hidden
-			if ((float) rand() / (float) RAND_MAX <= probConnInit) {
-				int innovId = getInnovId(innovIds, lastInnovId, inNodeId, outNodeId);
-				float weight = (float) rand() / (float) RAND_MAX * 2 * weightExtremumInit - weightExtremumInit;	// random number in [-weightExtremumInit; weightExtremumInit]
-				connections.push_back(Connection(innovId, inNodeId, outNodeId, 0, weight, true, false));
+	unsigned int iConn = 0;
+	while (iConn < N_ConnInit) {
+		// inNodeId and outNodeId
+		unsigned int inNodeId = rand () % nodes.size ();
+		unsigned int outNodeId = rand () % nodes.size ();
+
+		// inNodeRecu
+		unsigned int inNodeRecu = 0;
+		if (Random_Float (0.0f, 1.0f, true, false) < probRecuInit) {
+			inNodeRecu = rand () % (maxRecuInit + 1);
+		}
+
+		if (CheckNewConnectionValidity (inNodeId, outNodeId, inNodeRecu)) {
+			// innovId
+			const unsigned int innov_id = conn_innov->getInnovId (inNodeId, outNodeId, inNodeRecu);
+
+			// weight
+			const float weight = Random_Float (- weightExtremumInit, weightExtremumInit);	// random number in [-weightExtremumInit; weightExtremumInit]
+
+			connections.push_back(Connection (innov_id, inNodeId, outNodeId, inNodeRecu, weight, true));
+
+			if (inNodeRecu == 0) {
+				UpdateLayers (inNodeId);
 			}
-		}
-	}
-	// hidden -> output
-	for (int inNodeId = nbBias + nbInput + nbOutput; inNodeId < nbBias + nbInput + nbOutput + nbHiddenInit; inNodeId++) {	// hidden
-		for (int outNodeId = nbBias + nbInput; outNodeId < nbBias + nbInput + nbOutput; outNodeId++) {	// output
-			if ((float) rand() / (float) RAND_MAX <= probConnInit) {
-				int innovId = getInnovId(innovIds, lastInnovId, inNodeId, outNodeId);
-				float weight = (float) rand() / (float) RAND_MAX * 2 * weightExtremumInit - weightExtremumInit;	// random number in [-weightExtremumInit; weightExtremumInit]
-				connections.push_back(Connection(innovId, inNodeId, outNodeId, weight, true, false));
-			}
-		}
-	}
-	// input -> output
-	for (int inNodeId = 0; inNodeId < nbBias + nbInput; inNodeId++) {	// input
-		for (int outNodeId = nbBias + nbInput; outNodeId < nbBias + nbInput + nbOutput; outNodeId++) {	// output
-			if ((float) rand() / (float) RAND_MAX <= probConnInit) {
-				int innovId = getInnovId(innovIds, lastInnovId, inNodeId, outNodeId);
-				float weight = (float) rand() / (float) RAND_MAX * 2 * weightExtremumInit - weightExtremumInit;	// random number in [-weightExtremumInit; weightExtremumInit]
-				connections.push_back(Connection(innovId, inNodeId, outNodeId, weight, true, false));
-			}
+
+			iConn ++;
 		}
 	}
 }
 
-int Genome::getInnovId(std::vector<std::vector<int>>* innovIds, int* lastInnovId, int inNodeId, int outNodeId) {
-	/* get the innovation id of the connection inNodeId -> outNodeId. Create one if needed */
-	if ((int) innovIds->size() < inNodeId + 1) {
-		int previousSize = (int) innovIds->size();
-		for (int k = 0; k < inNodeId + 1 - previousSize; k++) {	// we complete the array until we reach inNodeId
-			innovIds->push_back({-1});
-		}
-	}
-	if ((int) (*innovIds)[inNodeId].size() < outNodeId + 1) {
-		int previousSize = (int) (*innovIds)[inNodeId].size();
-		for (int k = 0; k < outNodeId + 1 - previousSize; k++) {	// we complete the array until we reach outNodeId
-			(*innovIds)[inNodeId].push_back(-1);
-		}
-	}
-	if ((*innovIds)[inNodeId][outNodeId] == -1) {	// has this connection been built in the past ?
-		*lastInnovId ++;
-		(*innovIds)[inNodeId][outNodeId] = *lastInnovId;
-	}
-	
-	return (*innovIds)[inNodeId][outNodeId];
-}
-
-
-void Genome::loadInputs(void* inputs []) {
-	for (int i = 0; i < nbInput; i++) {
-		nodes[i + 1].input = inputs[i];	// i + 1 because the first node is the bias one
-		nodes[i + 1].output = inputs[i];	// input = output for the inputs nodes
+template <typename... Args>
+template <typename T_in>
+void Genome<Args...>::loadInputs (T_in inputs []) {
+	for (unsigned int i = 0; i < nbInput; i++) {
+		nodes[i + nbBias]->setInput (inputs [i]);
 	}
 }
 
-void Genome::loadInput(void* input, int input_id) {
-	nodes[input_id + 1].input = input;	// i + 1 because the first node is the bias one
-	nodes[input_id + 1].output = input;	// input = output for the inputs nodes
+template <typename... Args>
+template <typename T_in>
+void Genome<Args...>::loadInput (T_in input, int input_id) {
+	nodes[input_id + nbBias]->setInput (input);
 }
 
-void Genome::runNetwork(std::vector<ActivationFn> activationFns) {
+template <typename... Args>
+void Genome<Args...>::runNetwork() {
 	/* Process all input and output. For that, it "scans" each layer from the inputs to the last hidden's layer to calculate input with already known value. */ 
 
 	// reset input
-	for (int i = nbInput + 1; i < (int) nodes.size(); i++) {
-		nodes[i].input = 0;
+	for (size_t i = nbBias + nbInput; i < nodes.size(); i++) {
+		nodes [i]->reset ();
 	}
 	
-	int lastLayer = nodes[nbBias + nbInput].layer;
+	int lastLayer = nodes[nbBias + nbInput]->layer;
 	
-	for (int ilayer = 1; ilayer < lastLayer; ilayer++) {
-		// process nodes[*].input
-		for (int i = 0; i < (int) connections.size(); i++) {
-			if (connections[i].enabled && nodes[connections[i].outNodeId].layer == ilayer) {	// if the connections still exist and is pointing on the current layer
-				if (connections[i].inNodeRecu == 0) {	// no recurence
-					nodes[connections[i].outNodeId].input += nodes[connections[i].inNodeId].output * connections[i].weight;
+	for (int ilayer = 0; ilayer < lastLayer; ilayer++) {
+		// process nodes[*]->input
+		for (size_t i = 0; i < connections.size (); i++) {
+			if (connections [i].enabled && nodes [connections [i].outNodeId]->layer == ilayer) {	// if the connections still exist and is pointing on the current layer
+				if (connections [i].inNodeRecu == 0) {
+					nodes [connections [i].outNodeId]->AddToInput (
+						nodes [connections [i].inNodeId]->getOutput (),
+						connections [i].weight
+					);
 				} else {	// is recurent
-					if (connections[i].inNodeRecu <= (int) prevOut.size ()) {
-						nodes[connections[i].outNodeId].input += prevOut[(int) prevOut.size () - connections[i].inNodeRecu][connections[i].inNodeId] * connections[i].weight;
+					if (connections[i].inNodeRecu < (unsigned int) prevNodes.size () + 1) {
+						nodes[connections[i].outNodeId]->AddToInput (
+							prevNodes [(unsigned int) prevNodes.size () - connections [i].inNodeRecu][connections [i].inNodeId]->getOutput (),
+							connections [i].weight
+						);
 					} else {
 						// the input of the connection isn't existing yet!
 						// we consider that the connection isn't existing
@@ -147,95 +187,63 @@ void Genome::runNetwork(std::vector<ActivationFn> activationFns) {
 				}
 			}
 		}
-		
-		// process nodes[*].output
-		for (int i = nbBias + nbInput; i < (int) nodes.size(); i++) {	// for each node except inputs because output has already be calculated
-			if (nodes[i].layer == ilayer) {
-				nodes[i].output = activationFns[nodes[i].func_id](nodes[i].input);
+
+		// process nodes[*]->output
+		for (size_t i = 0; i < nodes.size (); i++) {
+			if (nodes [i]->layer == ilayer) {
+				nodes [i]->process ();
 			}
 		}
 	}
+
+	// we have to store previous values
+	prevNodes.push_back (nodes);
 }
 
-void Genome::getOutputs(void* outputs[]) {
+template <typename... Args>
+template <typename T_out>
+void Genome<Args...>::getOutputs (T_out outputs []) {
 	for (int i = 0; i < nbOutput; i++) {
-		outputs[i] = nodes[nbBias + nbInput + i].output;
+		outputs [i] = (T_out) nodes [nbBias + nbInput + i]->getOutput ();
 	}
 }
 
-void* Genome::getOutput (int output_id) {
-	return nodes[nbBias + nbInput + output_id].output;
+template <typename... Args>
+template <typename T_out>
+T_out Genome<Args...>::getOutput (int output_id) {
+	return (T_out) nodes[nbBias + nbInput + output_id]->getOutput ();
 }
 
-void Genome::mutate(std::vector<std::vector<int>>* innovIds, int* lastInnovId, int maxRecurrency, float mutateWeightThresh, float mutateWeightFullChangeThresh, float mutateWeightFactor, float addConnectionThresh, int maxIterationsFindConnectionThresh, float reactivateConnectionThresh, float addNodeThresh, int maxIterationsFindNodeThresh) {
-	// ### WEIGHTS ###
+template <typename... Args>
+void Genome<Args...>::mutate(innovation_t* conn_innov, unsigned int maxRecurrency, float mutateWeightThresh, float mutateWeightFullChangeThresh, float mutateWeightFactor, float addConnectionThresh, int maxIterationsFindConnectionThresh, float reactivateConnectionThresh, float addNodeThresh, int maxIterationsFindNodeThresh, float addTranstypeThresh) {
+	// WEIGHTS
 	if (Random_Float (0.0f, 1.0f, true, false) < mutateWeightThresh) {
-		// mutating weights
-		mutateWeights(mutateWeightFullChangeThresh, mutateWeightFactor);
+		MutateWeights (mutateWeightFullChangeThresh, mutateWeightFactor);
 	}
 	
-	// ### NODES ###
+	// NODES
 	if (Random_Float (0.0f, 1.0f, true, false) < addNodeThresh) {
-		// adding a node
-		addNode(innovIds, lastInnovId, maxIterationsFindNodeThresh, maxRecurrency);
+		AddNode (conn_innov, maxIterationsFindNodeThresh);
 	}
 
-	// ### CONNECTIONS ###
+	// TRANSTYPE (aka add a bi-typed node and two connections)
+	if (Random_Float (0.0f, 1.0f, true, false) < addTranstypeThresh) {
+		AddTranstype (conn_innov, maxRecurrency, maxIterationsFindNodeThresh);
+	}
+
+	// CONNECTIONS
 	if (Random_Float (0.0f, 1.0f, true, false) < addConnectionThresh) {
-		// adding a conection
-		addConnection(innovIds, lastInnovId, maxIterationsFindConnectionThresh, maxRecurrency, reactivateConnectionThresh);
+		AddConnection (conn_innov, maxRecurrency, maxIterationsFindConnectionThresh, reactivateConnectionThresh);
 	}
+
+	// TODO? We might updateLayers here, but is this useful?
 }
 
-void Genome::mutateWeights(float mutateWeightFullChangeThresh, float mutateWeightFactor) {
-	for (int i = 0; i < (int) connections.size(); i++) {
-		if (Random_Float (0.0f, 1.0f, true, false) < mutateWeightFullChangeThresh) {
-			// reset weight
-			connections[i].weight = Random_Float (- weightExtremumInit, weightExtremumInit);
-		} else {
-			// pertub weight
-			connections[i].weight *= Random_Float (- mutateWeightFactor, mutateWeightFactor)
-		}
-	}
-}
+template <typename... Args>
+bool Genome<Args...>::CheckNewConnectionValidity (unsigned int inNodeId, unsigned int outNodeId, unsigned int inNodeRecu, unsigned int* disabled_conn_id) {
+	if (nodes [inNodeId]->index_T_out == nodes [outNodeId]->index_T_in) return false;	// connections should link two same objects
 
-bool Genome::addConnection(std::vector<std::vector<int>>* innovIds, int* lastInnovId, int maxIterationsFindConnectionThresh, bool areRecurrentConnectionsAllowed, float reactivateConnectionThresh) {	// return true if the process ended well, false in the other case
-	// find valid node pair
-	int iterationNb = 0;
-	int inNodeId, outNodeId, inNodeRecu;
-	int isValid = 0;
-	int disabled_conn_id = -1;
-	while (iterationNb < maxIterationsFindConnectionThresh && isValid) {
-		inNodeId = rand() % (int) nodes.size();
-		outNodeId = rand() % (int) nodes.size();
-		inNodeRecu = rand() % (maxRecurrency + 1);
-		isValid = isValidNewConnection(inNodeId, outNodeId, inNodeId, &disabled_conn_id);
-		iterationNb++;
-	}
-	
-	if (iterationNb < maxIterationsFindConnectionThresh) {	// a valid connection has been found
-		// mutating
-		if (disabled_conn_id >= 0) {	// it is a former connection
-			if (Random_Float (0.0f, 1.0f, true, false) < reactivateConnectionThresh) {
-				connections[disabled_conn_id].enabled = true;	// former connection is reactivated
-				return true;
-			} else {
-				return true;	// return true even no connection has been change because process ended well
-			}
-		} else {
-			int innovId = getInnovId(innovIds, lastInnovId, inNodeId, outNodeId, inNodeRecu);
-			float weight = Random_Float (- weightExtremumInit, weightExtremumInit);	// random number in [-weightExtremumInit; weightExtremumInit]
-			connections.push_back(Connection(innovId, inNodeId, outNodeId, inNodeRecu, weight, true));
-			return true;
-		}
-	} else {
-		return false;	// cannot find a valid connection
-	}
-}
-
-bool Genome::isValidNewConnection(int inNodeId, int outNodeId, int inNodeRecu, int* disabled_conn_id) {
-	if (inNodeId == outNodeId) return false;	// the connection boucle itself
-	for (int i = 0; i < (int) connections.size(); i++) {
+	for (size_t i = 0; i < connections.size (); i++) {
 		if (
 			connections[i].inNodeId == inNodeId
 			&& connections[i].outNodeId == outNodeId
@@ -249,68 +257,163 @@ bool Genome::isValidNewConnection(int inNodeId, int outNodeId, int inNodeRecu, i
 			}
 		}
 	}
-	return true;	// tests passed well: it is a valid connection!
+	
+	if (inNodeRecu > 0) {
+		// if it is a recurrent connection, the unique condition is to not be a copy of another one
+		// as a recurrent connection cannot create a circle
+		return true;
+	}
+
+	// the new connection should not have an output as inNode
+	// because if this is the case, outNode's layer > inNode's one (wich is the maximum layer, it is the outputs one)
+	if (inNodeId >= nbBias + nbInput && inNodeId < nbBias + nbInput + nbOutput) {
+		return false;
+	}
+
+	// the new connection should not create a circle in the network
+	// because if this is the case, even after updating layers, we can find a connection that cannot be in the regular direction
+	if (CheckNewConnectionCircle (inNodeId, outNodeId)) {
+		return false;	// the connection will create a connection's circle in the network
+	}
+	return true;	// test passed well: it is a valid connection!
 }
 
-bool Genome::addNode(std::vector<std::vector<int>>* innovIds, int* lastInnovId, std::vector<int> kinds, int maxIterationsFindNodeThresh, bool areRecurrentConnectionsAllowed) {	// return true = node created, false = nothing created
+template <typename... Args>
+bool Genome<Args...>::CheckNewConnectionCircle (unsigned int inNodeId, unsigned int outNodeId) {
+	if (inNodeId == outNodeId) {
+		return true;
+	}
+	for (size_t iConn = 0; iConn < connections.size (); iConn ++) {
+		if (connections [iConn].inNodeId = outNodeId && connections [iConn].inNodeRecu == 0) {
+			if (CheckNewConnectionCircle (inNodeId, connections [iConn].outNodeId)) {
+				return true;
+			}
+		}
+	}
+	return false;
+
+}
+
+template <typename... Args>
+void Genome<Args...>::MutateWeights (float mutateWeightFullChangeThresh, float mutateWeightFactor) {
+	for (size_t i = 0; i < connections.size(); i++) {
+		if (Random_Float (0.0f, 1.0f, true, false) < mutateWeightFullChangeThresh) {
+			// reset weight
+			connections [i].weight = Random_Float (- weightExtremumInit, weightExtremumInit);
+		} else {
+			// pertub weight
+			connections [i].weight *= Random_Float (- mutateWeightFactor, mutateWeightFactor);
+		}
+	}
+}
+
+template <typename... Args>
+bool Genome<Args...>::AddConnection (innovation_t* conn_innov, unsigned int maxRecurrency, unsigned int maxIterationsFindConnectionThresh, float reactivateConnectionThresh) {	// return true if the process ended well, false in the other case
+	// find valid node pair
+	unsigned int iterationNb = 1;
+	unsigned int inNodeId = rand() % nodes.size();
+	unsigned int outNodeId = rand() % nodes.size();
+	unsigned int inNodeRecu = rand() % (maxRecurrency + 1);
+	int disabled_conn_id = -1;
+	while (
+		iterationNb < maxIterationsFindConnectionThresh
+		&& CheckNewConnectionValidity (inNodeId, outNodeId, inNodeId, &disabled_conn_id)
+	) {
+		inNodeId = rand() % nodes.size();
+		outNodeId = rand() % nodes.size();
+		inNodeRecu = rand() % (maxRecurrency + 1);
+		iterationNb ++;
+	}
+	
+	if (iterationNb < maxIterationsFindConnectionThresh) {	// a valid connection has been found
+		// mutating
+		if (disabled_conn_id >= 0) {	// it is a former connection
+			if (Random_Float (0.0f, 1.0f, true, false) < reactivateConnectionThresh) {
+				connections [disabled_conn_id].enabled = true;	// former connection is reactivated
+				return true;
+			} else {
+				return true;	// return true even no connection has been change because process ended well
+			}
+		} else {
+			// innovId
+			const unsigned int innov_id = conn_innov->getInnovId (inNodeId, outNodeId, inNodeRecu);
+
+			// weight
+			const float weight = Random_Float (- weightExtremumInit, weightExtremumInit);	// random number in [-weightExtremumInit; weightExtremumInit]
+
+			connections.push_back(Connection (innov_id, inNodeId, outNodeId, inNodeRecu, weight, true));
+			
+			return true;
+		}
+	} else {
+		return false;	// cannot find a valid connection
+	}
+}
+
+template <typename... Args>
+bool Genome<Args...>::AddNode (innovation_t* conn_innov, unsigned int maxIterationsFindNodeThresh) {	// return true = node created, false = nothing created
 	// choose at random an enabled connection
-	if ((int) connections.size() > 0) {	// if there is no connection, we cannot add a node!
-		int iConn = rand() % (int) connections.size();
-		int iterationNb = 0;
-		while (iterationNb < maxIterationsFindNodeThresh && !connections[iConn].enabled) {
-			iConn = rand() % (int) connections.size();
+	if (connections.size() > 0) {	// if there is no connection, we cannot add a node!
+		unsigned int iConn = rand() % connections.size();
+		unsigned int iterationNb = 0;
+		while (iterationNb < maxIterationsFindNodeThresh && !connections [iConn].enabled) {
+			iConn = rand() % connections.size();
 			iterationNb ++;
 		}
 		if (iterationNb < maxIterationsFindNodeThresh) {	// a connection has been found
 			// disable former connection
-			connections[iConn].enabled = false;
+			connections [iConn].enabled = false;
 			
 			// setup new node
-			int newNodeId = (int) nodes.size();
-			int inKind = rand() % (int) kind.size();
-			int outKind = rand() % (int) kind.size();
-			int funcId = findFuncId (inKind, outKind, kinds);
-			nodes.push_back(Node(newNodeId, -1, inKind, outKind, funcId));	// no layer for the moment
-			
+			const unsigned int newNodeId = (unsigned int) nodes.size ();
+			const unsigned int iT_in = nodes [connections [iConn].inNodeId]->index_T_in;
+			const unsigned int iT_out = nodes [connections [iConn].outNodeId]->index_T_out;
+
+			// get Node<T_in, T_out>
+			nodes.push_back(CreateNode<Args...>::get (iT_in, iT_out));
+
+			// activation function
+			std::function<void* (void*)> generic_func = activationFns [iT_in][iT_out][
+				rand () % activationFns [iT_in][iT_out].size ()
+			];
+
+			// setup the node
+			nodes.back ()->id = newNodeId;
+			nodes.back ()->layer = -1;	// no layer for now
+			nodes.back ()->index_T_in = iT_in;
+			nodes.back ()->index_T_out = iT_out;
+			nodes.back ()->setActivationFn (generic_func);
+			nodes.back ()->setResetValue (resetValues [iT_in]);
+
 			// build first connection
-			int inNodeId = connections[iConn].inNodeId;
+			int inNodeId = connections [iConn].inNodeId;
 			int outNodeId = newNodeId;
-			int innovId = getInnovId(innovIds, lastInnovId, inNodeId, outNodeId);
-			float weight = connections[iConn].weight;
-			int inNodeRecu = connections[iConn].inNodeRecu;
-			connections.push_back(Connection(innovId, inNodeId, outNodeId, inNodeRecu, weight, true));
+			unsigned int inNodeRecu = connections [iConn].inNodeRecu;
+			unsigned int innovId = conn_innov->getInnovId (inNodeId, outNodeId, inNodeRecu);
+			float weight = connections [iConn].weight;
+
+			connections.push_back (Connection (innovId, inNodeId, outNodeId, inNodeRecu, weight, true));
 			
 			// build second connection
 			inNodeId = newNodeId;
-			outNodeId = connections[iConn].outNodeId;
-			innovId = getInnovId(innovIds, lastInnovId, inNodeId, outNodeId);
+			outNodeId = connections [iConn].outNodeId;
+			inNodeRecu = 0;
+			innovId = conn_innov->getInnovId (inNodeId, outNodeId, inNodeRecu);
 			weight = Random_Float (- weightExtremumInit, weightExtremumInit);	// random number in [-weightExtremumInit; weightExtremumInit]
-			int inNodeRecu = 0;	// the new node has been added without recurrency
-			connections.push_back(Connection(innovId, inNodeId, outNodeId, weight, inNodeRecu, true));
+
+			connections.push_back (Connection (innovId, inNodeId, outNodeId, inNodeRecu, weight, true));
 
 			// update layers
-			if (connections[iConn].inNodeRecu > 0) {	// the connection was recurrent, so the layer has no effect
-				nodes[newNodeId].layer = nodes[connections[iConn].inNodeId].layer;	// update newNodeId layer
+			if (connections [iConn].inNodeRecu > 0) {	// the connection was recurrent, so the layer has no effect
+				nodes [newNodeId]->layer = nodes [connections [iConn].outNodeId]->layer - 1;	// update newNodeId layer
 			} else {									// else, the node is one layer further in the network
-				nodes[newNodeId].layer = nodes[connections[iConn].inNodeId].layer + 1;	// update newNodeId layer
-			}
-			nodes[connections[iConn].outNodeId].layer = nodes[newNodeId].layer + 1;	// update outNodeId layer
-			updateLayersRec(connections[iConn].outNodeId);	// recursively update layers
-
-			// output nodes can have different nodes after updating layers: let's give output nodes the same output layer, the maximum one
-			int maxLayer = nodes[nbBias + nbInput + nbOutput].layer;
-			for (int i = nbBias + nbInput + nbOutput + 1; i < (int) nodes.size(); i++) {
-				if (nodes[i].layer > maxLayer) {
-					maxLayer = nodes[i].layer;
-				}
-			}
-			for (int i = nbBias + nbInput; i < nbBias + nbInput + nbOutput; i++) {
-				nodes[i].layer = maxLayer + 1;
+				nodes [newNodeId]->layer = nodes [connections[iConn].inNodeId]->layer + 1;	// update newNodeId layer
+				nodes [connections [iConn].outNodeId]->layer = nodes[newNodeId]->layer + 1;	// update outNodeId layer
+				UpdateLayers (connections [iConn].outNodeId);	// update other layers
 			}
 
 			return true;
 		} else {
-			std::cout << "Error : no active connection found while calling Genome::addNode" << std::endl;
 			return false;	// no active connection found
 		}
 	} else {
@@ -318,17 +421,128 @@ bool Genome::addNode(std::vector<std::vector<int>>* innovIds, int* lastInnovId, 
 	}
 }
 
-void Genome::updateLayersRec(int nodeId) {
-	for (int iConn = 0; iConn < (int) connections.size(); iConn++) {
-		if (!(connections[iConn].inNodeRecu > 0) && connections[iConn].enabled && connections[iConn].inNodeId == nodeId) {
-			int newNodeId = connections[iConn].outNodeId;
-			nodes[newNodeId].layer = nodes[nodeId].layer + 1;
-			updateLayersRec(newNodeId);
+template <typename... Args>
+bool Genome<Args...>::AddTranstype (innovation_t* conn_innov, unsigned int maxRecurrency, unsigned int maxIterationsFindNodeThresh) {
+	if (N_types > 1) {
+		// Add bi-typed node
+		const unsigned int newNodeId = (unsigned int) nodes.size ();
+		const unsigned int iT_in = rand () % N_types;
+		unsigned int iT_out = rand () % N_types;
+		while (iT_out == iT_in) {
+			iT_out = rand () % N_types;
+		}
+
+		// get Node<T_in, T_out>
+		nodes.push_back(CreateNode<Args...>::get (iT_in, iT_out));
+
+		// activation function
+		std::function<void* (void*)> generic_func = activationFns [iT_in][iT_out][
+			rand () % activationFns [iT_in][iT_out].size ()
+		];
+
+		// setup the node
+		nodes.back ()->id = newNodeId;
+		nodes.back ()->layer = -1;	// no layer for now
+		nodes.back ()->index_T_in = iT_in;
+		nodes.back ()->index_T_out = iT_out;
+		nodes.back ()->setActivationFn (generic_func);
+		nodes.back ()->setResetValue (resetValues [iT_in]);
+
+		// Add the first connection
+		unsigned int inNodeId = rand() % nodes.size();
+		unsigned int inNodeRecu = rand () % (maxRecurrency + 1);
+		unsigned int iterationNb = 0;
+		while (
+			iterationNb < maxIterationsFindNodeThresh
+			&& (
+				nodes [inNodeId]->index_T_out != iT_in
+				|| (
+					inNodeId >= nbBias + nbInput && inNodeId < nbBias + nbInput + nbOutput	// cannot build a non recurrent connection with an output node as the input's connection
+					&& inNodeRecu > 0
+				)
+			)
+		) {
+			inNodeId = rand() % nodes.size();
+			iterationNb ++;
+		}
+		if (iterationNb == maxIterationsFindNodeThresh) return false;
+
+		unsigned int innov_id = conn_innov->getInnovId (inNodeId, newNodeId, inNodeRecu);
+		float weight = Random_Float (- weightExtremumInit, weightExtremumInit);	// random number in [-weightExtremumInit; weightExtremumInit]
+
+		connections.push_back(Connection (innov_id, inNodeId, newNodeId, inNodeRecu, weight, true));
+
+		// Add the second connection
+		unsigned int outNodeId = rand() % nodes.size();
+		inNodeRecu = 0;
+		iterationNb = 0;
+		while (
+			iterationNb < maxIterationsFindNodeThresh
+			&& (
+				nodes [outNodeId]->index_T_in != iT_out
+				|| CheckNewConnectionCircle (newNodeId, outNodeId)
+			)
+		) {
+			outNodeId = rand() % nodes.size();
+			iterationNb ++;
+		}
+		if (iterationNb == maxIterationsFindNodeThresh) return false;
+
+		innov_id = conn_innov->getInnovId (newNodeId, outNodeId, inNodeRecu);
+		weight = Random_Float (- weightExtremumInit, weightExtremumInit);	// random number in [-weightExtremumInit; weightExtremumInit]
+
+		connections.push_back(Connection (innov_id, newNodeId, outNodeId, inNodeRecu, weight, true));
+
+		return true;
+	} else {
+		return false;	// there is only one type of object
+	}
+}
+
+template <typename... Args>
+void Genome<Args...>::UpdateLayers_Recursive (int inNodeId) {
+	for (size_t iConn = 0; iConn < connections.size (); iConn ++) {
+		if (
+			!(connections [iConn].inNodeRecu > 0)
+			&& connections [iConn].enabled
+			&& connections [iConn].inNodeId == inNodeId
+		) {
+			unsigned int newNodeId = connections [iConn].outNodeId;
+			nodes [newNodeId]->layer = nodes [inNodeId]->layer + 1;
+
+			UpdateLayers_Recursive (newNodeId);
 		}
 	}
 }
 
-void Genome::drawNetwork(sf::Vector2u windowSize, float dotsRadius, std::string& font_path = "/usr/share/fonts/cantarell/Cantarell-VF.otf") {
+template <typename... Args>
+void Genome<Args...>::UpdateLayers (int inNodeId) {
+	// Update layers
+	UpdateLayers_Recursive (inNodeId);
+
+	// this might move some output's node, let's homogenize that
+	unsigned int outputLayer = nodes [nbBias + nbInput]->layer;
+	for (size_t i = nbBias + nbInput + 1; i < nbBias + nbInput + nbOutput; i ++) {
+		// check among the outputs which one is the highest and set the output layer to it
+		if (nodes [i]->layer > outputLayer) {
+			outputLayer = nodes [i]->layer;
+		}
+	}
+	for (size_t i = nbBias + nbInput + nbOutput; i < nodes.size (); i ++) {
+		// check among the hiddens which one is the highest and set the output layer to it + 1
+		if (nodes [i]->layer > outputLayer) {
+			outputLayer = nodes [i]->layer + 1;
+		}
+	}
+	for (size_t i = nbBias + nbInput + 1; i < nbBias + nbInput + nbOutput; i ++) {
+		// new layer!
+		nodes [i]->layer = outputLayer;
+	}
+}
+
+/*
+template <typename... Args>
+void Genome<Args...>::drawNetwork(sf::Vector2u windowSize, float dotsRadius, std::string& font_path = "/usr/share/fonts/cantarell/Cantarell-VF.otf") {
 	sf::RenderWindow window(sf::VideoMode(windowSize.x, windowSize.y), "VRNEAT - Titofra");
     
     sf::CircleShape dots[nodes.size()];
@@ -339,7 +553,7 @@ void Genome::drawNetwork(sf::Vector2u windowSize, float dotsRadius, std::string&
     // ### NODES ###
 	sf::Font font;
 	if (!font.loadFromFile(font_path)) {
-		std::cout << "Error while loading font in 'Genome::drawNetwork'." << std::endl;
+		std::cout << "Error while loading font in 'Genome<Args...>::drawNetwork'." << std::endl;
 	}
 
 	for (int i = 0; i < (int) nodes.size(); i++) {
@@ -473,3 +687,4 @@ void Genome::drawNetwork(sf::Vector2u windowSize, float dotsRadius, std::string&
         window.display();
     }
 }
+*/

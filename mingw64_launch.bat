@@ -1,5 +1,5 @@
 cmake -G "MinGW Makefiles" -B "./build" -DX64_BITS=ON .
 cd build
 make
-cp ./liblrneat.a ../lib/liblrneat.a
+cp ./libvrneat.a ../lib/libvrneat.a
 cd ..

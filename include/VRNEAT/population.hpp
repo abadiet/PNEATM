@@ -40,9 +40,6 @@ class Population {
 		float avgFitness;
 		float avgFitnessAdjusted;
 
-		std::vector<std::vector<int>> innovIds;
-		int lastInnovId;
-
 		int popSize;
 		float speciationThresh;
 		int threshGensSinceImproved;
@@ -59,6 +56,10 @@ class Population {
 		std::vector<Species> species;
 		std::vector<int> kinds;
 		std::vector<ActivationFn> activationFns;
+
+		std::vector<std::vector<int>> connectionIds;
+		int N_connectionId;
+		int getConnectionId (int inNodeId, int outNodeId);
 
 		float compareGenomes(int ig1, int ig2, float a, float b, float c);
 		void updateFitnesses();
