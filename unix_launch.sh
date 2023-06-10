@@ -3,4 +3,4 @@
 cmake -B ./build/ -S ./
 cd ./build/
 make
-cp ./libvrneat.a ../lib/libvrneat.a
+cp ./libpneatm.a ../lib/libpneatm.a
