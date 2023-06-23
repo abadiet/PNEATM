@@ -2,6 +2,8 @@
 #define NODE_BASE_HPP
 
 #include <functional>
+#include <iostream>
+#include <cstring>
 
 namespace pneatm {
 
@@ -19,6 +21,8 @@ class NodeBase{
 
 		virtual void process () = 0;
 		virtual void reset () = 0;
+
+		virtual void print (std::string prefix = "") = 0;
 
 	protected:
 		unsigned int id;

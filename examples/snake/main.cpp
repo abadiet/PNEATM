@@ -3,7 +3,7 @@
 int main() {
     srand ((int) time (0));	// init seed for rand
 
-    unsigned int popSize = 50;
+    unsigned int popSize = 5;
     std::vector<size_t> bias_sch = {1};
     std::vector<size_t> inputs_sch = {14};
     std::vector<size_t> outputs_sch = {3};
@@ -26,6 +26,9 @@ int main() {
     int threshGensSinceImproved = 15;
     pneatm::Population<float> pop (popSize, bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, speciationThreshInit, threshGensSinceImproved);
 
+    pop.print ();
+
+/*
     unsigned int maxReurrency = 0;
 
     Snake snake (8);
@@ -33,9 +36,10 @@ int main() {
     unsigned int maxIterationThresh = 500;
     float bestFitness = 0.0f;
     while (bestFitness < 3000.0f && pop.getGeneration () < 10000) {
-        std::cout << "generation " << pop.getGeneration ();
+        std::cout << "generation " << pop.getGeneration () << std::endl;
 
         for (unsigned int genomeId = 0; genomeId < popSize; genomeId ++) {
+            std::cout << "genome " << genomeId << std::endl;
             snake.reset ();
 
             std::vector<float> AI_Inputs;
@@ -45,9 +49,11 @@ int main() {
             while (iteration < maxIterationThresh && !isFinished) {
                 AI_Inputs = snake.getAIInputs ();
 
-                pop.loadInputs (AI_Inputs, genomeId);
+                pop.template loadInputs<float> (AI_Inputs, genomeId);
+    std::cout << "oui" << std::endl;
                 pop.runNetwork (genomeId);
-                Snake_Inputs = pop.getOutputs<float> (genomeId);
+                
+                Snake_Inputs = pop.template getOutputs<float> (genomeId);
 
                 isFinished = snake.run (Snake_Inputs);
 
@@ -96,6 +102,6 @@ int main() {
 
     // play a game by the fitter genome
     //playGameFitter (pop.getFitterGenome (), maxIterationThresh, false, {800, 600}, 0.12f, 8);
-
+*/ 
     return 0;
 }

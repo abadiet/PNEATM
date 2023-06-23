@@ -9,6 +9,8 @@
 #include <vector>
 #include <SFML/Graphics.hpp>
 #include <cmath>
+#include <iostream>
+#include <cstring>
 
 
 /* HEADER */
@@ -37,6 +39,8 @@ class Genome {
 		T_out getOutput (int output_id);
 
 		void mutate (innovation_t* conn_innov, unsigned int maxRecurrency = 0, float mutateWeightThresh = 0.8f, float mutateWeightFullChangeThresh = 0.1f, float mutateWeightFactor = 1.2f, float addConnectionThresh = 0.05f, unsigned int maxIterationsFindConnectionThresh = 20, float reactivateConnectionThresh = 0.25f, float addNodeThresh = 0.03f, int maxIterationsFindNodeThresh = 20, float addTranstypeThresh = 0.02f);
+
+		void print (std::string prefix = "");
 
 		//void drawNetwork (sf::Vector2u windowSize = {1300, 800}, float dotsRadius = 6.5f);
 
@@ -110,7 +114,7 @@ Genome<Args...>::Genome (std::vector<size_t> bias_sch, std::vector<size_t> input
 	// input
 	nbInput = 0;
 	for (size_t i = 0; i < inputs_sch.size (); i++) {
-		for (size_t k = 0; k < inputs_sch [nbBias + nbInput]; k++) {
+		for (size_t k = 0; k < inputs_sch [i]; k++) {
 			// get Node<T_in, T_out>
 			nodes.push_back(CreateNode::get<Args...> (i, i));
 
@@ -134,7 +138,7 @@ Genome<Args...>::Genome (std::vector<size_t> bias_sch, std::vector<size_t> input
 		outputLayer = 1;
 	}
 	for (size_t i = 0; i < outputs_sch.size (); i++) {
-		for (size_t k = 0; k < outputs_sch [nbOutput]; k++) {
+		for (size_t k = 0; k < outputs_sch [i]; k++) {
 			// get Node<T_in, T_out>
 			nodes.push_back(CreateNode::get<Args...> (i, i));
 
@@ -153,7 +157,7 @@ Genome<Args...>::Genome (std::vector<size_t> bias_sch, std::vector<size_t> input
 	unsigned int nbHidden = 0;
 	for (size_t i = 0; i < hiddens_sch_init.size (); i++) {
 		for (size_t j = 0; j < hiddens_sch_init [i].size (); j++) {
-			for (size_t k = 0; k < hiddens_sch_init [i][nbHidden]; k++) {
+			for (size_t k = 0; k < hiddens_sch_init [i][j]; k++) {
 				// get Node<T_in, T_out>
 				nodes.push_back(CreateNode::get<Args...> (i, j));
 
@@ -173,20 +177,20 @@ Genome<Args...>::Genome (std::vector<size_t> bias_sch, std::vector<size_t> input
 			}
 		}
 	}
-	
+
 	// CONNECTIONS
 	unsigned int iConn = 0;
 	while (iConn < N_ConnInit) {
+
 		// inNodeId and outNodeId
-		unsigned int inNodeId = (unsigned int) (rand () % nodes.size ());
-		unsigned int outNodeId = (unsigned int) (rand () % nodes.size ());
+		unsigned int inNodeId = Random_UInt (0, (unsigned int) nodes.size() - 1);
+		unsigned int outNodeId = Random_UInt (0, (unsigned int) nodes.size() - 1);
 
 		// inNodeRecu
 		unsigned int inNodeRecu = 0;
 		if (Random_Float (0.0f, 1.0f, true, false) < probRecuInit) {
-			inNodeRecu = rand () % (maxRecuInit + 1);
+			inNodeRecu = Random_UInt (0, maxRecuInit);
 		}
-
 		if (CheckNewConnectionValidity (inNodeId, outNodeId, inNodeRecu)) {
 			// innovId
 			const unsigned int innov_id = conn_innov->getInnovId (inNodeId, outNodeId, inNodeRecu);
@@ -210,12 +214,18 @@ Genome<Args...>::~Genome () {
 	for (NodeBase* node : nodes) {
 		delete node;
 	}
+	for (std::vector<NodeBase*> nodes : prevNodes) {
+		for (NodeBase* node : nodes) {
+			delete node;
+		}
+	}
 }
 
 template <typename... Args>
 template <typename T_in>
 void Genome<Args...>::loadInputs (std::vector<T_in> inputs) {
 	for (unsigned int i = 0; i < nbInput; i++) {
+		std::cout << i << " " << nodes [i + nbBias]->id << std::endl;	// TODO id is garabage
 		nodes [i + nbBias]->setInput (static_cast<void*> (&inputs [i]));
 	}
 }
@@ -315,7 +325,7 @@ void Genome<Args...>::mutate(innovation_t* conn_innov, unsigned int maxRecurrenc
 
 template <typename... Args>
 bool Genome<Args...>::CheckNewConnectionValidity (unsigned int inNodeId, unsigned int outNodeId, unsigned int inNodeRecu, int* disabled_conn_id) {
-	if (nodes [inNodeId]->index_T_out == nodes [outNodeId]->index_T_in) return false;	// connections should link two same objects
+	if (nodes [inNodeId]->index_T_out != nodes [outNodeId]->index_T_in) return false;	// connections should link two same objects
 
 	for (size_t i = 0; i < connections.size (); i++) {
 		if (
@@ -499,10 +509,10 @@ bool Genome<Args...>::AddTranstype (innovation_t* conn_innov, unsigned int maxRe
 	if (N_types > 1) {
 		// Add bi-typed node
 		const unsigned int newNodeId = (unsigned int) nodes.size ();
-		const unsigned int iT_in = rand () % N_types;
-		unsigned int iT_out = rand () % N_types;
+		const unsigned int iT_in = Random_UInt (0, N_types - 1);
+		unsigned int iT_out = Random_UInt (0, N_types - 1);
 		while (iT_out == iT_in) {
-			iT_out = rand () % N_types;
+			iT_out = Random_UInt (0, N_types - 1);
 		}
 
 		// get Node<T_in, T_out>
@@ -522,7 +532,7 @@ bool Genome<Args...>::AddTranstype (innovation_t* conn_innov, unsigned int maxRe
 
 		// Add the first connection
 		unsigned int inNodeId = Random_UInt (0, (unsigned int) nodes.size () - 1);
-		unsigned int inNodeRecu = (unsigned int) (rand () % (maxRecurrency + 1));
+		unsigned int inNodeRecu = Random_UInt (0, maxRecurrency - 1);
 		unsigned int iterationNb = 0;
 		while (
 			iterationNb < maxIterationsFindNodeThresh
@@ -611,6 +621,45 @@ void Genome<Args...>::UpdateLayers (int inNodeId) {
 		nodes [i]->layer = outputLayer;
 	}
 }
+
+template <typename... Args>
+void Genome<Args...>::print (std::string prefix) {
+	std::cout << prefix << "Number of Bias Node: " << nbBias << std::endl;
+	std::cout << prefix << "Number of Input Node: " << nbInput << std::endl;
+	std::cout << prefix << "Number of Output Node: " << nbOutput << std::endl;
+	std::cout << prefix << "Weight's range at intialization: [" << -1.0f * weightExtremumInit << ", " << weightExtremumInit << "]" << std::endl;
+	std::cout << prefix << "Number of objects manipulated: " << N_types << std::endl;
+	std::cout << prefix << "Maximum recurrency: " << rec_max << std::endl;
+	std::cout << prefix << "Current Fitness: " << fitness << std::endl;
+	std::cout << prefix << "Current SpeciesID: " << speciesId << std::endl;
+	std::cout << prefix << "Maximum recurrency: " << rec_max << std::endl;
+	std::cout << prefix << "Number of Activation Functions [Input TypeID to Output TypeID (Number of functions)]: ";
+	for (size_t i = 0; i < activationFns.size (); i++) {
+		for (size_t j = 0; j < activationFns [i].size (); j++) {
+			std::cout << i << " to " << j << " (" << activationFns [i][j].size () << "), ";
+		}
+	}
+	std::cout << std::endl;
+	std::cout << prefix << "Nodes: " << std::endl;
+	for (NodeBase* node : nodes) {
+		node->print (prefix + "   ");
+		std::cout << std::endl;
+	}
+	std::cout << prefix << "Previous Nodes: " << std::endl;
+	for (size_t i = 0; i < prevNodes.size (); i++) {
+		std::cout << prefix << " * Generation " << -1 * i << std::endl;
+		for (NodeBase* node : prevNodes [i]) {
+			node->print (prefix + "     ");
+			std::cout << std::endl;
+		}
+	}
+	std::cout << prefix << "Connections: " << std::endl;
+	for (size_t i = 0; i < connections.size (); i++) {
+		connections [i].print (prefix + "   ");
+		std::cout << std::endl;
+	}
+}
+
 
 /*
 template <typename... Args>

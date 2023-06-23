@@ -6,6 +6,7 @@
 #include <snake.hpp>
 #include <PNEATM/population.hpp>
 #include <PNEATM/genome.hpp>
+#include <functional>
 
 /* SNAKE */
 /*
@@ -53,9 +54,8 @@ void playGameFitter (pneatm::Genome<Args...>& genome, const unsigned int maxIter
 */
 /* ACTIVATION FUNCTIONS */
 
-float sigmoid_float2float (float x) {
-    /* Will be our activation function */
+std::function<float (float)> sigmoid_float2float = [] (float x) {
     return (1.0f / (1.0f + (float) exp(-1 * 4.09 * x)));
-}
+};
 
 #endif  // SETUP_HPP

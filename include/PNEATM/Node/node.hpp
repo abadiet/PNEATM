@@ -3,6 +3,8 @@
 
 #include <PNEATM/Node/node_base.hpp>
 #include <functional>
+#include <iostream>
+#include <cstring>
 
 
 /* HEADER */
@@ -13,6 +15,7 @@ template <typename T_in, typename T_out>
 class Node : public NodeBase {
 	public:
 		Node ();
+		~Node () {};
 
 		void setActivationFn (void* f) override;
 		void setActivationFnToIdentity () override;
@@ -24,6 +27,8 @@ class Node : public NodeBase {
 
 		void process () override;
 		void reset () override;
+
+		void print (std::string prefix = "") override;
 
 	private:
 		T_in input;
@@ -87,6 +92,18 @@ void Node<T_in, T_out>::process () {
 template <typename T_in, typename T_out>
 void Node<T_in, T_out>::reset () {
 	input = resetValue;
+}
+
+template <typename T_in, typename T_out>
+void Node<T_in, T_out>::print (std::string prefix) {
+	std::cout << prefix << "ID: " << id << std::endl;
+	std::cout << prefix << "Layer: " << layer << std::endl;
+	std::cout << prefix << "Input Type ID: " << index_T_in << std::endl;
+	std::cout << prefix << "Output Type ID: " << index_T_out << std::endl;
+	std::cout << prefix << "Is the activation function the identity? " << activationFn_isIdentity << std::endl;
+	std::cout << prefix << "Current Input Value: " << input << std::endl;
+	std::cout << prefix << "Current Output Value: " << output << std::endl;
+	std::cout << prefix << "Reset Value: " << resetValue << std::endl;
 }
 
 #endif	// NODE_HPP

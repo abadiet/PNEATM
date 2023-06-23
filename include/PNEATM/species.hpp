@@ -2,12 +2,16 @@
 #define SPECIES_HPP
 
 #include <vector>
+#include <iostream>
+#include <cstring>
 
 namespace pneatm {
 
 class Species {
 	public:
 		Species (unsigned int id);
+
+		void print (std::string prefix = "");
 
 	private:
 		unsigned int id;
