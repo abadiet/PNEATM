@@ -15,7 +15,7 @@ class Species {
 		float avgFitnessAdjusted;
 		int allowedOffspring;
 		float sumFitness;
-		int gensSinceImproved;
+		unsigned int gensSinceImproved;
 		bool isDead;
 		std::vector<int> members;
 

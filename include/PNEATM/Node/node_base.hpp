@@ -9,21 +9,23 @@ class NodeBase{
     public:
         virtual ~NodeBase() {};
 
-		virtual void setActivationFn (std::function<void* (void*)> f);
-		virtual void setResetValue (void* value);
+		virtual void setActivationFn (void* f) = 0;
+		virtual void setActivationFnToIdentity () = 0;
+		virtual void setResetValue (void* value) = 0;
 
-		virtual void setInput (void* value);
-		virtual void AddToInput (void* value, float scalar);	// TODO: too dirty
-		virtual void* getOutput ();
+		virtual void setInput (void* value) = 0;
+		virtual void AddToInput (void* value, float scalar) = 0;	// TODO: too dirty
+		virtual void* getOutput () = 0;
 
-		virtual void process ();
-		virtual void reset ();
+		virtual void process () = 0;
+		virtual void reset () = 0;
 
 	protected:
 		unsigned int id;
-		unsigned int layer;
+		int layer;
 		unsigned int index_T_in;
 		unsigned int index_T_out;
+		bool activationFn_isIdentity;
 
 	template <typename... Args>
 	friend class Genome;

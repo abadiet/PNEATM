@@ -5,7 +5,9 @@ namespace pneatm {
 
 class Connection {
 	public:
-		Connection(const unsigned int innovId, const unsigned int inNodeId, const unsigned int outNodeId, const unsigned int inNodeRecu, float weight, bool enabled);
+		Connection (const unsigned int innovId, const unsigned int inNodeId, const unsigned int outNodeId, const unsigned int inNodeRecu, float weight, bool enabled);
+
+		Connection& operator= (const Connection& other);
 
 	private:
 		const unsigned int innovId;
@@ -17,6 +19,9 @@ class Connection {
 
 	template <typename... Args>
 	friend class Genome;
+
+	template <typename... Args>
+	friend class Population;
 };
 
 }
