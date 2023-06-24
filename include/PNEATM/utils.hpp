@@ -12,11 +12,8 @@ namespace pneatm {
 
 struct CreateNode {
     template <typename T1, typename T2, typename... Args>
-    static NodeBase* get(size_t iT_in, size_t iT_out, bool T2_is_first = false, bool mono_type = true) {
+    static NodeBase* get(size_t iT_in, size_t iT_out, bool T2_is_first = false) {
         if (iT_in == 0 && iT_out == 0) {
-            if (mono_type) {
-                return std::make_unique<Node <T1, T1>> ().release ();
-            }
             if (T2_is_first) {
                 return std::make_unique<Node <T2, T1>> ().release ();
             } else {
@@ -29,22 +26,18 @@ struct CreateNode {
             new_iT_in --;
             if (new_iT_out > 0) {
                 new_iT_out --;
-                // both T1 and T2 are not found
+                // both T_in and T_out are not found
+                // Note that if T2 is the last type (aka Args is nothing), the next line will call template <typename T> static CreateNode::NodeBase* get(size_t iT_in, size_t iT_out) which is wht we expect as T_in = T_out
                 return CreateNode::get<T2, Args...>(new_iT_in, new_iT_out);
             } else {
-                // T2 is found
-                if (!T2_is_first) {
-                    // we just found T2 so we keep it in first place
-                    return CreateNode::get<T2, Args...>(new_iT_in, new_iT_out, true, false);
-                } else {
-                    // T2 has been found at a previous call and is now T1, we keep it in first place
-                    return CreateNode::get<T1, Args...>(new_iT_in, new_iT_out, true, false);
-                }
+                // T_out is found and is T1, we keep it
+                return CreateNode::get<T1, T2, Args...>(new_iT_in, new_iT_out, true);
             }
         } else {
             new_iT_out --;
-            // T1 is found, we keep it in first place
-            return CreateNode::get<T1, Args...>(new_iT_in, new_iT_out, false, false);
+            // T_out is not found
+            // However, T_in is found and is T1, we keep it in first place
+            return CreateNode::get<T1, T2, Args...>(new_iT_in, new_iT_out, false);
         }
     }
 
