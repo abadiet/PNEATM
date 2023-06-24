@@ -41,8 +41,7 @@ class Genome {
 		void mutate (innovation_t* conn_innov, unsigned int maxRecurrency = 0, float mutateWeightThresh = 0.8f, float mutateWeightFullChangeThresh = 0.1f, float mutateWeightFactor = 1.2f, float addConnectionThresh = 0.05f, unsigned int maxIterationsFindConnectionThresh = 20, float reactivateConnectionThresh = 0.25f, float addNodeThresh = 0.03f, int maxIterationsFindNodeThresh = 20, float addTranstypeThresh = 0.02f);
 
 		void print (std::string prefix = "");
-
-		//void drawNetwork (sf::Vector2u windowSize = {1300, 800}, float dotsRadius = 6.5f);
+		void draw (unsigned int windowWidth = 1300, unsigned int windowHeight = 800, float dotsRadius = 6.5f, std::string font_path = "/usr/share/fonts/OTF/SF-Pro-Display-Regular.otf");
 
 	private:
 		unsigned int nbBias;
@@ -67,8 +66,8 @@ class Genome {
 		bool AddConnection (innovation_t* conn_innov, unsigned int maxRecurrency, unsigned int maxIterationsFindConnectionThresh, float reactivateConnectionThresh);
 		bool AddNode (innovation_t* conn_innov, unsigned int maxIterationsFindNodeThresh);
 		bool AddTranstype (innovation_t* conn_innov, unsigned int maxRecurrency, unsigned int maxIterationsFindNodeThresh);
-		void UpdateLayers (int inNodeId);
-		void UpdateLayers_Recursive (unsigned int inNodeId);
+		void UpdateLayers (int nodeId);
+		void UpdateLayers_Recursive (unsigned int nodeId);
 
 	template <typename... Args2>
 	friend class Population;
@@ -200,8 +199,9 @@ Genome<Args...>::Genome (std::vector<size_t> bias_sch, std::vector<size_t> input
 
 			connections.push_back(Connection (innov_id, inNodeId, outNodeId, inNodeRecu, weight, true));
 
-			if (inNodeRecu == 0) {
-				UpdateLayers (inNodeId);
+			if (inNodeRecu == 0 && nodes [outNodeId]->layer == nodes [inNodeId]->layer) {
+				nodes [outNodeId]->layer = nodes [inNodeId]->layer + 1;
+				UpdateLayers (outNodeId);
 			}
 
 			iConn ++;
@@ -326,6 +326,7 @@ void Genome<Args...>::mutate(innovation_t* conn_innov, unsigned int maxRecurrenc
 template <typename... Args>
 bool Genome<Args...>::CheckNewConnectionValidity (unsigned int inNodeId, unsigned int outNodeId, unsigned int inNodeRecu, int* disabled_conn_id) {
 	if (nodes [inNodeId]->index_T_out != nodes [outNodeId]->index_T_in) return false;	// connections should link two same objects
+	if (outNodeId < nbBias + nbInput) return false;	// connections cannot point to an input node
 
 	for (size_t i = 0; i < connections.size (); i++) {
 		if (
@@ -582,15 +583,15 @@ bool Genome<Args...>::AddTranstype (innovation_t* conn_innov, unsigned int maxRe
 }
 
 template <typename... Args>
-void Genome<Args...>::UpdateLayers_Recursive (unsigned int inNodeId) {
+void Genome<Args...>::UpdateLayers_Recursive (unsigned int nodeId) {
 	for (size_t iConn = 0; iConn < connections.size (); iConn ++) {
 		if (
 			!(connections [iConn].inNodeRecu > 0)
 			&& connections [iConn].enabled
-			&& connections [iConn].inNodeId == inNodeId
+			&& connections [iConn].inNodeId == nodeId
 		) {
 			unsigned int newNodeId = connections [iConn].outNodeId;
-			nodes [newNodeId]->layer = nodes [inNodeId]->layer + 1;
+			nodes [newNodeId]->layer = nodes [nodeId]->layer + 1;
 
 			UpdateLayers_Recursive (newNodeId);
 		}
@@ -598,13 +599,13 @@ void Genome<Args...>::UpdateLayers_Recursive (unsigned int inNodeId) {
 }
 
 template <typename... Args>
-void Genome<Args...>::UpdateLayers (int inNodeId) {
+void Genome<Args...>::UpdateLayers (int nodeId) {
 	// Update layers
-	UpdateLayers_Recursive (inNodeId);
+	UpdateLayers_Recursive (nodeId);
 
 	// this might move some output's node, let's homogenize that
 	int outputLayer = nodes [nbBias + nbInput]->layer;
-	for (size_t i = nbBias + nbInput + 1; i < nbBias + nbInput + nbOutput; i ++) {
+	for (size_t i = nbBias + nbInput; i < nbBias + nbInput + nbOutput; i ++) {
 		// check among the outputs which one is the highest and set the output layer to it
 		if (nodes [i]->layer > outputLayer) {
 			outputLayer = nodes [i]->layer;
@@ -612,11 +613,11 @@ void Genome<Args...>::UpdateLayers (int inNodeId) {
 	}
 	for (size_t i = nbBias + nbInput + nbOutput; i < nodes.size (); i ++) {
 		// check among the hiddens which one is the highest and set the output layer to it + 1
-		if (nodes [i]->layer > outputLayer) {
+		if (nodes [i]->layer >= outputLayer) {
 			outputLayer = nodes [i]->layer + 1;
 		}
 	}
-	for (size_t i = nbBias + nbInput + 1; i < nbBias + nbInput + nbOutput; i ++) {
+	for (size_t i = nbBias + nbInput; i < nbBias + nbInput + nbOutput; i ++) {
 		// new layer!
 		nodes [i]->layer = outputLayer;
 	}
@@ -650,7 +651,7 @@ void Genome<Args...>::print (std::string prefix) {
 		std::cout << prefix << " * Generation " << -1 * i << std::endl;
 		for (NodeBase* node : prevNodes [i]) {
 			node->print (prefix + "     ");
-			std::cout << std::endl;
+			std::cout << prefix << std::endl;
 		}
 	}
 	std::cout << prefix << "Connections: " << std::endl;
@@ -661,94 +662,100 @@ void Genome<Args...>::print (std::string prefix) {
 }
 
 
-/*
 template <typename... Args>
-void Genome<Args...>::drawNetwork(sf::Vector2u windowSize, float dotsRadius, std::string& font_path = "/usr/share/fonts/cantarell/Cantarell-VF.otf") {
-	sf::RenderWindow window(sf::VideoMode(windowSize.x, windowSize.y), "PNEATM - Titofra");
-    
-    sf::CircleShape dots[nodes.size()];
-	sf::Text dotsText[nodes.size()];
-	sf::Vertex lines[connections.size()][2];
+void Genome<Args...>::draw (unsigned int windowWidth, unsigned int windowHeight, float dotsRadius, std::string font_path) {
+	sf::RenderWindow window (sf::VideoMode (windowWidth, windowHeight), "PNEATM - https://github.com/titofra");
+
+    std::vector<sf::CircleShape> dots;
+	std::vector<sf::Text> dotsText;
+	std::vector<sf::VertexArray> lines;
 	sf::Text mainText;
-    
+
     // ### NODES ###
 	sf::Font font;
 	if (!font.loadFromFile(font_path)) {
-		std::cout << "Error while loading font in 'Genome<Args...>::drawNetwork'." << std::endl;
+		std::cout << "Error while loading font in 'Genome<Args...>::draw'." << std::endl;
 	}
 
-	for (int i = 0; i < (int) nodes.size(); i++) {
-		dots[i].setRadius(dotsRadius);
-		dots[i].setFillColor(sf::Color::White);
-		
-		dotsText[i].setString(std::to_string(i));	// need of <iostream> for std::to_string function
-		dotsText[i].setFillColor(sf::Color::White);
-		dotsText[i].setCharacterSize(20);
-		dotsText[i].setFont(font);
+	for (size_t i = 0; i < nodes.size (); i++) {
+		dots.push_back (sf::CircleShape ());
+		dotsText.push_back (sf::Text ());
+
+		dots [i].setRadius (dotsRadius);
+		dots [i].setFillColor (sf::Color::White);
+
+		dotsText [i].setString (std::to_string (i));
+		dotsText [i].setFillColor (sf::Color::White);
+		dotsText [i].setCharacterSize (20);
+		dotsText [i].setFont (font);
 	}
 
-	int nbLayer = nodes[nbBias + nbInput].layer + 1;
+	const unsigned int nbLayer = nodes [nbBias + nbInput]->layer + 1;
 
-	// variables for position x
-	float firstLayerX = 200;
-	float stepX = (float) (0.9 * windowSize.x - firstLayerX) / (float) (nbLayer - 1);
+	// constants for position x
+	const float firstLayerX = 200.0f;
+	const float stepX = 0.9f * ((float) windowWidth - firstLayerX) / (float) (nbLayer - 1);
 
 	// input
-	for (int i = 0; i < 1 + nbInput; i++) {
-		dots[i].setPosition({(float) (firstLayerX + stepX * (float) nodes[i].layer - (float) dotsRadius), (float) (0.1 * windowSize.y + i * 0.8 * windowSize.y / nbInput - (float) dotsRadius)});
-		dotsText[i].setPosition({(float) (firstLayerX + stepX * (float) nodes[i].layer - dotsRadius), (float) (0.1 * windowSize.y + i * 0.8 * windowSize.y / nbInput + 4.0)});
+	for (unsigned int i = 0; i < nbBias + nbInput; i++) {
+		dots [i].setPosition ({firstLayerX + stepX * (float) nodes [i]->layer - dotsRadius, 0.1f * (float) windowHeight + (float) i * 0.8f * (float) windowHeight / (float) nbInput - dotsRadius});
+		dotsText [i].setPosition ({firstLayerX + stepX * (float) nodes [i]->layer - dotsRadius, 0.1f * (float) windowHeight + (float) i * 0.8f * (float) windowHeight / (float) nbInput + 4.0f});
 	}
 	// output
 	if (nbOutput == 1) {	// if there is only one node, we draw it on the middle of y
-		dots[1 + nbInput].setPosition({(float) (firstLayerX + stepX * (float) nodes[1 + nbInput].layer - dotsRadius), (float) (0.5 * windowSize.y  - dotsRadius)});
-		dotsText[1 + nbInput].setPosition({(float) (firstLayerX + stepX * (float) nodes[1 + nbInput].layer - dotsRadius), (float) (0.5 * windowSize.y + 4.0)});
+		dots [nbBias + nbInput].setPosition ({firstLayerX + stepX * (float) nodes[1 + nbInput]->layer - dotsRadius, 0.5f * (float) windowHeight  - dotsRadius});
+		dotsText [nbBias + nbInput].setPosition ({firstLayerX + stepX * (float) nodes[1 + nbInput]->layer - dotsRadius, 0.5f * (float) windowHeight + 4.0f});
 	} else {
-		for (int i = 1 + nbInput; i < 1 + nbInput + nbOutput; i++) {
-			dots[i].setPosition({(float) (firstLayerX + stepX * (float) nodes[i].layer - dotsRadius), (float) (0.1 * windowSize.y + (i - (1 + nbInput)) * 0.8 * windowSize.y / (nbOutput - 1) - dotsRadius)});
-			dotsText[i].setPosition({(float) (firstLayerX + stepX * (float) nodes[i].layer - dotsRadius), (float) (0.1 * windowSize.y + (i - (1 + nbInput)) * 0.8 * windowSize.y / (nbOutput - 1) + 4.0)});
+		for (unsigned int i = nbBias + nbInput; i < nbBias + nbInput + nbOutput; i++) {
+			dots [i].setPosition ({firstLayerX + stepX * (float) nodes[i]->layer - dotsRadius, 0.1f * (float) windowHeight + (float) (i - (nbBias + nbInput)) * 0.8f * (float) windowHeight / (float) (nbOutput - 1) - dotsRadius});
+			dotsText [i].setPosition ({firstLayerX + stepX * (float) nodes[i]->layer - dotsRadius, 0.1f * (float) windowHeight + (float) (i - (nbBias + nbInput)) * 0.8f * (float) windowHeight / (float) (nbOutput - 1) + 4.0f});
 		}
 	}
 	// other
-	for (int ilayer = 1; ilayer < (nbLayer - 1); ilayer++) {
-		std::vector<int> iNodesiLayer;
-		for (int i = 1 + nbInput + nbOutput; i < (int) nodes.size(); i++) {
-			if (nodes[i].layer == ilayer) {
-				iNodesiLayer.push_back(i);
+	for (unsigned int ilayer = 1; ilayer < nbLayer - 1; ilayer++) {
+		std::vector<unsigned int> iNodesiLayer;
+		for (unsigned int i = nbBias + nbInput + nbOutput; i < (unsigned int) nodes.size(); i++) {
+			if (nodes [i]->layer == (int) ilayer) {
+				iNodesiLayer.push_back (i);
 			}
 		}
-		if ((int) iNodesiLayer.size() == 1) {	// if there is only one node, we draw it on the middle of y
-			dots[iNodesiLayer[0]].setPosition({(float) (firstLayerX + stepX * (float) nodes[iNodesiLayer[0]].layer - dotsRadius), (float) (0.5 * windowSize.y - dotsRadius)});
-			dotsText[iNodesiLayer[0]].setPosition({(float) (firstLayerX + stepX * (float) nodes[iNodesiLayer[0]].layer - dotsRadius), (float) (0.5 * windowSize.y + 4.0)});
+		if (iNodesiLayer.size() == 1) {	// if there is only one node, we draw it on the middle of y
+			dots [iNodesiLayer [0]].setPosition ({firstLayerX + stepX * (float) nodes[iNodesiLayer[0]]->layer - dotsRadius, 0.5f * (float) windowHeight - dotsRadius});
+			dotsText [iNodesiLayer [0]].setPosition ({firstLayerX + stepX * (float) nodes[iNodesiLayer[0]]->layer - dotsRadius, 0.5f * (float) windowHeight + 4.0f});
 		} else {
-			for (int i = 0; i < (int) iNodesiLayer.size(); i++) {
-				dots[iNodesiLayer[i]].setPosition({(float) (firstLayerX + stepX * (float) nodes[iNodesiLayer[i]].layer - dotsRadius), (float) (0.1 * windowSize.y + i * 0.8 * windowSize.y / ((int) iNodesiLayer.size() - 1) - dotsRadius)});
-				dotsText[iNodesiLayer[i]].setPosition({(float) (firstLayerX + stepX * (float) nodes[iNodesiLayer[i]].layer - dotsRadius), (float) (0.1 * windowSize.y + i * 0.8 * windowSize.y / ((int) iNodesiLayer.size() - 1) + 4.0)});
+			for (size_t i = 0; i < iNodesiLayer.size(); i++) {
+				dots [iNodesiLayer [i]].setPosition ({firstLayerX + stepX * (float) nodes[iNodesiLayer[i]]->layer - dotsRadius, 0.1f * (float) windowHeight + (float) i * 0.8f * (float) windowHeight / (float) (iNodesiLayer.size() - 1) - dotsRadius});
+				dotsText [iNodesiLayer [i]].setPosition ({firstLayerX + stepX * (float) nodes[iNodesiLayer[i]]->layer - dotsRadius, 0.1f * (float) windowHeight + (float) i * 0.8f * (float) windowHeight / (float) (iNodesiLayer.size() - 1) + 4.0f});
 			}
 		}
 	}
 	
 	// ### CONNECTIONS ###
 	float maxWeight = connections[0].weight;
-	for (int i = 1; i < (int) connections.size(); i++) {
-		if (connections[i].weight * connections[i].weight > maxWeight * maxWeight) {
-			maxWeight = connections[i].weight;
+	for (size_t i = 1; i < connections.size(); i++) {
+		if (connections [i].weight * connections [i].weight > maxWeight * maxWeight) {
+			maxWeight = connections [i].weight;
 		}
 	}
 
-	for (int i = 0; i < (int) connections.size(); i++) {
+	for (size_t i = 0; i < connections.size(); i++) {
 		sf::Color color;
-		if (connections[i].enabled) {
-			if (!(connections[i].inNodeRecu > 0)) {
+		if (connections [i].enabled) {
+			if (!(connections [i].inNodeRecu > 0)) {
 				color = sf::Color::Green;
 			} else {
 				color = sf::Color::Blue;
 			}
 		} else {
-			color = sf::Color::Red;
+			if (!(connections [i].inNodeRecu > 0)) {
+				color = sf::Color::Red;
+			} else {
+				color = sf::Color::Yellow;
+			}
 		}
 
 		// weighted connections
-		if (connections[i].weight / maxWeight > 0.0) {
+		if (connections [i].weight / maxWeight > 0.0) {
 			float ratioColor = (float) pow(connections[i].weight / maxWeight, 0.4);
 			color.r = static_cast<sf::Uint8>(color.r * ratioColor);
 			color.g = static_cast<sf::Uint8>(color.g * ratioColor);
@@ -760,54 +767,52 @@ void Genome<Args...>::drawNetwork(sf::Vector2u windowSize, float dotsRadius, std
 			color.b = static_cast<sf::Uint8>(color.b * ratioColor);
 		}
 
-
-		lines[i][0] = sf::Vertex({(float) dots[connections[i].inNodeId].getPosition().x + dotsRadius, (float) dots[connections[i].inNodeId].getPosition().y + dotsRadius}, color);
-		lines[i][1] = sf::Vertex({(float) dots[connections[i].outNodeId].getPosition().x + dotsRadius, (float) dots[connections[i].outNodeId].getPosition().y + dotsRadius}, color);
+		lines.push_back (sf::VertexArray (sf::Lines, 2));
+		lines [i][0] = sf::Vertex({dots [connections [i].inNodeId].getPosition ().x + dotsRadius, dots [connections [i].inNodeId].getPosition ().y + dotsRadius}, color);
+		lines [i][1] = sf::Vertex({dots [connections [i].outNodeId].getPosition ().x + dotsRadius, dots [connections [i].outNodeId].getPosition ().y + dotsRadius}, color);
 	}
 
 	// ### TEXT ###
-	mainText.setFillColor(sf::Color::White);
-	mainText.setCharacterSize(15);
-	mainText.setFont(font);
-	mainText.setPosition({15.0, 15.0});
+	mainText.setFillColor (sf::Color::White);
+	mainText.setCharacterSize (15);
+	mainText.setFont (font);
+	mainText.setPosition ({15.0, 15.0});
 
 	sf::String stringMainText = "";
-	for (int i = 0; i < (int) connections.size(); i++) {
-		stringMainText += std::to_string(connections[i].inNodeId) + "  <->  " + std::to_string(connections[i].outNodeId) + "   (" +  std::to_string(connections[i].weight) + ")";	// need <iostream> for std::to_string function
-		if (connections[i].enabled && connections[i].isRecurrent) {
-			stringMainText += " R";
-		} else {
-			if (!connections[i].enabled) {
-				stringMainText += " D";
-			}
+	for (size_t i = 0; i < connections.size(); i++) {
+		stringMainText += std::to_string (connections [i].inNodeId) + "  ->  " + std::to_string (connections [i].outNodeId) + "   (" +  std::to_string (connections [i].weight) + ")";
+		if (connections [i].inNodeRecu > 0) {
+			stringMainText += " R (" + connections [i].inNodeRecu;
+			stringMainText += ")";
+		}
+		if (!connections [i].enabled) {
+			stringMainText += " D";
 		}
 		stringMainText += "\n";
 	}
-	mainText.setString(stringMainText);
-    
-    while (window.isOpen())
-    {
+	mainText.setString (stringMainText);
+
+    while (window.isOpen ()) {
         sf::Event event;
-        while (window.pollEvent(event))
+        while (window.pollEvent (event))
         {
             if (event.type == sf::Event::Closed) {
-                window.close();
+                window.close ();
             }
         }
 
         window.clear(sf::Color::Black);
 
-		for (int i = 0; i < (int) connections.size(); i++) {
-			window.draw(lines[i], 2, sf::PrimitiveType::Lines);
+		for (size_t i = 0; i < connections.size(); i++) {
+			window.draw (lines [i]);
 		}
-        for (int i = 0; i < (int) nodes.size(); i++) {
-		    window.draw(dots[i]);
-		    window.draw(dotsText[i]);
+        for (size_t i = 0; i < nodes.size(); i++) {
+		    window.draw (dots [i]);
+		    window.draw (dotsText [i]);
 		}
-		window.draw(mainText);
-        window.display();
+		window.draw (mainText);
+        window.display ();
     }
 }
-*/
 
 #endif	// GENOME_HPP

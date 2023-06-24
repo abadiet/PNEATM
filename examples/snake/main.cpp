@@ -27,6 +27,7 @@ int main() {
     pneatm::Population<float> pop (popSize, bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, speciationThreshInit, threshGensSinceImproved);
 
     pop.print ();
+    pop.drawGenome (0);
 
 /*
     unsigned int maxReurrency = 0;

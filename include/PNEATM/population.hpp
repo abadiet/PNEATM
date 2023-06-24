@@ -26,7 +26,7 @@ class Population {
 		unsigned int getGeneration () {return generation;};
 		float getAvgFitness () {return avgFitness;};
 		float getAvgFitnessAdjusted () {return avgFitnessAdjusted;};
-		Genome<Args...>& getFitterGenome () {return genomes [fittergenome_id];};
+		Genome<Args...>& getFitterGenome () {return *genomes [fittergenome_id];};
 
 		template <typename T_in>
 		void loadInputs (std::vector<T_in> inputs);
@@ -51,8 +51,9 @@ class Population {
 		void mutate (unsigned int maxRecurrency, float mutateWeightThresh = 0.8f, float mutateWeightFullChangeThresh = 0.1f, float mutateWeightFactor = 1.2f, float addConnectionThresh = 0.05f, unsigned int maxIterationsFindConnectionThresh = 20, float reactivateConnectionThresh = 0.25f, float addNodeThresh = 0.03f, unsigned int maxIterationsFindNodeThresh = 20, float addTranstypeThresh = 0.02f);
 		
 		void print (std::string prefix = "");
-		
-		/*void drawNetwork (unsigned int genome_id, sf::Vector2u windowSize = {1300, 800}, float dotsRadius = 6.5f);
+		void drawGenome (unsigned int genome_id, unsigned int windowWidth = 1300, unsigned int windowHeight = 800, float dotsRadius = 6.5f, std::string font_path = "/usr/share/fonts/OTF/SF-Pro-Display-Regular.otf");
+
+		/*
 		void printInfo (bool extendedGlobal = false, bool printSpecies = false, bool printGenomes = false, bool extendedGenomes = false);
 		void save (const std::string filepath = "./neat_backup.txt");
 		void load (const std::string filepath = "./neat_backup.txt");*/
@@ -559,9 +560,13 @@ void Population<Args...>::print (std::string prefix) {
 }
 
 
-/*
 template <typename... Args>
-void Population<Args...>::drawNetwork(unsigned int genome_id, sf::Vector2u windowSize, float dotsRadius) {
+void Population<Args...>::drawGenome (unsigned int genome_id, unsigned int windowWidth, unsigned int windowHeight, float dotsRadius, std::string font_path) {
+	genomes [genome_id]->draw (windowWidth, windowHeight, dotsRadius, font_path);
+}
+
+/*
+drawNetwork(unsigned int genome_id, sf::Vector2u windowSize, float dotsRadius) {
 	genomes[genome_id].drawNetwork(windowSize, dotsRadius);
 }
 
