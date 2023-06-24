@@ -57,7 +57,7 @@ class Population {
 		void printInfo (bool extendedGlobal = false, bool printSpecies = false, bool printGenomes = false, bool extendedGenomes = false);
 		void save (const std::string filepath = "./neat_backup.txt");
 		void load (const std::string filepath = "./neat_backup.txt");*/
-	
+
 	private:
 		unsigned int generation;
 		float avgFitness;

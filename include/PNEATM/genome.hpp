@@ -693,7 +693,7 @@ void Genome<Args...>::draw (unsigned int windowWidth, unsigned int windowHeight,
 	const unsigned int nbLayer = nodes [nbBias + nbInput]->layer + 1;
 
 	// constants for position x
-	const float firstLayerX = 200.0f;
+	const float firstLayerX = 175.0f;
 	const float stepX = 0.9f * ((float) windowWidth - firstLayerX) / (float) (nbLayer - 1);
 
 	// input
@@ -774,7 +774,7 @@ void Genome<Args...>::draw (unsigned int windowWidth, unsigned int windowHeight,
 
 	// ### TEXT ###
 	mainText.setFillColor (sf::Color::White);
-	mainText.setCharacterSize (15);
+	mainText.setCharacterSize (11);
 	mainText.setFont (font);
 	mainText.setPosition ({15.0, 15.0});
 
@@ -782,7 +782,8 @@ void Genome<Args...>::draw (unsigned int windowWidth, unsigned int windowHeight,
 	for (size_t i = 0; i < connections.size(); i++) {
 		stringMainText += std::to_string (connections [i].inNodeId) + "  ->  " + std::to_string (connections [i].outNodeId) + "   (" +  std::to_string (connections [i].weight) + ")";
 		if (connections [i].inNodeRecu > 0) {
-			stringMainText += " R (" + connections [i].inNodeRecu;
+			stringMainText += " R (";
+			stringMainText += std::to_string (connections [i].inNodeRecu);
 			stringMainText += ")";
 		}
 		if (!connections [i].enabled) {
