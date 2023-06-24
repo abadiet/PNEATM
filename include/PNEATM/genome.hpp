@@ -85,7 +85,6 @@ Genome<Args...>::Genome (std::vector<size_t> bias_sch, std::vector<size_t> input
 	weightExtremumInit (weightExtremumInit),
 	activationFns (activationFns),
 	resetValues (resetValues)
-
 {
 	N_types = (unsigned int) activationFns.size ();
 	speciesId = -1;
@@ -103,7 +102,6 @@ Genome<Args...>::Genome (std::vector<size_t> bias_sch, std::vector<size_t> input
 			nodes.back ()->layer = 0;
 			nodes.back ()->index_T_in = (unsigned int) i;
 			nodes.back ()->index_T_out = (unsigned int) i;
-			nodes.back ()->setActivationFnToIdentity ();
 			nodes.back ()->setResetValue (bias_init [i]);	// for bias nodes, init and reset value are the same
 			nodes.back ()->reset ();	// set the init value
 
@@ -122,7 +120,6 @@ Genome<Args...>::Genome (std::vector<size_t> bias_sch, std::vector<size_t> input
 			nodes.back ()->layer = 0;
 			nodes.back ()->index_T_in = (unsigned int) i;
 			nodes.back ()->index_T_out = (unsigned int) i;
-			nodes.back ()->setActivationFnToIdentity ();
 			nodes.back ()->setResetValue (resetValues [i]);
 
 			nbInput ++;
@@ -146,7 +143,6 @@ Genome<Args...>::Genome (std::vector<size_t> bias_sch, std::vector<size_t> input
 			nodes.back ()->layer = outputLayer;
 			nodes.back ()->index_T_in = (unsigned int) i;
 			nodes.back ()->index_T_out = (unsigned int) i;
-			nodes.back ()->setActivationFnToIdentity ();
 			nodes.back ()->setResetValue (resetValues [i]);
 
 			nbOutput ++;
@@ -225,15 +221,14 @@ template <typename... Args>
 template <typename T_in>
 void Genome<Args...>::loadInputs (std::vector<T_in> inputs) {
 	for (unsigned int i = 0; i < nbInput; i++) {
-		std::cout << i << " " << nodes [i + nbBias]->id << std::endl;	// TODO id is garabage
-		nodes [i + nbBias]->setInput (static_cast<void*> (&inputs [i]));
+		nodes [i + nbBias]->loadInput (static_cast<void*> (&inputs [i]));
 	}
 }
 
 template <typename... Args>
 template <typename T_in>
 void Genome<Args...>::loadInput (T_in input, int input_id) {
-	nodes[input_id + nbBias]->setInput (static_cast<void*> (&input));
+	nodes[input_id + nbBias]->loadInput (static_cast<void*> (&input));
 }
 
 template <typename... Args>
@@ -247,7 +242,7 @@ void Genome<Args...>::runNetwork() {
 
 	int lastLayer = nodes[nbBias + nbInput]->layer;
 
-	for (int ilayer = 0; ilayer < lastLayer; ilayer++) {
+	for (int ilayer = 1; ilayer < lastLayer; ilayer++) {
 		// process nodes[*]->input
 		for (size_t i = 0; i < connections.size (); i++) {
 			if (connections [i].enabled && nodes [connections [i].outNodeId]->layer == ilayer) {	// if the connections still exist and is pointing on the current layer
@@ -325,7 +320,7 @@ void Genome<Args...>::mutate(innovation_t* conn_innov, unsigned int maxRecurrenc
 
 template <typename... Args>
 bool Genome<Args...>::CheckNewConnectionValidity (unsigned int inNodeId, unsigned int outNodeId, unsigned int inNodeRecu, int* disabled_conn_id) {
-	if (nodes [inNodeId]->index_T_out != nodes [outNodeId]->index_T_in) return false;	// connections should link two same objects
+	if (nodes [inNodeId]->index_T_out != nodes [outNodeId]->index_T_in) return false;	// connections must link two same objects
 	if (outNodeId < nbBias + nbInput) return false;	// connections cannot point to an input node
 
 	for (size_t i = 0; i < connections.size (); i++) {
@@ -697,14 +692,19 @@ void Genome<Args...>::draw (unsigned int windowWidth, unsigned int windowHeight,
 	const float stepX = 0.9f * ((float) windowWidth - firstLayerX) / (float) (nbLayer - 1);
 
 	// input
-	for (unsigned int i = 0; i < nbBias + nbInput; i++) {
-		dots [i].setPosition ({firstLayerX + stepX * (float) nodes [i]->layer - dotsRadius, 0.1f * (float) windowHeight + (float) i * 0.8f * (float) windowHeight / (float) nbInput - dotsRadius});
-		dotsText [i].setPosition ({firstLayerX + stepX * (float) nodes [i]->layer - dotsRadius, 0.1f * (float) windowHeight + (float) i * 0.8f * (float) windowHeight / (float) nbInput + 4.0f});
+	if (nbBias + nbInput == 1) {	// if there is only one node, we draw it on the middle of y	// Note that this not recommended to do a network without any Bias node
+		dots [0].setPosition ({firstLayerX - dotsRadius, 0.5f * (float) windowHeight  - dotsRadius});
+		dotsText [0].setPosition ({firstLayerX - dotsRadius, 0.5f * (float) windowHeight + 4.0f});
+	} else {
+		for (unsigned int i = 0; i < nbBias + nbInput; i++) {
+			dots [i].setPosition ({firstLayerX - dotsRadius, 0.1f * (float) windowHeight + (float) i * 0.8f * (float) windowHeight / (float) (nbBias + nbInput - 1) - dotsRadius});
+			dotsText [i].setPosition ({firstLayerX - dotsRadius, 0.1f * (float) windowHeight + (float) i * 0.8f * (float) windowHeight / (float) (nbBias + nbInput - 1) + 4.0f});
+		}
 	}
 	// output
 	if (nbOutput == 1) {	// if there is only one node, we draw it on the middle of y
-		dots [nbBias + nbInput].setPosition ({firstLayerX + stepX * (float) nodes[1 + nbInput]->layer - dotsRadius, 0.5f * (float) windowHeight  - dotsRadius});
-		dotsText [nbBias + nbInput].setPosition ({firstLayerX + stepX * (float) nodes[1 + nbInput]->layer - dotsRadius, 0.5f * (float) windowHeight + 4.0f});
+		dots [nbBias + nbInput].setPosition ({firstLayerX + stepX * (float) nodes[nbBias + nbInput]->layer - dotsRadius, 0.5f * (float) windowHeight  - dotsRadius});
+		dotsText [nbBias + nbInput].setPosition ({firstLayerX + stepX * (float) nodes[nbBias + nbInput]->layer - dotsRadius, 0.5f * (float) windowHeight + 4.0f});
 	} else {
 		for (unsigned int i = nbBias + nbInput; i < nbBias + nbInput + nbOutput; i++) {
 			dots [i].setPosition ({firstLayerX + stepX * (float) nodes[i]->layer - dotsRadius, 0.1f * (float) windowHeight + (float) (i - (nbBias + nbInput)) * 0.8f * (float) windowHeight / (float) (nbOutput - 1) - dotsRadius});

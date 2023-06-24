@@ -14,14 +14,13 @@ namespace pneatm {
 template <typename T_in, typename T_out>
 class Node : public NodeBase {
 	public:
-		Node ();
+		Node () {};
 		~Node () {};
 
 		void setActivationFn (void* f) override;
-		void setActivationFnToIdentity () override;
 		void setResetValue (void* value) override;
 
-		void setInput (void* value) override;
+		void loadInput (void* value) override;
 		void AddToInput (void* value, float scalar) override;	// TODO: too dirty
 		void* getOutput () override;
 
@@ -45,19 +44,11 @@ class Node : public NodeBase {
 
 using namespace pneatm;
 
-template <typename T_in, typename T_out>
-Node<T_in, T_out>::Node () {
-	activationFn_isIdentity = false;
-}
+#include <PNEATM/utils.hpp>
 
 template <typename T_in, typename T_out>
 void Node<T_in, T_out>::setActivationFn (void* f) {
 	func = *static_cast<std::function<T_out (T_in)>*> (f);
-}
-
-template <typename T_in, typename T_out>
-void Node<T_in, T_out>::setActivationFnToIdentity () {
-	activationFn_isIdentity = true;
 }
 
 template <typename T_in, typename T_out>
@@ -66,8 +57,9 @@ void Node<T_in, T_out>::setResetValue (void* value) {
 }
 
 template <typename T_in, typename T_out>
-void Node<T_in, T_out>::setInput (void* value) {
+void Node<T_in, T_out>::loadInput (void* value) {
 	input = *static_cast<T_in*> (value);
+	output = *static_cast<T_out*> (value);
 }
 
 template <typename T_in, typename T_out>
@@ -82,11 +74,7 @@ void* Node<T_in, T_out>::getOutput () {
 
 template <typename T_in, typename T_out>
 void Node<T_in, T_out>::process () {
-	if (activationFn_isIdentity) {
-		output = input;
-	} else {
-		output = func (input);
-	}
+	output = func (input);
 }
 
 template <typename T_in, typename T_out>
@@ -100,7 +88,6 @@ void Node<T_in, T_out>::print (std::string prefix) {
 	std::cout << prefix << "Layer: " << layer << std::endl;
 	std::cout << prefix << "Input Type ID: " << index_T_in << std::endl;
 	std::cout << prefix << "Output Type ID: " << index_T_out << std::endl;
-	std::cout << prefix << "Is the activation function the identity? " << activationFn_isIdentity << std::endl;
 	std::cout << prefix << "Current Input Value: " << input << std::endl;
 	std::cout << prefix << "Current Output Value: " << output << std::endl;
 	std::cout << prefix << "Reset Value: " << resetValue << std::endl;
