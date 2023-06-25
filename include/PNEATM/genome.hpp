@@ -53,7 +53,7 @@ class Genome {
 		std::vector<void*> resetValues;
 
 		std::vector <NodeBase*> nodes;
-		std::vector <std::vector <NodeBase*>> prevNodes;
+		std::vector <std::vector <void*>> prevNodes;	//TODO: void* -> const void*
 		unsigned int rec_max;
 		std::vector <Connection> connections;
 
@@ -211,11 +211,6 @@ Genome<Args...>::~Genome () {
 	for (NodeBase* node : nodes) {
 		delete node;
 	}
-	for (std::vector<NodeBase*> nodes : prevNodes) {
-		for (NodeBase* node : nodes) {
-			delete node;
-		}
-	}
 }
 
 template <typename... Args>
@@ -260,7 +255,7 @@ void Genome<Args...>::runNetwork() {
 				} else {	// is recurent
 					if (connections[i].inNodeRecu < (unsigned int) prevNodes.size () + 1) {
 						nodes[connections[i].outNodeId]->AddToInput (
-							prevNodes [(unsigned int) prevNodes.size () - connections [i].inNodeRecu][connections [i].inNodeId]->getOutput (),
+							prevNodes [(unsigned int) prevNodes.size () - connections [i].inNodeRecu][connections [i].inNodeId],
 							connections [i].weight
 						);
 					} else {
@@ -280,7 +275,11 @@ void Genome<Args...>::runNetwork() {
 	}
 
 	// we have to store previous values
-	prevNodes.push_back (nodes);
+	prevNodes.push_back ({});
+	prevNodes.back ().reserve (nodes.size ());
+	for (NodeBase* node : nodes) {
+		prevNodes.back ().push_back (node->getOutput ());
+	}
 }
 
 template <typename... Args>
@@ -647,14 +646,7 @@ void Genome<Args...>::print (std::string prefix) {
 		node->print (prefix + "   ");
 		std::cout << std::endl;
 	}
-	std::cout << prefix << "Previous Nodes: " << std::endl;
-	for (size_t i = 0; i < prevNodes.size (); i++) {
-		std::cout << prefix << " * Generation " << -1 * i << std::endl;
-		for (NodeBase* node : prevNodes [i]) {
-			node->print (prefix + "     ");
-			std::cout << prefix << std::endl;
-		}
-	}
+	std::cout << prefix << "Previous Nodes: " << prevNodes.size () << " calls to the network are stored" << std::endl;
 	std::cout << prefix << "Connections: " << std::endl;
 	for (size_t i = 0; i < connections.size (); i++) {
 		connections [i].print (prefix + "   ");
