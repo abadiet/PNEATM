@@ -14,7 +14,7 @@ namespace pneatm {
 template <typename T_in, typename T_out>
 class Node : public NodeBase {
 	public:
-		Node () {};
+		Node ();
 		~Node () {};
 
 		void setActivationFn (void* f) override;
@@ -47,6 +47,13 @@ using namespace pneatm;
 #include <PNEATM/utils.hpp>
 
 template <typename T_in, typename T_out>
+Node<T_in, T_out>::Node () {
+	func = [] (T_in input) {	// default activation function is the identity (useful for bias/inputs/outputs)
+		return input;
+	};
+}
+
+template <typename T_in, typename T_out>
 void Node<T_in, T_out>::setActivationFn (void* f) {
 	func = *static_cast<std::function<T_out (T_in)>*> (f);
 }
@@ -59,7 +66,6 @@ void Node<T_in, T_out>::setResetValue (void* value) {
 template <typename T_in, typename T_out>
 void Node<T_in, T_out>::loadInput (void* value) {
 	input = *static_cast<T_in*> (value);
-	output = *static_cast<T_out*> (value);
 }
 
 template <typename T_in, typename T_out>

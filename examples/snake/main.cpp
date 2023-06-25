@@ -3,14 +3,14 @@
 int main () {
     srand ((int) time (0));	// init seed for rand
 
-    unsigned int popSize = 3;
+    unsigned int popSize = 50;
     std::vector<size_t> bias_sch = {1, 1};
-    std::vector<size_t> inputs_sch = {6, 5};
-    std::vector<size_t> outputs_sch = {3, 1};
+    std::vector<size_t> inputs_sch = {14, 0};
+    std::vector<size_t> outputs_sch = {3, 0};
     std::vector<std::vector<size_t>> hiddens_sch_init = {{2, 3}, {4, 1}};
     std::vector<void*> bias_init;
     float unitValueFLOAT = 1.0f;
-    int unitValueINT = 1.0f;
+    int unitValueINT = 1;
     bias_init.push_back ((void*) &unitValueFLOAT);
     bias_init.push_back ((void*) &unitValueINT);
     std::vector<void*> resetValues;
@@ -37,10 +37,6 @@ int main () {
     int threshGensSinceImproved = 15;
     pneatm::Population<float, myInt> pop (popSize, bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, speciationThreshInit, threshGensSinceImproved);
 
-    pop.print ();
-    pop.drawGenome (0);
-
-/*
     unsigned int maxReurrency = 0;
 
     Snake snake (8);
@@ -51,7 +47,6 @@ int main () {
         std::cout << "generation " << pop.getGeneration () << std::endl;
 
         for (unsigned int genomeId = 0; genomeId < popSize; genomeId ++) {
-            std::cout << "genome " << genomeId << std::endl;
             snake.reset ();
 
             std::vector<float> AI_Inputs;
@@ -62,7 +57,7 @@ int main () {
                 AI_Inputs = snake.getAIInputs ();
 
                 pop.template loadInputs<float> (AI_Inputs, genomeId);
-    std::cout << "oui" << std::endl;
+
                 pop.runNetwork (genomeId);
                 
                 Snake_Inputs = pop.template getOutputs<float> (genomeId);
@@ -84,7 +79,7 @@ int main () {
         pop.crossover ();
         pop.mutate (maxReurrency);
     }
-
+/*
     // we have to run once again the network and to do a speciation to get the last fitter genome
     for (unsigned int genomeId = 0; genomeId < popSize; genomeId ++) {
         snake.reset ();

@@ -178,7 +178,7 @@ std::vector<T_out> Population<Args...>::getOutputs (unsigned int genome_id) {
 template <typename... Args>
 template <typename T_out>
 T_out Population<Args...>::getOutput (unsigned int output_id, unsigned int genome_id) {
-	return genomes [genome_id]->template getOutputs<T_out> (output_id);
+	return genomes [genome_id]->template getOutput<T_out> (output_id);
 }
 
 template <typename... Args>
@@ -199,7 +199,7 @@ void Population<Args...>::speciate (unsigned int target, unsigned int targetThre
 			int iMainGenome = species [iSpe].members[rand() % species [iSpe].members.size ()];	// select a random member to be the main genome of the species
 			species [iSpe].members.clear ();
 			species [iSpe].members.push_back (iMainGenome);
-			genomes [iMainGenome].speciesId = (int) iSpe;
+			genomes [iMainGenome]->speciesId = (int) iSpe;
 		}
 	}
 
@@ -403,7 +403,7 @@ void Population<Args...>::crossover (bool elitism) {
 	std::vector<Genome<Args...>*> newGenomes;
 
 	if (elitism) {	// elitism mode on = we conserve during generations the fitter genome
-		Genome<Args...> newGenome = new Genome<Args...> (bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, &conn_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit);
+		Genome<Args...>* newGenome = new Genome<Args...> (bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, &conn_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit);
 		newGenome->nodes = genomes [fittergenome_id]->nodes;
 		newGenome->connections = genomes [fittergenome_id]->connections;
 		newGenome->speciesId = genomes [fittergenome_id]->speciesId;
@@ -412,7 +412,7 @@ void Population<Args...>::crossover (bool elitism) {
 
 	for (int iSpe = 0; iSpe < (int) species.size() ; iSpe ++) {
 		for (int k = 0; k < species [iSpe].allowedOffspring; k++) {
-			Genome<Args...> newGenome (bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, &conn_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit);
+			Genome<Args...>* newGenome = new Genome<Args...> (bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, &conn_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit);
 
 			// choose pseudo-randomly two parents. Don't care if they're identical as the child will be mutated...
 			unsigned int iParent1 = SelectParent (iSpe);
@@ -434,7 +434,7 @@ void Population<Args...>::crossover (bool elitism) {
 
 			// connections shared by both of the parents must be randomly wheighted
 			for (size_t iMainParentConn = 0; iMainParentConn < genomes [iMainParent]->connections.size (); iMainParentConn ++) {
-				for (size_t iSecondParentConn = 0; iSecondParentConn < genomes [iSecondParent].connections.size (); iSecondParentConn ++) {
+				for (size_t iSecondParentConn = 0; iSecondParentConn < genomes [iSecondParent]->connections.size (); iSecondParentConn ++) {
 					if (genomes [iMainParent]->connections [iMainParentConn].innovId == genomes [iSecondParent]->connections [iSecondParentConn].innovId) {
 						if (Random_Float (0.0f, 1.0f, true, false) < 0.5f) {	// 50 % of chance for each parent, newGenome already have the wheight of MainParent
 							newGenome->connections [iMainParentConn].weight = genomes [iSecondParent]->connections [iSecondParentConn].weight;
@@ -451,7 +451,7 @@ void Population<Args...>::crossover (bool elitism) {
 	int previousSize = (int) newGenomes.size();
 	// add genomes if some are missing
 	for (int k = 0; k < (int) popSize - (int) previousSize; k++) {
-		newGenomes.push_back (Genome<Args...> (bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, &conn_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit));
+		newGenomes.push_back (new Genome<Args...> (bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, &conn_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit));
 	}
 
 	// or remove some genomes if there is too many genomes
@@ -499,7 +499,7 @@ int Population<Args...>::SelectParent (unsigned int iSpe) {
 template <typename... Args>
 void Population<Args...>::mutate (unsigned int maxRecurrency, float mutateWeightThresh, float mutateWeightFullChangeThresh, float mutateWeightFactor, float addConnectionThresh, unsigned int maxIterationsFindConnectionThresh, float reactivateConnectionThresh, float addNodeThresh, unsigned int maxIterationsFindNodeThresh, float addTranstypeThresh) {
 	for (unsigned int i = 0; i < popSize; i++) {
-		genomes[i].mutate (&conn_innov, maxRecurrency, mutateWeightThresh, mutateWeightFullChangeThresh, mutateWeightFactor, addConnectionThresh, maxIterationsFindConnectionThresh, reactivateConnectionThresh, addNodeThresh, maxIterationsFindNodeThresh, addTranstypeThresh);
+		genomes[i]->mutate (&conn_innov, maxRecurrency, mutateWeightThresh, mutateWeightFullChangeThresh, mutateWeightFactor, addConnectionThresh, maxIterationsFindConnectionThresh, reactivateConnectionThresh, addNodeThresh, maxIterationsFindNodeThresh, addTranstypeThresh);
 	}
 }
 

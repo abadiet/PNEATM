@@ -102,8 +102,9 @@ Genome<Args...>::Genome (std::vector<size_t> bias_sch, std::vector<size_t> input
 			nodes.back ()->layer = 0;
 			nodes.back ()->index_T_in = (unsigned int) i;
 			nodes.back ()->index_T_out = (unsigned int) i;
-			nodes.back ()->setResetValue (bias_init [i]);	// for bias nodes, init and reset value are the same
-			nodes.back ()->reset ();	// set the init value
+			nodes.back ()->loadInput (bias_init [i]);	// load input now as it will always be the same
+			nodes.back ()->process ();	// load output now as it will always be the same
+			// bias node doesn't requires a reset value as they are never changed
 
 			nbBias ++;
 		}
@@ -228,7 +229,7 @@ void Genome<Args...>::loadInputs (std::vector<T_in> inputs) {
 template <typename... Args>
 template <typename T_in>
 void Genome<Args...>::loadInput (T_in input, int input_id) {
-	nodes[input_id + nbBias]->loadInput (static_cast<void*> (&input));
+	nodes [input_id + nbBias]->loadInput (static_cast<void*> (&input));
 }
 
 template <typename... Args>
@@ -240,9 +241,14 @@ void Genome<Args...>::runNetwork() {
 		nodes [i]->reset ();
 	}
 
+	// process nodes[*]->output for input/bias nodes
+	for (unsigned int i = 0; i < nbBias + nbInput; i++) {
+		nodes [i]->process ();
+	}
+
 	int lastLayer = nodes[nbBias + nbInput]->layer;
 
-	for (int ilayer = 1; ilayer < lastLayer; ilayer++) {
+	for (int ilayer = 1; ilayer <= lastLayer; ilayer++) {
 		// process nodes[*]->input
 		for (size_t i = 0; i < connections.size (); i++) {
 			if (connections [i].enabled && nodes [connections [i].outNodeId]->layer == ilayer) {	// if the connections still exist and is pointing on the current layer
