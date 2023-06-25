@@ -146,7 +146,7 @@ void Population<Args...>::loadInputs(std::vector<T_in> inputs, unsigned int geno
 template <typename... Args>
 template <typename T_in>
 void Population<Args...>::loadInput(T_in input, unsigned int input_id) {
-	for (int i = 0; i < popSize; i++) {
+	for (unsigned int i = 0; i < popSize; i++) {
 		genomes [i]->template loadInput<T_in> (input, input_id);
 	}
 }
@@ -159,7 +159,7 @@ void Population<Args...>::loadInput(T_in input, unsigned int input_id, unsigned 
 
 template <typename... Args>
 void Population<Args...>::runNetwork () {
-	for (int i = 0; i < popSize; i++) {
+	for (unsigned int i = 0; i < popSize; i++) {
 		genomes [i]->runNetwork ();
 	}
 }
@@ -196,7 +196,7 @@ void Population<Args...>::speciate (unsigned int target, unsigned int targetThre
 	// init species with leaders
 	for (size_t iSpe = 0; iSpe < species.size(); iSpe++) {
 		if (!species [iSpe].isDead) {	// if the species is still alive
-			int iMainGenome = species [iSpe].members[rand() % species [iSpe].members.size ()];	// select a random member to be the main genome of the species
+			unsigned int iMainGenome = species [iSpe].members [rand() % species [iSpe].members.size ()];	// select a random member to be the main genome of the species
 			species [iSpe].members.clear ();
 			species [iSpe].members.push_back (iMainGenome);
 			genomes [iMainGenome]->speciesId = (int) iSpe;
@@ -206,18 +206,18 @@ void Population<Args...>::speciate (unsigned int target, unsigned int targetThre
 	// process the other genomes
 	for (unsigned int genome_id = 0; genome_id < popSize; genome_id++) {
 		if (genomes [genome_id]->speciesId == -1) {	// if the genome not already belong to a species
-			int speciesId = 0;
+			unsigned int speciesId = 0;
 			while (
-				speciesId < (int) species.size()
-				&& !(
-					!species[speciesId].isDead
-					&& CompareGenomes (species [speciesId].members [0], genome_id, a, b, c) < speciationThresh
+				speciesId < (unsigned int) species.size()
+				&& (
+					species[speciesId].isDead
+					|| !(CompareGenomes (species [speciesId].members [0], genome_id, a, b, c) < speciationThresh)
 					)
 				)
 			{
 				speciesId ++;	// the genome cannot belong to this species, let's check the next one
 			}
-			if (speciesId == (int) species.size ()) {
+			if (speciesId == (unsigned int) species.size ()) {
 				// no species found for the current genome, we have to create one new
 				species.push_back (Species (speciesId));
 			}
@@ -227,7 +227,7 @@ void Population<Args...>::speciate (unsigned int target, unsigned int targetThre
 	}
 
 	// check how many alive species we have
-	int nbSpeciesAlive = 0;
+	unsigned int nbSpeciesAlive = 0;
 	for (size_t iSpe = 0; iSpe < species.size (); iSpe++) {
 		if (!species [iSpe].isDead) {	// if the species is still alive
 			nbSpeciesAlive ++;
@@ -235,10 +235,10 @@ void Population<Args...>::speciate (unsigned int target, unsigned int targetThre
 	}
 
 	// update speciationThresh
-	if (nbSpeciesAlive < (int) target - (int) targetThresh) {
+	if ((int) nbSpeciesAlive < (int) target - (int) targetThresh) {
 		speciationThresh -= stepThresh;
 	} else {
-		if (nbSpeciesAlive > (int) target + (int) targetThresh) {
+		if (nbSpeciesAlive > target + targetThresh) {
 			speciationThresh += stepThresh;
 		}
 	}
@@ -410,7 +410,7 @@ void Population<Args...>::crossover (bool elitism) {
 		newGenomes.push_back (newGenome);
 	}
 
-	for (int iSpe = 0; iSpe < (int) species.size() ; iSpe ++) {
+	for (unsigned int iSpe = 0; iSpe < (unsigned int) species.size() ; iSpe ++) {
 		for (int k = 0; k < species [iSpe].allowedOffspring; k++) {
 			Genome<Args...>* newGenome = new Genome<Args...> (bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, &conn_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit);
 
@@ -459,6 +459,10 @@ void Population<Args...>::crossover (bool elitism) {
 		newGenomes.pop_back ();
 	}
 
+	// replace the genomes by the new ones
+	for (Genome<Args...>* genome : genomes) {
+		delete genome;
+	}
 	genomes = newGenomes;
 
 	// reset species members

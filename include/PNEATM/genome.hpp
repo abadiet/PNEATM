@@ -187,12 +187,12 @@ Genome<Args...>::Genome (std::vector<size_t> bias_sch, std::vector<size_t> input
 		if (Random_Float (0.0f, 1.0f, true, false) < probRecuInit) {
 			inNodeRecu = Random_UInt (0, maxRecuInit);
 		}
-		if (CheckNewConnectionValidity (inNodeId, outNodeId, inNodeRecu)) {
+		if (CheckNewConnectionValidity (inNodeId, outNodeId, inNodeRecu)) {	// we don't care of former connections as there is no disabled connection for now
 			// innovId
 			const unsigned int innov_id = conn_innov->getInnovId (inNodeId, outNodeId, inNodeRecu);
 
 			// weight
-			const float weight = Random_Float (- weightExtremumInit, weightExtremumInit);	// random number in [-weightExtremumInit; weightExtremumInit]
+			const float weight = Random_Float (- weightExtremumInit, weightExtremumInit);
 
 			connections.push_back(Connection (innov_id, inNodeId, outNodeId, inNodeRecu, weight, true));
 
@@ -337,8 +337,8 @@ bool Genome<Args...>::CheckNewConnectionValidity (unsigned int inNodeId, unsigne
 			if (connections[i].enabled) {
 				return false;	// it is already an enabled connection
 			} else {
+				// it is a disabled connection
 				*disabled_conn_id = (int) i;
-				return true;	// it is a former connection
 			}
 		}
 	}
@@ -402,7 +402,7 @@ bool Genome<Args...>::AddConnection (innovation_t* conn_innov, unsigned int maxR
 	int disabled_conn_id = -1;
 	while (
 		iterationNb < maxIterationsFindConnectionThresh
-		&& CheckNewConnectionValidity (inNodeId, outNodeId, inNodeId, &disabled_conn_id)
+		&& !CheckNewConnectionValidity (inNodeId, outNodeId, inNodeId, &disabled_conn_id)
 	) {
 		inNodeId = Random_UInt (0, (unsigned int) nodes.size() - 1);
 		outNodeId = Random_UInt (0, (unsigned int) nodes.size() - 1);
@@ -412,7 +412,7 @@ bool Genome<Args...>::AddConnection (innovation_t* conn_innov, unsigned int maxR
 	
 	if (iterationNb < maxIterationsFindConnectionThresh) {	// a valid connection has been found
 		// mutating
-		if (disabled_conn_id >= 0) {	// it is a former connection
+		if (disabled_conn_id) {	// it is a former connection
 			if (Random_Float (0.0f, 1.0f, true, false) < reactivateConnectionThresh) {
 				connections [disabled_conn_id].enabled = true;	// former connection is reactivated
 				return true;
@@ -424,7 +424,7 @@ bool Genome<Args...>::AddConnection (innovation_t* conn_innov, unsigned int maxR
 			const unsigned int innov_id = conn_innov->getInnovId (inNodeId, outNodeId, inNodeRecu);
 
 			// weight
-			const float weight = Random_Float (- weightExtremumInit, weightExtremumInit);	// random number in [-weightExtremumInit; weightExtremumInit]
+			const float weight = Random_Float (- weightExtremumInit, weightExtremumInit);
 
 			connections.push_back(Connection (innov_id, inNodeId, outNodeId, inNodeRecu, weight, true));
 			
@@ -483,19 +483,25 @@ bool Genome<Args...>::AddNode (innovation_t* conn_innov, unsigned int maxIterati
 			outNodeId = connections [iConn].outNodeId;
 			inNodeRecu = 0;
 			innovId = conn_innov->getInnovId (inNodeId, outNodeId, inNodeRecu);
-			weight = Random_Float (- weightExtremumInit, weightExtremumInit);	// random number in [-weightExtremumInit; weightExtremumInit]
+			weight = Random_Float (- weightExtremumInit, weightExtremumInit);
 
 			connections.push_back (Connection (innovId, inNodeId, outNodeId, inNodeRecu, weight, true));
 
 			// update layers
-			if (connections [iConn].inNodeRecu > 0) {	// the connection was recurrent, so the layer has no effect
-				nodes [newNodeId]->layer = nodes [connections [iConn].outNodeId]->layer - 1;	// update newNodeId layer
+			if (connections [iConn].inNodeRecu > 0) {	// the connection was recurrent, so the layers are not changed
+				if (nodes [connections [iConn].outNodeId]->layer  == 1) {	// the output node was on the first layer, we cannot set the new node on the layer 0 (reserved for the input): everything has to moved
+					nodes [newNodeId]->layer = 1;	// update newNodeId layer
+					nodes [connections [iConn].outNodeId]->layer = 2;	// update outNodeId layer
+					UpdateLayers (connections [iConn].outNodeId);	// update other layers
+				} else {
+					// we set the new node's layer to the first one because there is no node connected to it on the same network (with a null recurrency) 
+					nodes [newNodeId]->layer = 1;	// update newNodeId layer
+				}
 			} else {									// else, the node is one layer further in the network
 				nodes [newNodeId]->layer = nodes [connections[iConn].inNodeId]->layer + 1;	// update newNodeId layer
 				nodes [connections [iConn].outNodeId]->layer = nodes[newNodeId]->layer + 1;	// update outNodeId layer
 				UpdateLayers (connections [iConn].outNodeId);	// update other layers
 			}
-
 			return true;
 		} else {
 			return false;	// no active connection found
@@ -507,7 +513,7 @@ bool Genome<Args...>::AddNode (innovation_t* conn_innov, unsigned int maxIterati
 
 template <typename... Args>
 bool Genome<Args...>::AddTranstype (innovation_t* conn_innov, unsigned int maxRecurrency, unsigned int maxIterationsFindNodeThresh) {
-	if (N_types > 1) {
+	if (N_types > 1) {	// if there is only one type, we cannot add a bi-typed node!
 		// Add bi-typed node
 		const unsigned int newNodeId = (unsigned int) nodes.size ();
 		const unsigned int iT_in = Random_UInt (0, N_types - 1);
@@ -551,7 +557,7 @@ bool Genome<Args...>::AddTranstype (innovation_t* conn_innov, unsigned int maxRe
 		if (iterationNb == maxIterationsFindNodeThresh) return false;
 
 		unsigned int innov_id = conn_innov->getInnovId (inNodeId, newNodeId, inNodeRecu);
-		float weight = Random_Float (- weightExtremumInit, weightExtremumInit);	// random number in [-weightExtremumInit; weightExtremumInit]
+		float weight = Random_Float (- weightExtremumInit, weightExtremumInit);
 
 		connections.push_back(Connection (innov_id, inNodeId, newNodeId, inNodeRecu, weight, true));
 
@@ -572,7 +578,7 @@ bool Genome<Args...>::AddTranstype (innovation_t* conn_innov, unsigned int maxRe
 		if (iterationNb == maxIterationsFindNodeThresh) return false;
 
 		innov_id = conn_innov->getInnovId (newNodeId, outNodeId, inNodeRecu);
-		weight = Random_Float (- weightExtremumInit, weightExtremumInit);	// random number in [-weightExtremumInit; weightExtremumInit]
+		weight = Random_Float (- weightExtremumInit, weightExtremumInit);
 
 		connections.push_back(Connection (innov_id, newNodeId, outNodeId, inNodeRecu, weight, true));
 

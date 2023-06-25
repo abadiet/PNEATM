@@ -21,7 +21,7 @@ class Species {
 		float sumFitness;
 		unsigned int gensSinceImproved;
 		bool isDead;
-		std::vector<int> members;
+		std::vector<unsigned int> members;
 
 	template <typename... Args>
 	friend class Population;

@@ -19,7 +19,7 @@ void Species::print (std::string prefix) {
 	std::cout << prefix << "Current Number of generation since any improvement: " << gensSinceImproved << std::endl;
 	std::cout << prefix << "Is dead? " << isDead << std::endl;
 	std::cout << prefix << "Members' IDs: ";
-	for (int id : members) {
+	for (unsigned int id : members) {
 		std::cout << id << ", ";
 	}
 	std::cout << std::endl;
