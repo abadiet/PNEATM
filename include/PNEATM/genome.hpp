@@ -11,6 +11,7 @@
 #include <cmath>
 #include <iostream>
 #include <cstring>
+#include <spdlog/spdlog.h>
 
 
 /* HEADER */
@@ -20,7 +21,7 @@ namespace pneatm {
 template <typename... Args>
 class Genome {
 	public:
-		Genome (std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_init, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, innovation_t* conn_innov, unsigned int N_ConnInit, float probRecuInit, float weightExtremumInit, unsigned int maxRecuInit);
+		Genome (std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_init, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, innovation_t* conn_innov, unsigned int N_ConnInit, float probRecuInit, float weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger);
 		~Genome ();
 
 		float getFitness () {return fitness;};
@@ -60,6 +61,8 @@ class Genome {
 		float fitness;
 		int speciesId;
 
+		spdlog::logger* logger;
+
 		bool CheckNewConnectionValidity (unsigned int inNodeId, unsigned int outNodeId, unsigned int inNodeRecu, int* disabled_conn_id = nullptr);
 		bool CheckNewConnectionCircle (unsigned int inNodeId, unsigned int outNodeId);
 		void MutateWeights (float mutateWeightFullChangeThresh, float mutateWeightFactor);
@@ -81,11 +84,14 @@ class Genome {
 using namespace pneatm;
 
 template <typename... Args>
-Genome<Args...>::Genome (std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_init, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, innovation_t* conn_innov, unsigned int N_ConnInit, float probRecuInit, float weightExtremumInit, unsigned int maxRecuInit) :
+Genome<Args...>::Genome (std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_init, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, innovation_t* conn_innov, unsigned int N_ConnInit, float probRecuInit, float weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger) :
 	weightExtremumInit (weightExtremumInit),
 	activationFns (activationFns),
-	resetValues (resetValues)
+	resetValues (resetValues),
+	logger (logger)
 {
+	logger->trace ("Genome initialization");
+
 	N_types = (unsigned int) activationFns.size ();
 	speciesId = -1;
 
@@ -208,6 +214,7 @@ Genome<Args...>::Genome (std::vector<size_t> bias_sch, std::vector<size_t> input
 
 template <typename... Args>
 Genome<Args...>::~Genome () {
+	logger->trace ("Genome destruction");
 	for (NodeBase* node : nodes) {
 		delete node;
 	}
@@ -248,17 +255,20 @@ void Genome<Args...>::runNetwork() {
 		for (size_t i = 0; i < connections.size (); i++) {
 			if (connections [i].enabled && nodes [connections [i].outNodeId]->layer == ilayer) {	// if the connections still exist and is pointing on the current layer
 				if (connections [i].inNodeRecu == 0) {
+					logger->trace ("processing of connection {3}: adding to node{0}'s input value from dot product between node{1}'s output and {2}", connections [i].outNodeId, connections [i].inNodeId, connections [i].weight, i);
 					nodes [connections [i].outNodeId]->AddToInput (
 						nodes [connections [i].inNodeId]->getOutput (),
 						connections [i].weight
 					);
 				} else {	// is recurent
 					if (connections[i].inNodeRecu < (unsigned int) prevNodes.size () + 1) {
+						logger->trace ("processing of connection {3}: adding to node{0}'s input value from dot product between node{1}'s output ({4} generation from now) and {2}", connections [i].outNodeId, connections [i].inNodeId, connections [i].weight, i, connections [i].inNodeRecu);
 						nodes[connections[i].outNodeId]->AddToInput (
 							prevNodes [(unsigned int) prevNodes.size () - connections [i].inNodeRecu][connections [i].inNodeId],
 							connections [i].weight
 						);
 					} else {
+						logger->warn ("processing of connection {3}: cannot add to node{0}'s input value from dot product between node{1}'s output ({4} generation from now) and {2} as this value isn't existing yet!", connections [i].outNodeId, connections [i].inNodeId, connections [i].weight, i, connections [i].inNodeRecu);
 						// the input of the connection isn't existing yet!
 						// we consider that the connection isn't existing
 					}
@@ -275,6 +285,7 @@ void Genome<Args...>::runNetwork() {
 	}
 
 	// we have to store previous values
+	logger->trace ("saving previous nodes' outputs");
 	prevNodes.push_back ({});
 	prevNodes.back ().reserve (nodes.size ());
 	for (NodeBase* node : nodes) {
@@ -381,12 +392,15 @@ bool Genome<Args...>::CheckNewConnectionCircle (unsigned int inNodeId, unsigned 
 
 template <typename... Args>
 void Genome<Args...>::MutateWeights (float mutateWeightFullChangeThresh, float mutateWeightFactor) {
+	logger->trace ("mutating of weights");
 	for (size_t i = 0; i < connections.size(); i++) {
 		if (Random_Float (0.0f, 1.0f, true, false) < mutateWeightFullChangeThresh) {
 			// reset weight
+			logger->trace ("resetting connection{}'s weight", i);
 			connections [i].weight = Random_Float (- weightExtremumInit, weightExtremumInit);
 		} else {
 			// pertub weight
+			logger->trace ("pertubating connection{}'s weight", i);
 			connections [i].weight *= Random_Float (- mutateWeightFactor, mutateWeightFactor);
 		}
 	}
@@ -394,6 +408,8 @@ void Genome<Args...>::MutateWeights (float mutateWeightFullChangeThresh, float m
 
 template <typename... Args>
 bool Genome<Args...>::AddConnection (innovation_t* conn_innov, unsigned int maxRecurrency, unsigned int maxIterationsFindConnectionThresh, float reactivateConnectionThresh) {	// return true if the process ended well, false in the other case
+	logger->trace ("adding a new connection");
+
 	// find valid node pair
 	unsigned int iterationNb = 1;
 	unsigned int inNodeId = Random_UInt (0, (unsigned int) nodes.size() - 1);
@@ -414,9 +430,11 @@ bool Genome<Args...>::AddConnection (innovation_t* conn_innov, unsigned int maxR
 		// mutating
 		if (disabled_conn_id) {	// it is a former connection
 			if (Random_Float (0.0f, 1.0f, true, false) < reactivateConnectionThresh) {
+				logger->trace ("connection{} is re-enabled", disabled_conn_id);
 				connections [disabled_conn_id].enabled = true;	// former connection is reactivated
 				return true;
 			} else {
+				logger->warn ("process ended well but no connection has been added during Genome<Args...>::AddConnection");
 				return true;	// return true even no connection has been change because process ended well
 			}
 		} else {
@@ -428,15 +446,18 @@ bool Genome<Args...>::AddConnection (innovation_t* conn_innov, unsigned int maxR
 
 			connections.push_back(Connection (innov_id, inNodeId, outNodeId, inNodeRecu, weight, true));
 			
+			logger->trace ("connection{0} added between node{1} (with a recurrency of {3}) and node{2}", connections.size () - 1, inNodeId, outNodeId, inNodeRecu);
 			return true;
 		}
 	} else {
+		logger->warn ("maximum iteration threshold to find a valid connectino has been reached in Genome<Args...>::AddConnection: no connection is added");
 		return false;	// cannot find a valid connection
 	}
 }
 
 template <typename... Args>
 bool Genome<Args...>::AddNode (innovation_t* conn_innov, unsigned int maxIterationsFindNodeThresh) {	// return true = node created, false = nothing created
+	logger->trace ("adding a node");
 	// choose at random an enabled connection
 	if (connections.size() > 0) {	// if there is no connection, we cannot add a node!
 		unsigned int iConn = Random_UInt (0, (unsigned int) connections.size () - 1);
@@ -453,6 +474,8 @@ bool Genome<Args...>::AddNode (innovation_t* conn_innov, unsigned int maxIterati
 			const unsigned int newNodeId = (unsigned int) nodes.size ();
 			const unsigned int iT_in = nodes [connections [iConn].inNodeId]->index_T_in;
 			const unsigned int iT_out = nodes [connections [iConn].outNodeId]->index_T_out;
+
+			logger->trace ("adding node{2}, linking type{0} to type{1}", iT_in, iT_out, newNodeId);
 
 			// get Node<T_in, T_out>
 			nodes.push_back(CreateNode::get<Args...> (iT_in, iT_out));
@@ -476,6 +499,8 @@ bool Genome<Args...>::AddNode (innovation_t* conn_innov, unsigned int maxIterati
 			unsigned int innovId = conn_innov->getInnovId (inNodeId, outNodeId, inNodeRecu);
 			float weight = connections [iConn].weight;
 
+			logger->trace ("adding connection{0} between node{1} and node{2}", connections.size (), inNodeId, outNodeId);
+
 			connections.push_back (Connection (innovId, inNodeId, outNodeId, inNodeRecu, weight, true));
 			
 			// build second connection
@@ -484,6 +509,8 @@ bool Genome<Args...>::AddNode (innovation_t* conn_innov, unsigned int maxIterati
 			inNodeRecu = 0;
 			innovId = conn_innov->getInnovId (inNodeId, outNodeId, inNodeRecu);
 			weight = Random_Float (- weightExtremumInit, weightExtremumInit);
+
+			logger->trace ("adding connection{0} between node{1} and node{2}", connections.size (), inNodeId, outNodeId);
 
 			connections.push_back (Connection (innovId, inNodeId, outNodeId, inNodeRecu, weight, true));
 
@@ -504,15 +531,18 @@ bool Genome<Args...>::AddNode (innovation_t* conn_innov, unsigned int maxIterati
 			}
 			return true;
 		} else {
+			logger->warn ("maximum iteration threshold to find an active connection has been reached in Genome<Args...>::AddNode: no node is added");
 			return false;	// no active connection found
 		}
 	} else {
+		logger->warn ("there is no connection, no node is added in Genome<Args...>::AddNode");
 		return false;	// there is no connection, cannot add a node
 	}
 }
 
 template <typename... Args>
 bool Genome<Args...>::AddTranstype (innovation_t* conn_innov, unsigned int maxRecurrency, unsigned int maxIterationsFindNodeThresh) {
+	logger->trace ("adding a bi-typed node");
 	if (N_types > 1) {	// if there is only one type, we cannot add a bi-typed node!
 		// Add bi-typed node
 		const unsigned int newNodeId = (unsigned int) nodes.size ();
@@ -521,6 +551,8 @@ bool Genome<Args...>::AddTranstype (innovation_t* conn_innov, unsigned int maxRe
 		while (iT_out == iT_in) {
 			iT_out = Random_UInt (0, N_types - 1);
 		}
+
+		logger->trace ("adding node{2}, linking type{0} to type{1}", iT_in, iT_out, newNodeId);
 
 		// get Node<T_in, T_out>
 		nodes.push_back(CreateNode::get<Args...> (iT_in, iT_out));
@@ -554,10 +586,15 @@ bool Genome<Args...>::AddTranstype (innovation_t* conn_innov, unsigned int maxRe
 			inNodeId = Random_UInt (0, (unsigned int) nodes.size () - 1);
 			iterationNb ++;
 		}
-		if (iterationNb == maxIterationsFindNodeThresh) return false;
+		if (iterationNb == maxIterationsFindNodeThresh) {
+			logger->warn ("maximum iteration threshold to find a valid connection has been reached in Genome<Args...>::AddTranstype: a bi-typed node has been added, but no connection point or start to it");
+			return false;
+		}
 
 		unsigned int innov_id = conn_innov->getInnovId (inNodeId, newNodeId, inNodeRecu);
 		float weight = Random_Float (- weightExtremumInit, weightExtremumInit);
+
+		logger->trace ("adding connection{0} between node{1} and node{2}", connections.size (), inNodeId, newNodeId);
 
 		connections.push_back(Connection (innov_id, inNodeId, newNodeId, inNodeRecu, weight, true));
 
@@ -575,15 +612,21 @@ bool Genome<Args...>::AddTranstype (innovation_t* conn_innov, unsigned int maxRe
 			outNodeId = Random_UInt (0, (unsigned int) nodes.size () - 1);
 			iterationNb ++;
 		}
-		if (iterationNb == maxIterationsFindNodeThresh) return false;
+		if (iterationNb == maxIterationsFindNodeThresh) {
+			logger->warn ("maximum iteration threshold to find a valid connection has been reached in Genome<Args...>::AddTranstype: a bi-typed node has been added, but only one connection point or start to it");
+			return false;
+		}
 
 		innov_id = conn_innov->getInnovId (newNodeId, outNodeId, inNodeRecu);
 		weight = Random_Float (- weightExtremumInit, weightExtremumInit);
+
+		logger->trace ("adding connection{0} between node{1} and node{2}", connections.size (), newNodeId, outNodeId);
 
 		connections.push_back(Connection (innov_id, newNodeId, outNodeId, inNodeRecu, weight, true));
 
 		return true;
 	} else {
+		logger->warn ("the genome is processing oone type of object: cannot add a bi-typed node in Genome<Args...>::AddTranstype");
 		return false;	// there is only one type of object
 	}
 }

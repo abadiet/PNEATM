@@ -7,6 +7,8 @@
 #include <PNEATM/population.hpp>
 #include <PNEATM/genome.hpp>
 #include <functional>
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
 
 /* SNAKE */
 /*

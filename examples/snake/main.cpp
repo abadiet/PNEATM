@@ -3,6 +3,11 @@
 int main () {
     srand ((int) time (0));	// init seed for rand
 
+    // init logger
+	spdlog::set_pattern ("[%Y-%m-%d %H:%M:%S.%e] [%t] [%^%l%$] %v");
+    spdlog::set_level(spdlog::level::warn);
+    auto logger = spdlog::stdout_color_mt("logger");
+
     unsigned int popSize = 50;
     std::vector<size_t> bias_sch = {1};
     std::vector<size_t> inputs_sch = {14};
@@ -24,7 +29,7 @@ int main () {
     unsigned int maxRecuInit = 10;
     float speciationThreshInit = 100.0f;
     int threshGensSinceImproved = 15;
-    pneatm::Population<float> pop (popSize, bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, speciationThreshInit, threshGensSinceImproved);
+    pneatm::Population<float> pop (popSize, bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger.get (), speciationThreshInit, threshGensSinceImproved);
 
     unsigned int maxRecurrency = 10;
 

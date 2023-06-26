@@ -19,7 +19,7 @@ namespace pneatm {
 template <typename... Args>
 class Population {
 	public:
-		Population (unsigned int popSize, std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_init, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, unsigned int N_ConnInit, float probRecuInit, float weightExtremumInit, unsigned int maxRecuInit, float speciationThreshInit = 100.0f, int threshGensSinceImproved = 15);
+		Population (unsigned int popSize, std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_init, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, unsigned int N_ConnInit, float probRecuInit, float weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger, float speciationThreshInit = 100.0f, int threshGensSinceImproved = 15);
 		~Population ();
 		//Population (const std::string filepath) {load(filepath);};
 
@@ -84,6 +84,8 @@ class Population {
 		std::vector<std::vector<std::vector<void*>>> activationFns;
 		innovation_t conn_innov;
 
+		spdlog::logger* logger;
+
 		float CompareGenomes (unsigned int ig1, unsigned int ig2, float a, float b, float c);
 		void UpdateFitnesses ();
 		int SelectParent (unsigned int iSpe);
@@ -97,7 +99,7 @@ class Population {
 using namespace pneatm;
 
 template <typename... Args>
-Population<Args...>::Population(unsigned int popSize, std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_init, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, unsigned int N_ConnInit, float probRecuInit, float weightExtremumInit, unsigned int maxRecuInit, float speciationThreshInit, int threshGensSinceImproved) :
+Population<Args...>::Population(unsigned int popSize, std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_init, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, unsigned int N_ConnInit, float probRecuInit, float weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger, float speciationThreshInit, int threshGensSinceImproved) :
 	popSize (popSize),
 	speciationThresh (speciationThreshInit),
 	threshGensSinceImproved (threshGensSinceImproved),
@@ -111,19 +113,24 @@ Population<Args...>::Population(unsigned int popSize, std::vector<size_t> bias_s
 	probRecuInit (probRecuInit),
 	weightExtremumInit (weightExtremumInit),
 	maxRecuInit (maxRecuInit),
-	activationFns (activationFns)
+	activationFns (activationFns),
+	logger (logger)
 {
+	logger->info ("Population initialization");
+
 	generation = 0;
 	fittergenome_id = -1;
-	spdlog::info("Welcome to spdlog!");
+
 	genomes.reserve (popSize);
 	for (unsigned int i = 0; i < popSize; i++) {
-		genomes.push_back (new Genome<Args...> (bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, &conn_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit));
+		genomes.push_back (new Genome<Args...> (bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, &conn_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger));
 	}
 }
 
 template <typename... Args>
 Population<Args...>::~Population () {
+	logger->info ("Population destruction");
+
 	for (Genome<Args...>* genome : genomes) {
 		delete genome;
 	}
@@ -133,6 +140,7 @@ template <typename... Args>
 template <typename T_in>
 void Population<Args...>::loadInputs(std::vector<T_in> inputs) {
 	for (int i = 0; i < popSize; i++) {
+		logger->trace ("Load genome{}'s inputs", i);
 		genomes [i]->template loadInputs<T_in> (inputs);
 	}
 }
@@ -140,6 +148,7 @@ void Population<Args...>::loadInputs(std::vector<T_in> inputs) {
 template <typename... Args>
 template <typename T_in>
 void Population<Args...>::loadInputs(std::vector<T_in> inputs, unsigned int genome_id) {
+	logger->trace ("Load genome{}'s inputs", genome_id);
 	genomes [genome_id]->template loadInputs<T_in> (inputs);
 }
 
@@ -147,6 +156,7 @@ template <typename... Args>
 template <typename T_in>
 void Population<Args...>::loadInput(T_in input, unsigned int input_id) {
 	for (unsigned int i = 0; i < popSize; i++) {
+		logger->trace ("Load genome{0}'s input{1}", i, input_id);
 		genomes [i]->template loadInput<T_in> (input, input_id);
 	}
 }
@@ -154,40 +164,47 @@ void Population<Args...>::loadInput(T_in input, unsigned int input_id) {
 template <typename... Args>
 template <typename T_in>
 void Population<Args...>::loadInput(T_in input, unsigned int input_id, unsigned int genome_id) {
+	logger->trace ("Load genome{0}'s input{1}", genome_id, input_id);
 	genomes [genome_id]->template loadInput<T_in> (input, input_id);
 }
 
 template <typename... Args>
 void Population<Args...>::runNetwork () {
 	for (unsigned int i = 0; i < popSize; i++) {
+		logger->trace ("Run genome{0}'s network", i);
 		genomes [i]->runNetwork ();
 	}
 }
 
 template <typename... Args>
 void Population<Args...>::runNetwork(unsigned int genome_id) {
+	logger->trace ("Run genome{0}'s network", genome_id);
 	genomes [genome_id]->runNetwork ();
 }
 
 template <typename... Args>
 template <typename T_out>
 std::vector<T_out> Population<Args...>::getOutputs (unsigned int genome_id) {
+	logger->trace ("Get genome{}'s outputs", genome_id);
 	return genomes [genome_id]->template getOutputs<T_out> ();
 }
 
 template <typename... Args>
 template <typename T_out>
 T_out Population<Args...>::getOutput (unsigned int output_id, unsigned int genome_id) {
+	logger->trace ("Get genome{0}'s output{1}", genome_id, output_id);
 	return genomes [genome_id]->template getOutput<T_out> (output_id);
 }
 
 template <typename... Args>
 void Population<Args...>::setFitness (float fitness, unsigned int genome_id) {
+	logger->trace ("setting genome{}'s fitness", genome_id);
 	genomes [genome_id]->fitness = fitness;
 }
 
 template <typename... Args>
 void Population<Args...>::speciate (unsigned int target, unsigned int targetThresh, float stepThresh, float a, float b, float c) {
+	logger->info ("Speciation");
 	// reset species
 	for (unsigned int i = 0; i < popSize; i++) {
 		genomes [i]->speciesId = -1;
@@ -233,6 +250,8 @@ void Population<Args...>::speciate (unsigned int target, unsigned int targetThre
 			nbSpeciesAlive ++;
 		}
 	}
+
+	logger->trace ("speciation result in {} alive species", nbSpeciesAlive);
 
 	// update speciationThresh
 	if ((int) nbSpeciesAlive < (int) target - (int) targetThresh) {
@@ -400,10 +419,12 @@ void Population<Args...>::UpdateFitnesses () {
 
 template <typename... Args>
 void Population<Args...>::crossover (bool elitism) {
+	logger->info ("Crossover");
 	std::vector<Genome<Args...>*> newGenomes;
 
 	if (elitism) {	// elitism mode on = we conserve during generations the fitter genome
-		Genome<Args...>* newGenome = new Genome<Args...> (bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, &conn_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit);
+		logger->trace ("elitism is on: adding the fitter genome to the new generation");
+		Genome<Args...>* newGenome = new Genome<Args...> (bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, &conn_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger);
 		newGenome->nodes = genomes [fittergenome_id]->nodes;
 		newGenome->connections = genomes [fittergenome_id]->connections;
 		newGenome->speciesId = genomes [fittergenome_id]->speciesId;
@@ -412,7 +433,7 @@ void Population<Args...>::crossover (bool elitism) {
 
 	for (unsigned int iSpe = 0; iSpe < (unsigned int) species.size() ; iSpe ++) {
 		for (int k = 0; k < species [iSpe].allowedOffspring; k++) {
-			Genome<Args...>* newGenome = new Genome<Args...> (bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, &conn_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit);
+			Genome<Args...>* newGenome = new Genome<Args...> (bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, &conn_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger);
 
 			// choose pseudo-randomly two parents. Don't care if they're identical as the child will be mutated...
 			unsigned int iParent1 = SelectParent (iSpe);
@@ -428,6 +449,9 @@ void Population<Args...>::crossover (bool elitism) {
 				iMainParent = iParent2;
 				iSecondParent = iParent1;
 			}
+
+			logger->trace ("adding child from the crossover between genome{0} and genome{1} to the new generation", iMainParent, iSecondParent);
+
 			newGenome->nodes = genomes [iMainParent]->nodes;
 			newGenome->connections = genomes [iMainParent]->connections;
 			newGenome->speciesId = iSpe;
@@ -451,7 +475,7 @@ void Population<Args...>::crossover (bool elitism) {
 	int previousSize = (int) newGenomes.size();
 	// add genomes if some are missing
 	for (int k = 0; k < (int) popSize - (int) previousSize; k++) {
-		newGenomes.push_back (new Genome<Args...> (bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, &conn_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit));
+		newGenomes.push_back (new Genome<Args...> (bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, &conn_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger));
 	}
 
 	// or remove some genomes if there is too many genomes
@@ -460,6 +484,7 @@ void Population<Args...>::crossover (bool elitism) {
 	}
 
 	// replace the genomes by the new ones
+	logger->trace ("replacing the genomes");
 	for (Genome<Args...>* genome : genomes) {
 		delete genome;
 	}
@@ -503,6 +528,7 @@ int Population<Args...>::SelectParent (unsigned int iSpe) {
 template <typename... Args>
 void Population<Args...>::mutate (unsigned int maxRecurrency, float mutateWeightThresh, float mutateWeightFullChangeThresh, float mutateWeightFactor, float addConnectionThresh, unsigned int maxIterationsFindConnectionThresh, float reactivateConnectionThresh, float addNodeThresh, unsigned int maxIterationsFindNodeThresh, float addTranstypeThresh) {
 	for (unsigned int i = 0; i < popSize; i++) {
+		logger->info ("Mutation of genome{}", i);
 		genomes[i]->mutate (&conn_innov, maxRecurrency, mutateWeightThresh, mutateWeightFullChangeThresh, mutateWeightFactor, addConnectionThresh, maxIterationsFindConnectionThresh, reactivateConnectionThresh, addNodeThresh, maxIterationsFindNodeThresh, addTranstypeThresh);
 	}
 }
@@ -566,6 +592,7 @@ void Population<Args...>::print (std::string prefix) {
 
 template <typename... Args>
 void Population<Args...>::drawGenome (unsigned int genome_id, unsigned int windowWidth, unsigned int windowHeight, float dotsRadius, std::string font_path) {
+	logger->info ("Drawing genome{}'s network", genome_id);
 	genomes [genome_id]->draw (windowWidth, windowHeight, dotsRadius, font_path);
 }
 
