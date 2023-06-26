@@ -10,8 +10,10 @@ C++ library for evolving neural networks with a modified NEAT that allows any ki
 
 To address these limitations, the primary goal of **PNEATM** is to provide a substantial memory capacity and the ability to handle various forms of data. This enhancement is intended to allow for the utilization of larger neuroevolution networks and to enhance their capabilities through the implementation of a memory system."
 
-## Dependency
-This code depends on SFML library (install it from [https://www.sfml-dev.org/download.php](https://www.sfml-dev.org/download.php)).
+## Dependencies
+This code depends on both SFML and spdlog libraries:
+- [SFML install](https://www.sfml-dev.org/download.php)
+- [spdlog install](https://github.com/gabime/spdlog)
 
 ## Examples
 A Snake AI powered by PNEATM is available on [/examples/snake/](https://github.com/titofra/NEAT/tree/main/examples/snake).
