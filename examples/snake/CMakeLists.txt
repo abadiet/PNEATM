@@ -4,7 +4,7 @@ project(SnakePNEATM)
 
 include_directories(../../include)
 add_library(pneatm STATIC IMPORTED)
-set_property(TARGET pneatm PROPERTY IMPORTED_LOCATION ../../../lib/libpneatm.a)
+set_property(TARGET pneatm PROPERTY IMPORTED_LOCATION ../../../lib/PNEATM/libpneatm.a)
 
 add_executable(SnakePNEATM main.cpp)
 

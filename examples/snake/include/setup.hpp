@@ -55,50 +55,11 @@ void playGameFitter (pneatm::Genome<Args...>& genome, const unsigned int maxIter
 
 /* TYPES */
 
-class myInt {
-private:
-    int value;
-
-public:
-    myInt(int value = 0) : value(value) {}
-
-    myInt operator*(const float scalar) const {
-        return myInt ((int) ((float) value * scalar));
-    }
-
-    myInt operator+=(const myInt& other) const {
-        return myInt (value + other.value);
-    }
-
-    friend std::ostream& operator<<(std::ostream& os, const myInt& x);
-
-    operator int() const {
-        return value;
-    }
-};
-
-std::ostream& operator<<(std::ostream& os, const myInt& x) {
-    os << x.value;
-    return os;
-}
-
 
 /* ACTIVATION FUNCTIONS */
 
 std::function<float (float)> sigmoid_float2float = [] (float x) {
     return (1.0f / (1.0f + (float) exp(-1 * 4.09 * x)));
-};
-
-std::function<myInt (myInt)> sigmoid_int2int = [] (myInt x) {
-    return myInt ((int) (1.0 / (1.0 + (float) exp(-1 * 4.09 * (int) x))));
-};
-
-std::function<float (myInt)> sigmoid_int2float = [] (myInt x) {
-    return (1.0f / (1.0f + (float) exp(-1 * 4.09 * (int) x)));
-};
-
-std::function<myInt (float)> sigmoid_float2int = [] (float x) {
-    return myInt ((int) (1.0 / (1.0 + exp(-1 * 4.09 * x))));
 };
 
 #endif  // SETUP_HPP
