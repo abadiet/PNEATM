@@ -5,7 +5,7 @@ int main () {
 
     // init logger
 	spdlog::set_pattern ("[%Y-%m-%d %H:%M:%S.%e] [%t] [%^%l%$] %v");
-    spdlog::set_level(spdlog::level::warn);
+    spdlog::set_level(spdlog::level::info);
     auto logger = spdlog::stdout_color_mt("logger");
 
     unsigned int popSize = 50;

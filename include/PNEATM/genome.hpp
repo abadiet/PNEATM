@@ -268,7 +268,7 @@ void Genome<Args...>::runNetwork() {
 							connections [i].weight
 						);
 					} else {
-						logger->warn ("processing of connection {3}: cannot add to node{0}'s input value from dot product between node{1}'s output ({4} generation from now) and {2} as this value isn't existing yet!", connections [i].outNodeId, connections [i].inNodeId, connections [i].weight, i, connections [i].inNodeRecu);
+						logger->trace ("processing of connection {3}: cannot add to node{0}'s input value from dot product between node{1}'s output ({4} generation from now) and {2} as this value isn't existing yet!", connections [i].outNodeId, connections [i].inNodeId, connections [i].weight, i, connections [i].inNodeRecu);
 						// the input of the connection isn't existing yet!
 						// we consider that the connection isn't existing
 					}
@@ -626,7 +626,7 @@ bool Genome<Args...>::AddTranstype (innovation_t* conn_innov, unsigned int maxRe
 
 		return true;
 	} else {
-		logger->warn ("the genome is processing oone type of object: cannot add a bi-typed node in Genome<Args...>::AddTranstype");
+		logger->warn ("the genome is processing one type of object: cannot add a bi-typed node in Genome<Args...>::AddTranstype");
 		return false;	// there is only one type of object
 	}
 }

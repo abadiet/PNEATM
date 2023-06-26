@@ -527,8 +527,9 @@ int Population<Args...>::SelectParent (unsigned int iSpe) {
 
 template <typename... Args>
 void Population<Args...>::mutate (unsigned int maxRecurrency, float mutateWeightThresh, float mutateWeightFullChangeThresh, float mutateWeightFactor, float addConnectionThresh, unsigned int maxIterationsFindConnectionThresh, float reactivateConnectionThresh, float addNodeThresh, unsigned int maxIterationsFindNodeThresh, float addTranstypeThresh) {
+	logger->info ("Mutations");
 	for (unsigned int i = 0; i < popSize; i++) {
-		logger->info ("Mutation of genome{}", i);
+		logger->trace ("Mutation of genome{}", i);
 		genomes[i]->mutate (&conn_innov, maxRecurrency, mutateWeightThresh, mutateWeightFullChangeThresh, mutateWeightFactor, addConnectionThresh, maxIterationsFindConnectionThresh, reactivateConnectionThresh, addNodeThresh, maxIterationsFindNodeThresh, addTranstypeThresh);
 	}
 }
