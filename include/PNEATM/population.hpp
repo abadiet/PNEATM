@@ -10,7 +10,7 @@
 #include <cstring>
 #include <limits>
 #include <vector>
-
+#include <spdlog/spdlog.h>
 
 /* HEADER */
 
@@ -115,7 +115,7 @@ Population<Args...>::Population(unsigned int popSize, std::vector<size_t> bias_s
 {
 	generation = 0;
 	fittergenome_id = -1;
-
+	spdlog::info("Welcome to spdlog!");
 	genomes.reserve (popSize);
 	for (unsigned int i = 0; i < popSize; i++) {
 		genomes.push_back (new Genome<Args...> (bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, &conn_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit));
