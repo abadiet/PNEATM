@@ -12,15 +12,15 @@ namespace pneatm {
 
 struct CreateNode {
     template <typename T1, typename T2, typename... Args>
-    static NodeBase* get(size_t iT_in, size_t iT_out, bool mono_type = true, bool T2_is_first = false) {
+    static std::unique_ptr<NodeBase> get(size_t iT_in, size_t iT_out, bool mono_type = true, bool T2_is_first = false) {
         if (iT_in == 0 && iT_out == 0) {
             if (mono_type) {
-                return std::make_unique<Node <T1, T1>> ().release ();
+                return std::make_unique<Node <T1, T1>> ();
             }
             if (T2_is_first) {
-                return std::make_unique<Node <T2, T1>> ().release ();
+                return std::make_unique<Node <T2, T1>> ();
             } else {
-                return std::make_unique<Node <T1, T2>> ().release ();
+                return std::make_unique<Node <T1, T2>> ();
             }
         }
         size_t new_iT_in = iT_in;
@@ -47,8 +47,8 @@ struct CreateNode {
     }
 
     template <typename T>
-    static NodeBase* get(size_t iT_in, size_t iT_out) {
-        return std::make_unique<Node <T, T>> ().release ();
+    static std::unique_ptr<NodeBase> get(size_t iT_in, size_t iT_out) {
+        return std::make_unique<Node <T, T>> ();
         UNUSED (iT_in);
         UNUSED (iT_out);
     }

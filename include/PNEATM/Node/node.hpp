@@ -5,7 +5,7 @@
 #include <functional>
 #include <iostream>
 #include <cstring>
-
+#include <memory>
 
 /* HEADER */
 
@@ -27,6 +27,8 @@ class Node : public NodeBase {
 		void process () override;
 		void reset () override;
 
+		std::unique_ptr<NodeBase> clone () override;
+
 		void print (std::string prefix = "") override;
 
 	private:
@@ -43,8 +45,6 @@ class Node : public NodeBase {
 /* IMPLEMENTATIONS */
 
 using namespace pneatm;
-
-#include <PNEATM/utils.hpp>
 
 template <typename T_in, typename T_out>
 Node<T_in, T_out>::Node () {
@@ -86,6 +86,22 @@ void Node<T_in, T_out>::process () {
 template <typename T_in, typename T_out>
 void Node<T_in, T_out>::reset () {
 	input = resetValue;
+}
+
+template <typename T_in, typename T_out>
+std::unique_ptr<NodeBase> Node<T_in, T_out>::clone () {
+	std::unique_ptr<NodeBase> node =  std::make_unique<Node<T_in, T_out>> ();
+
+	node->id = id;
+	node->layer = layer;
+	node->index_T_in = index_T_in;
+	node->index_T_out = index_T_out;
+	node->setResetValue (static_cast<void*> (&resetValue));
+	node->setActivationFn (static_cast<void*> (&func));
+	node->loadInput (static_cast<void*> (&input));
+	node->process ();
+
+	return node;
 }
 
 template <typename T_in, typename T_out>

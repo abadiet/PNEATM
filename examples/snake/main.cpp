@@ -5,10 +5,10 @@ int main () {
 
     // init logger
 	spdlog::set_pattern ("[%Y-%m-%d %H:%M:%S.%e] [%t] [%^%l%$] %v");
-    spdlog::set_level(spdlog::level::info);
+    spdlog::set_level(spdlog::level::err);
     auto logger = spdlog::stdout_color_mt("logger");
 
-    unsigned int popSize = 50;
+    unsigned int popSize = 5;
     std::vector<size_t> bias_sch = {1};
     std::vector<size_t> inputs_sch = {14};
     std::vector<size_t> outputs_sch = {3};
@@ -41,7 +41,6 @@ int main () {
         std::cout << "generation " << pop.getGeneration () << std::endl;
 
         for (unsigned int genomeId = 0; genomeId < popSize; genomeId ++) {
-            std::cout << "genome " << genomeId << std::endl;
             snake.reset ();
 
             std::vector<float> AI_Inputs;
@@ -65,6 +64,7 @@ int main () {
             } else {
                 pop.setFitness (snake.getScore (), genomeId);
             }
+
         }
 
         pop.speciate ();
@@ -73,7 +73,7 @@ int main () {
         pop.crossover ();
         pop.mutate (maxRecurrency);
     }
-
+/*
     // we have to run once again the network and to do a speciation to get the last fitter genome
     for (unsigned int genomeId = 0; genomeId < popSize; genomeId ++) {
         snake.reset ();
@@ -100,7 +100,7 @@ int main () {
         }
     }
     pop.speciate ();
-
+*/
     // play a game by the fitter genome
     //playGameFitter (pop.getFitterGenome (), maxIterationThresh, false, {800, 600}, 0.12f, 8);
 

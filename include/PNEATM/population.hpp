@@ -11,6 +11,7 @@
 #include <limits>
 #include <vector>
 #include <spdlog/spdlog.h>
+#include <memory>
 
 /* HEADER */
 
@@ -79,7 +80,7 @@ class Population {
 		unsigned int maxRecuInit;
 
 		int fittergenome_id;
-		std::vector<Genome<Args...>*> genomes;
+		std::vector<std::unique_ptr<Genome<Args...>>> genomes;
 		std::vector<Species> species;
 		std::vector<std::vector<std::vector<void*>>> activationFns;
 		innovation_t conn_innov;
@@ -123,17 +124,13 @@ Population<Args...>::Population(unsigned int popSize, std::vector<size_t> bias_s
 
 	genomes.reserve (popSize);
 	for (unsigned int i = 0; i < popSize; i++) {
-		genomes.push_back (new Genome<Args...> (bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, &conn_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger));
+		genomes.push_back (std::make_unique<Genome<Args...>> (bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, &conn_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger));
 	}
 }
 
 template <typename... Args>
 Population<Args...>::~Population () {
 	logger->info ("Population destruction");
-
-	for (Genome<Args...>* genome : genomes) {
-		delete genome;
-	}
 }
 
 template <typename... Args>
@@ -420,21 +417,16 @@ void Population<Args...>::UpdateFitnesses () {
 template <typename... Args>
 void Population<Args...>::crossover (bool elitism) {
 	logger->info ("Crossover");
-	std::vector<Genome<Args...>*> newGenomes;
+	std::vector< std::unique_ptr<Genome<Args...>>> newGenomes;
+	newGenomes.reserve (popSize);
 
 	if (elitism) {	// elitism mode on = we conserve during generations the fitter genome
 		logger->trace ("elitism is on: adding the fitter genome to the new generation");
-		Genome<Args...>* newGenome = new Genome<Args...> (bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, &conn_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger);
-		newGenome->nodes = genomes [fittergenome_id]->nodes;
-		newGenome->connections = genomes [fittergenome_id]->connections;
-		newGenome->speciesId = genomes [fittergenome_id]->speciesId;
-		newGenomes.push_back (newGenome);
+		newGenomes.push_back (genomes [fittergenome_id]->clone ());
 	}
 
 	for (unsigned int iSpe = 0; iSpe < (unsigned int) species.size() ; iSpe ++) {
 		for (int k = 0; k < species [iSpe].allowedOffspring; k++) {
-			Genome<Args...>* newGenome = new Genome<Args...> (bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, &conn_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger);
-
 			// choose pseudo-randomly two parents. Don't care if they're identical as the child will be mutated...
 			unsigned int iParent1 = SelectParent (iSpe);
 			unsigned int iParent2 = SelectParent (iSpe);
@@ -452,30 +444,25 @@ void Population<Args...>::crossover (bool elitism) {
 
 			logger->trace ("adding child from the crossover between genome{0} and genome{1} to the new generation", iMainParent, iSecondParent);
 
-			newGenome->nodes = genomes [iMainParent]->nodes;
-			newGenome->connections = genomes [iMainParent]->connections;
-			newGenome->speciesId = iSpe;
+			newGenomes.push_back (genomes [iMainParent]->clone ());
 
 			// connections shared by both of the parents must be randomly wheighted
 			for (size_t iMainParentConn = 0; iMainParentConn < genomes [iMainParent]->connections.size (); iMainParentConn ++) {
 				for (size_t iSecondParentConn = 0; iSecondParentConn < genomes [iSecondParent]->connections.size (); iSecondParentConn ++) {
 					if (genomes [iMainParent]->connections [iMainParentConn].innovId == genomes [iSecondParent]->connections [iSecondParentConn].innovId) {
 						if (Random_Float (0.0f, 1.0f, true, false) < 0.5f) {	// 50 % of chance for each parent, newGenome already have the wheight of MainParent
-							newGenome->connections [iMainParentConn].weight = genomes [iSecondParent]->connections [iSecondParentConn].weight;
+							newGenomes.back ()->connections [iMainParentConn].weight = genomes [iSecondParent]->connections [iSecondParentConn].weight;
 						}
 					}
 				}
 			}
-
-			// the new genome is ready!
-			newGenomes.push_back (newGenome);
 		}
 	}
 
 	int previousSize = (int) newGenomes.size();
 	// add genomes if some are missing
 	for (int k = 0; k < (int) popSize - (int) previousSize; k++) {
-		newGenomes.push_back (new Genome<Args...> (bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, &conn_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger));
+		newGenomes.push_back (std::make_unique<Genome<Args...>> (bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, &conn_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger));
 	}
 
 	// or remove some genomes if there is too many genomes
@@ -485,10 +472,8 @@ void Population<Args...>::crossover (bool elitism) {
 
 	// replace the genomes by the new ones
 	logger->trace ("replacing the genomes");
-	for (Genome<Args...>* genome : genomes) {
-		delete genome;
-	}
-	genomes = newGenomes;
+	genomes.clear ();
+	genomes = std::move (newGenomes);
 
 	// reset species members
 	for (size_t i = 0; i < species.size(); i++) {
@@ -530,7 +515,7 @@ void Population<Args...>::mutate (unsigned int maxRecurrency, float mutateWeight
 	logger->info ("Mutations");
 	for (unsigned int i = 0; i < popSize; i++) {
 		logger->trace ("Mutation of genome{}", i);
-		genomes[i]->mutate (&conn_innov, maxRecurrency, mutateWeightThresh, mutateWeightFullChangeThresh, mutateWeightFactor, addConnectionThresh, maxIterationsFindConnectionThresh, reactivateConnectionThresh, addNodeThresh, maxIterationsFindNodeThresh, addTranstypeThresh);
+		genomes [i]->mutate (&conn_innov, maxRecurrency, mutateWeightThresh, mutateWeightFullChangeThresh, mutateWeightFactor, addConnectionThresh, maxIterationsFindConnectionThresh, reactivateConnectionThresh, addNodeThresh, maxIterationsFindNodeThresh, addTranstypeThresh);
 	}
 }
 

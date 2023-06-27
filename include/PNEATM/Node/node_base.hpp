@@ -4,6 +4,8 @@
 #include <functional>
 #include <iostream>
 #include <cstring>
+#include <memory>
+
 
 namespace pneatm {
 
@@ -21,6 +23,8 @@ class NodeBase{
 		virtual void process () = 0;
 		virtual void reset () = 0;
 
+		virtual  std::unique_ptr<NodeBase> clone () = 0;
+
 		virtual void print (std::string prefix = "") = 0;
 
 	protected:
@@ -31,6 +35,8 @@ class NodeBase{
 
 	template <typename... Args>
 	friend class Genome;
+	template <typename T_in, typename T_out>
+	friend class Node;
 };
 
 }

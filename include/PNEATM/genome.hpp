@@ -12,6 +12,7 @@
 #include <iostream>
 #include <cstring>
 #include <spdlog/spdlog.h>
+#include <memory>
 
 
 /* HEADER */
@@ -22,6 +23,7 @@ template <typename... Args>
 class Genome {
 	public:
 		Genome (std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_init, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, innovation_t* conn_innov, unsigned int N_ConnInit, float probRecuInit, float weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger);
+		Genome (unsigned int nbBias, unsigned int nbInput, unsigned int nbOutput, unsigned int N_types, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, float weightExtremumInit, spdlog::logger* logger);
 		~Genome ();
 
 		float getFitness () {return fitness;};
@@ -41,6 +43,8 @@ class Genome {
 
 		void mutate (innovation_t* conn_innov, unsigned int maxRecurrency = 0, float mutateWeightThresh = 0.8f, float mutateWeightFullChangeThresh = 0.1f, float mutateWeightFactor = 1.2f, float addConnectionThresh = 0.05f, unsigned int maxIterationsFindConnectionThresh = 20, float reactivateConnectionThresh = 0.25f, float addNodeThresh = 0.03f, int maxIterationsFindNodeThresh = 20, float addTranstypeThresh = 0.02f);
 
+		 std::unique_ptr<Genome<Args...>> clone ();
+
 		void print (std::string prefix = "");
 		void draw (unsigned int windowWidth = 1300, unsigned int windowHeight = 800, float dotsRadius = 6.5f, std::string font_path = "/usr/share/fonts/OTF/SF-Pro-Display-Regular.otf");
 
@@ -53,7 +57,7 @@ class Genome {
 		std::vector<std::vector<std::vector<void*>>> activationFns;
 		std::vector<void*> resetValues;
 
-		std::vector <NodeBase*> nodes;
+		std::vector < std::unique_ptr<NodeBase>> nodes;
 		std::vector <std::vector <void*>> prevNodes;	//TODO: void* -> const void*
 		unsigned int rec_max;
 		std::vector <Connection> connections;
@@ -213,11 +217,23 @@ Genome<Args...>::Genome (std::vector<size_t> bias_sch, std::vector<size_t> input
 }
 
 template <typename... Args>
+Genome<Args...>::Genome (unsigned int nbBias, unsigned int nbInput, unsigned int nbOutput, unsigned int N_types, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, float weightExtremumInit, spdlog::logger* logger) :
+	nbBias (nbBias),
+	nbInput (nbInput),
+	nbOutput (nbOutput),
+	weightExtremumInit (weightExtremumInit),
+	N_types (N_types),
+	activationFns (activationFns),
+	resetValues (resetValues),
+	logger (logger)
+{
+	logger->trace ("Genome initialization");
+	speciesId = -1;
+}
+
+template <typename... Args>
 Genome<Args...>::~Genome () {
 	logger->trace ("Genome destruction");
-	for (NodeBase* node : nodes) {
-		delete node;
-	}
 }
 
 template <typename... Args>
@@ -263,7 +279,7 @@ void Genome<Args...>::runNetwork() {
 				} else {	// is recurent
 					if (connections[i].inNodeRecu < (unsigned int) prevNodes.size () + 1) {
 						logger->trace ("processing of connection {3}: adding to node{0}'s input value from dot product between node{1}'s output ({4} generation from now) and {2}", connections [i].outNodeId, connections [i].inNodeId, connections [i].weight, i, connections [i].inNodeRecu);
-						nodes[connections[i].outNodeId]->AddToInput (
+						nodes [connections[i].outNodeId]->AddToInput (
 							prevNodes [(unsigned int) prevNodes.size () - connections [i].inNodeRecu][connections [i].inNodeId],
 							connections [i].weight
 						);
@@ -288,9 +304,10 @@ void Genome<Args...>::runNetwork() {
 	logger->trace ("saving previous nodes' outputs");
 	prevNodes.push_back ({});
 	prevNodes.back ().reserve (nodes.size ());
-	for (NodeBase* node : nodes) {
+	for (const std::unique_ptr<NodeBase>& node : nodes) {
 		prevNodes.back ().push_back (node->getOutput ());
 	}
+
 }
 
 template <typename... Args>
@@ -371,6 +388,7 @@ bool Genome<Args...>::CheckNewConnectionValidity (unsigned int inNodeId, unsigne
 	if (CheckNewConnectionCircle (inNodeId, outNodeId)) {
 		return false;	// the connection will create a connection's circle in the network
 	}
+
 	return true;	// test passed well: it is a valid connection!
 }
 
@@ -418,7 +436,7 @@ bool Genome<Args...>::AddConnection (innovation_t* conn_innov, unsigned int maxR
 	int disabled_conn_id = -1;
 	while (
 		iterationNb < maxIterationsFindConnectionThresh
-		&& !CheckNewConnectionValidity (inNodeId, outNodeId, inNodeId, &disabled_conn_id)
+		&& !CheckNewConnectionValidity (inNodeId, outNodeId, inNodeRecu, &disabled_conn_id)
 	) {
 		inNodeId = Random_UInt (0, (unsigned int) nodes.size() - 1);
 		outNodeId = Random_UInt (0, (unsigned int) nodes.size() - 1);
@@ -428,7 +446,7 @@ bool Genome<Args...>::AddConnection (innovation_t* conn_innov, unsigned int maxR
 	
 	if (iterationNb < maxIterationsFindConnectionThresh) {	// a valid connection has been found
 		// mutating
-		if (disabled_conn_id) {	// it is a former connection
+		if (disabled_conn_id >= 0) {	// it is a former connection
 			if (Random_Float (0.0f, 1.0f, true, false) < reactivateConnectionThresh) {
 				logger->trace ("connection{} is re-enabled", disabled_conn_id);
 				connections [disabled_conn_id].enabled = true;	// former connection is reactivated
@@ -444,7 +462,7 @@ bool Genome<Args...>::AddConnection (innovation_t* conn_innov, unsigned int maxR
 			// weight
 			const float weight = Random_Float (- weightExtremumInit, weightExtremumInit);
 
-			connections.push_back(Connection (innov_id, inNodeId, outNodeId, inNodeRecu, weight, true));
+			connections.push_back (Connection (innov_id, inNodeId, outNodeId, inNodeRecu, weight, true));
 			
 			logger->trace ("connection{0} added between node{1} (with a recurrency of {3}) and node{2}", connections.size () - 1, inNodeId, outNodeId, inNodeRecu);
 			return true;
@@ -671,6 +689,21 @@ void Genome<Args...>::UpdateLayers (int nodeId) {
 		nodes [i]->layer = outputLayer;
 	}
 }
+
+template <typename... Args>
+std::unique_ptr<Genome<Args...>> Genome<Args...>::clone () {
+	std::unique_ptr<Genome<Args...>> genome =  std::make_unique<Genome<Args...>> (nbBias, nbInput, nbOutput, N_types, resetValues, activationFns, weightExtremumInit, logger);
+
+	genome->nodes.reserve (nodes.size ());
+	for (const  std::unique_ptr<NodeBase>& node : nodes) {
+		genome->nodes.push_back (node->clone ());
+	}
+	genome->connections = connections;
+	genome->speciesId = speciesId;
+
+	return genome;
+}
+
 
 template <typename... Args>
 void Genome<Args...>::print (std::string prefix) {
