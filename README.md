@@ -18,7 +18,7 @@ This code depends on both SFML (for graphics) and spdlog (for logs) libraries:
 - [spdlog install](https://github.com/gabime/spdlog)
 
 ## Examples
-A Snake AI powered by PNEATM is available on [/examples/snake/](https://github.com/titofra/NEAT/tree/main/examples/snake).
+A Snake AI powered by PNEATM is available on [/examples/snake/](https://github.com/titofra/PNEATM/tree/main/examples/snake).
 
 ## TODO
 - [x] NEAT
