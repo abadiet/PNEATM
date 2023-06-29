@@ -68,13 +68,13 @@ bool Snake::run (std::vector<float> inputs) {
             newDot.x += 1;
         break;
         case 1:
-            newDot.y += 1;
+            newDot.y -= 1;
         break;
         case 2:
             newDot.x -= 1;
         break;
         case 3:
-            newDot.y -= 1;
+            newDot.y += 1;
         break;
         default :
             std::cout << "Error: invalid curMvmt: " << curMvmt << std::endl;
@@ -87,11 +87,11 @@ bool Snake::run (std::vector<float> inputs) {
     // new snake's state
     if (isPosBusy (newDot.x, newDot.y, true)) {
         if (isPosBusy(newDot.x, newDot.y, false)) {
-            return true;   // game finsished, return fitness
-        } else {    // the snake eat the fruit
+            return true;   // game has ended
+        } else {    // the snake ate the fruit
             score += 100.0f;
             if ((unsigned int) snake.size () == playgroundSize * playgroundSize - 1) {   // if the snake has the maximum lenght possible
-                return true;   // return fitness
+                return true;   // considering game is finished
             }
             // choose fruit position on an empty place
             fruit.x = rand() % (playgroundSize);
