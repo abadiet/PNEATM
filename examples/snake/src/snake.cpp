@@ -60,7 +60,6 @@ bool Snake::run (std::vector<float> inputs) {
     }
 
     // move snake
-    snake.erase(snake.begin() + 0);
     vecXY_t newDot;
     newDot.x = snake.back ().x;
     newDot.y = snake.back ().y;
@@ -82,6 +81,8 @@ bool Snake::run (std::vector<float> inputs) {
             throw 0;
         break;
     }
+
+    snake.erase (snake.begin() + 0);
 
     // new snake's state
     if (isPosBusy (newDot.x, newDot.y, true)) {
@@ -165,7 +166,7 @@ bool Snake::isPosBusy (int x, int y, bool detectFruit) {
     /* Check if something is at this position */
 
     // there is a wall
-    if (x < 0 || x > (int) playgroundSize || y < 0 || y > (int) playgroundSize) {
+    if (x < 0 || x > (int) playgroundSize - 1 || y < 0 || y > (int) playgroundSize - 1) {
         return true;
     }
 

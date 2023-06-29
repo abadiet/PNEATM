@@ -57,7 +57,7 @@ class Genome {
 		std::vector<std::vector<std::vector<void*>>> activationFns;
 		std::vector<void*> resetValues;
 
-		std::vector < std::unique_ptr<NodeBase>> nodes;
+		std::vector <std::unique_ptr<NodeBase>> nodes;
 		std::vector <std::vector <void*>> prevNodes;	//TODO: void* -> const void*
 		unsigned int rec_max;
 		std::vector <Connection> connections;
@@ -347,8 +347,6 @@ void Genome<Args...>::mutate(innovation_t* conn_innov, unsigned int maxRecurrenc
 	if (Random_Float (0.0f, 1.0f, true, false) < addConnectionThresh) {
 		AddConnection (conn_innov, maxRecurrency, maxIterationsFindConnectionThresh, reactivateConnectionThresh);
 	}
-
-	// TODO? We might updateLayers here, but is this useful?
 }
 
 template <typename... Args>
@@ -411,7 +409,7 @@ bool Genome<Args...>::CheckNewConnectionCircle (unsigned int inNodeId, unsigned 
 template <typename... Args>
 void Genome<Args...>::MutateWeights (float mutateWeightFullChangeThresh, float mutateWeightFactor) {
 	logger->trace ("mutating of weights");
-	for (size_t i = 0; i < connections.size(); i++) {
+	for (size_t i = 0; i < connections.size (); i++) {
 		if (Random_Float (0.0f, 1.0f, true, false) < mutateWeightFullChangeThresh) {
 			// reset weight
 			logger->trace ("resetting connection{}'s weight", i);
@@ -463,7 +461,17 @@ bool Genome<Args...>::AddConnection (innovation_t* conn_innov, unsigned int maxR
 			const float weight = Random_Float (- weightExtremumInit, weightExtremumInit);
 
 			connections.push_back (Connection (innov_id, inNodeId, outNodeId, inNodeRecu, weight, true));
-			
+
+			// update layers
+			if (inNodeRecu == 0) {
+				// the added connection may have an impact on the network
+				if (nodes [inNodeId]->layer >= nodes [outNodeId]->layer) {
+					// it has an impact
+					nodes [outNodeId]->layer = nodes [inNodeId]->layer + 1;	// the node is constraint, its layer is the following one
+					UpdateLayers (outNodeId);
+				}
+			}
+
 			logger->trace ("connection{0} added between node{1} (with a recurrency of {3}) and node{2}", connections.size () - 1, inNodeId, outNodeId, inNodeRecu);
 			return true;
 		}
@@ -543,9 +551,11 @@ bool Genome<Args...>::AddNode (innovation_t* conn_innov, unsigned int maxIterati
 					nodes [newNodeId]->layer = 1;	// update newNodeId layer
 				}
 			} else {									// else, the node is one layer further in the network
-				nodes [newNodeId]->layer = nodes [connections[iConn].inNodeId]->layer + 1;	// update newNodeId layer
-				nodes [connections [iConn].outNodeId]->layer = nodes[newNodeId]->layer + 1;	// update outNodeId layer
-				UpdateLayers (connections [iConn].outNodeId);	// update other layers
+				nodes [newNodeId]->layer = nodes [connections [iConn].inNodeId]->layer + 1;	// update newNodeId layer
+				if (nodes [newNodeId]->layer >= nodes [connections [iConn].outNodeId]->layer) {
+					nodes [connections [iConn].outNodeId]->layer = nodes [newNodeId]->layer + 1;	// the node is constraint, its layer is the following one
+					UpdateLayers (connections [iConn].outNodeId);
+				}
 			}
 			return true;
 		} else {
@@ -597,7 +607,7 @@ bool Genome<Args...>::AddTranstype (innovation_t* conn_innov, unsigned int maxRe
 				nodes [inNodeId]->index_T_out != iT_in
 				|| (
 					inNodeId >= nbBias + nbInput && inNodeId < nbBias + nbInput + nbOutput	// cannot build a non recurrent connection with an output node as the input's connection
-					&& inNodeRecu > 0
+					&& inNodeRecu == 0
 				)
 			)
 		) {
@@ -616,16 +626,20 @@ bool Genome<Args...>::AddTranstype (innovation_t* conn_innov, unsigned int maxRe
 
 		connections.push_back(Connection (innov_id, inNodeId, newNodeId, inNodeRecu, weight, true));
 
+		// update newNode's layer
+		if (inNodeRecu > 0) {
+			nodes [newNodeId]->layer = 1;	// the node is not constraint as the only input connection comes from a reccurent node
+		} else {
+			nodes [newNodeId]->layer = nodes [inNodeId]->layer + 1;	// the node is constraint, its layer is the following one
+		}
+
 		// Add the second connection
 		unsigned int outNodeId = Random_UInt (0, (unsigned int) nodes.size () - 1);
 		inNodeRecu = 0;
 		iterationNb = 0;
 		while (
 			iterationNb < maxIterationsFindNodeThresh
-			&& (
-				nodes [outNodeId]->index_T_in != iT_out
-				|| CheckNewConnectionCircle (newNodeId, outNodeId)
-			)
+			&& !(CheckNewConnectionValidity (newNodeId, outNodeId, inNodeRecu))
 		) {
 			outNodeId = Random_UInt (0, (unsigned int) nodes.size () - 1);
 			iterationNb ++;
@@ -641,6 +655,12 @@ bool Genome<Args...>::AddTranstype (innovation_t* conn_innov, unsigned int maxRe
 		logger->trace ("adding connection{0} between node{1} and node{2}", connections.size (), newNodeId, outNodeId);
 
 		connections.push_back(Connection (innov_id, newNodeId, outNodeId, inNodeRecu, weight, true));
+
+		// update layers
+		if (nodes [newNodeId]->layer >= nodes [outNodeId]->layer) {
+			nodes [outNodeId]->layer = nodes [newNodeId]->layer + 1;	// the node is constraint, its layer is the following one
+			UpdateLayers (outNodeId);
+		}
 
 		return true;
 	} else {
@@ -724,7 +744,7 @@ void Genome<Args...>::print (std::string prefix) {
 	}
 	std::cout << std::endl;
 	std::cout << prefix << "Nodes: " << std::endl;
-	for (NodeBase* node : nodes) {
+	for (const std::unique_ptr<NodeBase>& node : nodes) {
 		node->print (prefix + "   ");
 		std::cout << std::endl;
 	}

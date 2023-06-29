@@ -224,8 +224,8 @@ void Population<Args...>::speciate (unsigned int target, unsigned int targetThre
 			while (
 				speciesId < (unsigned int) species.size()
 				&& (
-					species[speciesId].isDead
-					|| !(CompareGenomes (species [speciesId].members [0], genome_id, a, b, c) < speciationThresh)
+					species [speciesId].isDead
+					|| !(CompareGenomes (species [speciesId].members [0], genome_id, a, b, c) < speciationThresh)	// comparison leader vs genome_id
 					)
 				)
 			{
@@ -240,7 +240,7 @@ void Population<Args...>::speciate (unsigned int target, unsigned int targetThre
 		}
 	}
 
-	// check how many alive species we have
+	// check how many species are still alive
 	unsigned int nbSpeciesAlive = 0;
 	for (size_t iSpe = 0; iSpe < species.size (); iSpe++) {
 		if (!species [iSpe].isDead) {	// if the species is still alive
@@ -259,7 +259,7 @@ void Population<Args...>::speciate (unsigned int target, unsigned int targetThre
 		}
 	}
 
-	// update all the fitness
+	// update all the fitness as we now know the species
 	UpdateFitnesses ();
 }
 
@@ -298,7 +298,7 @@ float Population<Args...>::CompareGenomes (unsigned int ig1, unsigned int ig2, f
 		// for each enabled connection of the first genome
 		if (genomes [ig1]->connections [connEnabled1 [i1]].innovId > maxInnovId2) {
 			// if connection's innovId is over the maximum one of second genome's connections
-			// it is an excess genes
+			// it is an excess gene
 			excessGenes += 1;
 		} else {
 			size_t i2 = 0;
@@ -327,7 +327,7 @@ float Population<Args...>::CompareGenomes (unsigned int ig1, unsigned int ig2, f
 		// for each enabled connection of the second genome
 		if (genomes [ig2]->connections [connEnabled2 [i2]].innovId > maxInnovId1) {
 			// if connection's innovId is over the maximum one of first genome's connections
-			// it is an excess genes
+			// it is an excess gene
 			excessGenes += 1;
 		} else {
 			size_t i1 = 0;
@@ -344,13 +344,13 @@ float Population<Args...>::CompareGenomes (unsigned int ig1, unsigned int ig2, f
 
 	if (nbCommonGenes > 0) {
 		return (
-			(a * (float) excessGenes + b * (float) disjointGenes) / (float) std::max(connEnabled1.size (), connEnabled2.size ())
+			(a * (float) excessGenes + b * (float) disjointGenes) / (float) std::max (connEnabled1.size (), connEnabled2.size ())
 			+ c * sumDiffWeights / (float) nbCommonGenes
 		);
 	} else {
 		// there si no common genes between genomes
 		// let's return the maximum float as they might be very differents
-		return std::numeric_limits<float>::max();
+		return std::numeric_limits<float>::max ();
 	}
 }
 
@@ -425,7 +425,7 @@ void Population<Args...>::crossover (bool elitism) {
 		newGenomes.push_back (genomes [fittergenome_id]->clone ());
 	}
 
-	for (unsigned int iSpe = 0; iSpe < (unsigned int) species.size() ; iSpe ++) {
+	for (unsigned int iSpe = 0; iSpe < (unsigned int) species.size () ; iSpe ++) {
 		for (int k = 0; k < species [iSpe].allowedOffspring; k++) {
 			// choose pseudo-randomly two parents. Don't care if they're identical as the child will be mutated...
 			unsigned int iParent1 = SelectParent (iSpe);
@@ -442,7 +442,7 @@ void Population<Args...>::crossover (bool elitism) {
 				iSecondParent = iParent1;
 			}
 
-			logger->trace ("adding child from the crossover between genome{0} and genome{1} to the new generation", iMainParent, iSecondParent);
+			logger->trace ("adding child from the parents genome{0} and genome{1} to the new generation", iMainParent, iSecondParent);
 
 			newGenomes.push_back (genomes [iMainParent]->clone ());
 
@@ -470,7 +470,7 @@ void Population<Args...>::crossover (bool elitism) {
 		newGenomes.pop_back ();
 	}
 
-	// replace the genomes by the new ones
+	// replace the current genomes by the new ones
 	logger->trace ("replacing the genomes");
 	genomes.clear ();
 	genomes = std::move (newGenomes);
@@ -487,7 +487,7 @@ void Population<Args...>::crossover (bool elitism) {
 		}
 	}
 
-	fittergenome_id = -1;	// avoid a missuse of fittergenome_id
+	fittergenome_id = -1;	// avoid a missuse of fittergenome_id as there is no fitness for now, so no fitter genome
 
 	generation ++;
 }

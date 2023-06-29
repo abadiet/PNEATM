@@ -11,10 +11,10 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 
 /* SNAKE */
-/*
+
 template <typename... Args>
 void playGameFitter (pneatm::Genome<Args...>& genome, const unsigned int maxIterationThresh, bool displayConsole = true, sf::Vector2u windowSize = {800, 600}, float timeUpsSeconds = 0.7f, const unsigned int playgroundSize = 8) {
-    sf::RenderWindow window(sf::VideoMode(windowSize.x, windowSize.y), "NEAT - Titofra");
+    sf::RenderWindow window(sf::VideoMode(windowSize.x, windowSize.y), "PNEATM - https://github.com/titofra");
 
     Snake snake (playgroundSize);
 
@@ -31,9 +31,10 @@ void playGameFitter (pneatm::Genome<Args...>& genome, const unsigned int maxIter
     while (iteration < maxIterationThresh && !isFinished) {
         AI_Inputs = snake.getAIInputs ();
 
-        genome.loadInputs (AI_Inputs);
+        genome.template loadInputs<float> (AI_Inputs);
         genome.runNetwork ();
-        Snake_Inputs = genome.getOutputs<float> ();
+
+        Snake_Inputs = genome.template getOutputs<float> ();
 
         isFinished = snake.run (Snake_Inputs);
 
@@ -53,7 +54,7 @@ void playGameFitter (pneatm::Genome<Args...>& genome, const unsigned int maxIter
 
 	std::cout << "final score: " << snake.getScore () << std::endl;
 }
-*/
+
 
 /* TYPES */
 
