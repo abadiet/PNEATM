@@ -599,7 +599,7 @@ bool Genome<Args...>::AddTranstype (innovation_t* conn_innov, unsigned int maxRe
 
 		// Add the first connection
 		unsigned int inNodeId = Random_UInt (0, (unsigned int) nodes.size () - 1);
-		unsigned int inNodeRecu = Random_UInt (0, maxRecurrency - 1);
+		unsigned int inNodeRecu = Random_UInt (0, maxRecurrency);
 		unsigned int iterationNb = 0;
 		while (
 			iterationNb < maxIterationsFindNodeThresh
