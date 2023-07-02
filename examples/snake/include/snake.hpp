@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <SFML/Graphics.hpp>
+#include <myInt.hpp>
 
 typedef struct vecXY {
     unsigned int x;
@@ -18,8 +19,8 @@ class Snake {
 
         float getScore () {return score;};
 
-        std::vector<float> getAIInputs ();
-        bool run (std::vector<float> inputs);
+        std::vector<myInt> getAIInputs ();
+        bool run (myInt input);
 
         void drawPlaygroundConsole ();
         void drawPlaygroundSFML (sf::RenderWindow* window, float timeUpsSeconds);

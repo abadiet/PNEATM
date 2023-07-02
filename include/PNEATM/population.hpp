@@ -20,7 +20,7 @@ namespace pneatm {
 template <typename... Args>
 class Population {
 	public:
-		Population (unsigned int popSize, std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_init, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, unsigned int N_ConnInit, float probRecuInit, float weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger, float speciationThreshInit = 100.0f, int threshGensSinceImproved = 15);
+		Population (unsigned int popSize, std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_init, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, unsigned int N_ConnInit, float probRecuInit, float weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger, float speciationThreshInit = 100.0f, unsigned int threshGensSinceImproved = 15);
 		~Population ();
 		//Population (const std::string filepath) {load(filepath);};
 
@@ -100,7 +100,7 @@ class Population {
 using namespace pneatm;
 
 template <typename... Args>
-Population<Args...>::Population(unsigned int popSize, std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_init, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, unsigned int N_ConnInit, float probRecuInit, float weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger, float speciationThreshInit, int threshGensSinceImproved) :
+Population<Args...>::Population(unsigned int popSize, std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_init, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, unsigned int N_ConnInit, float probRecuInit, float weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger, float speciationThreshInit, unsigned int threshGensSinceImproved) :
 	popSize (popSize),
 	speciationThresh (speciationThreshInit),
 	threshGensSinceImproved (threshGensSinceImproved),
@@ -348,7 +348,7 @@ float Population<Args...>::CompareGenomes (unsigned int ig1, unsigned int ig2, f
 			+ c * sumDiffWeights / (float) nbCommonGenes
 		);
 	} else {
-		// there si no common genes between genomes
+		// there is no common genes between genomes
 		// let's return the maximum float as they might be very differents
 		return std::numeric_limits<float>::max ();
 	}
@@ -417,7 +417,7 @@ void Population<Args...>::UpdateFitnesses () {
 template <typename... Args>
 void Population<Args...>::crossover (bool elitism) {
 	logger->info ("Crossover");
-	std::vector< std::unique_ptr<Genome<Args...>>> newGenomes;
+	std::vector<std::unique_ptr<Genome<Args...>>> newGenomes;
 	newGenomes.reserve (popSize);
 
 	if (elitism) {	// elitism mode on = we conserve during generations the fitter genome
@@ -464,7 +464,6 @@ void Population<Args...>::crossover (bool elitism) {
 	for (int k = 0; k < (int) popSize - (int) previousSize; k++) {
 		newGenomes.push_back (std::make_unique<Genome<Args...>> (bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, &conn_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger));
 	}
-
 	// or remove some genomes if there is too many genomes
 	for (int k = 0; k < (int) previousSize - (int) popSize; k++) {
 		newGenomes.pop_back ();
@@ -499,7 +498,7 @@ int Population<Args...>::SelectParent (unsigned int iSpe) {
 	and add their fitness to a running sum and if that sum is greater than the random value generated,
 	that genome is chosen since players with a higher fitness function add more to the running sum then they have a higher chance of being chosen */
 
-	float randThresh = Random_Float (0.0f, species[iSpe].sumFitness, true, false);
+	float randThresh = Random_Float (0.0f, species [iSpe].sumFitness, true, false);
 	float runningSum = 0.0f;
 	for (size_t i = 0; i < species [iSpe].members.size (); i++) {
 		runningSum += genomes [species [iSpe].members [i]]->fitness;

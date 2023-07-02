@@ -9,6 +9,7 @@ Snake::Snake (unsigned int playgroundSize) :
 void Snake::reset () {
     score = 0;
     curMvmt = rand() % 4;
+    snake.clear ();
     snake.push_back (
         {
             rand() % (playgroundSize),
@@ -23,42 +24,54 @@ void Snake::reset () {
     }
 }
 
-std::vector<float> Snake::getAIInputs () {
-    std::vector<float> AIinputs;
+std::vector<myInt> Snake::getAIInputs () {
+    std::vector<myInt> AIinputs;
     // playground bounds
-    AIinputs.push_back ((float) snakeEyes((0 + 2 * curMvmt) % 8, false));
-    AIinputs.push_back ((float) snakeEyes((1 + 2 * curMvmt) % 8, false));
-    AIinputs.push_back ((float) snakeEyes((2 + 2 * curMvmt) % 8, false));
-    AIinputs.push_back ((float) snakeEyes((3 + 2 * curMvmt) % 8, false));
-    AIinputs.push_back ((float) snakeEyes((4 + 2 * curMvmt) % 8, false));
-    AIinputs.push_back ((float) snakeEyes((5 + 2 * curMvmt) % 8, false));
-    AIinputs.push_back ((float) snakeEyes((6 + 2 * curMvmt) % 8, false));
+    AIinputs.push_back (snakeEyes((0 + 2 * curMvmt) % 8, false));
+    AIinputs.push_back (snakeEyes((1 + 2 * curMvmt) % 8, false));
+    AIinputs.push_back (snakeEyes((2 + 2 * curMvmt) % 8, false));
+    AIinputs.push_back (snakeEyes((3 + 2 * curMvmt) % 8, false));
+    AIinputs.push_back (snakeEyes((4 + 2 * curMvmt) % 8, false));
+    AIinputs.push_back (snakeEyes((5 + 2 * curMvmt) % 8, false));
+    AIinputs.push_back (snakeEyes((6 + 2 * curMvmt) % 8, false));
     
     // fruit
-    AIinputs.push_back ((float) snakeEyes((0 + 2 * curMvmt) % 8, true));
-    AIinputs.push_back ((float) snakeEyes((1 + 2 * curMvmt) % 8, true));
-    AIinputs.push_back ((float) snakeEyes((2 + 2 * curMvmt) % 8, true));
-    AIinputs.push_back ((float) snakeEyes((3 + 2 * curMvmt) % 8, true));
-    AIinputs.push_back ((float) snakeEyes((4 + 2 * curMvmt) % 8, true));
-    AIinputs.push_back ((float) snakeEyes((5 + 2 * curMvmt) % 8, true));
-    AIinputs.push_back ((float) snakeEyes((6 + 2 * curMvmt) % 8, true));
+    AIinputs.push_back (snakeEyes((0 + 2 * curMvmt) % 8, true));
+    AIinputs.push_back (snakeEyes((1 + 2 * curMvmt) % 8, true));
+    AIinputs.push_back (snakeEyes((2 + 2 * curMvmt) % 8, true));
+    AIinputs.push_back (snakeEyes((3 + 2 * curMvmt) % 8, true));
+    AIinputs.push_back (snakeEyes((4 + 2 * curMvmt) % 8, true));
+    AIinputs.push_back (snakeEyes((5 + 2 * curMvmt) % 8, true));
+    AIinputs.push_back (snakeEyes((6 + 2 * curMvmt) % 8, true));
 
     return AIinputs;
 }
 
-bool Snake::run (std::vector<float> inputs) {
+bool Snake::run (myInt input) {
     /* The main function of the game: move the snake's part relatively to the inputs, refresh state, add fruits ... */
     // new Mvmt
-    if (inputs[2] > 0.5 && inputs[2] > inputs[1] && inputs[2] > inputs[0]) {   // turn right
+
+    if (input > 100) {
         curMvmt = (curMvmt + 1) % 4;
     } else {
-        if (inputs[1] > 0.5 && inputs[1] > inputs[0] && inputs[1] > inputs[2]) {   // turn left
-            curMvmt = (curMvmt - 1 + 4) % 4;  // + 4 to avoid having negative curMvmt
-        } else {
-            // consider inputs[0] dominent, is that a good idea ? idk
+        if (input < -100) {
+            curMvmt = (curMvmt - 1 + 4) % 4;
         }
     }
 
+/*
+    switch (input) {
+        case 1:
+            curMvmt = (curMvmt - 1 + 4) % 4;  // + 4 to avoid having negative curMvmt
+            break;
+        case 2:
+            curMvmt = (curMvmt + 1) % 4;
+            break;
+        default:
+            break;
+            // nothing to do
+    }
+*/
     // move snake
     vecXY_t newDot;
     newDot.x = snake.back ().x;

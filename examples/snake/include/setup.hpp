@@ -9,6 +9,7 @@
 #include <functional>
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
+#include <myInt.hpp>
 
 /* SNAKE */
 
@@ -24,17 +25,19 @@ void playGameFitter (pneatm::Genome<Args...>& genome, const unsigned int maxIter
         snake.drawPlaygroundSFML (&window, timeUpsSeconds);
     }
 
-    std::vector<float> AI_Inputs;
-    std::vector<float> Snake_Inputs;
     bool isFinished = false;
     unsigned int iteration = 0;
     while (iteration < maxIterationThresh && !isFinished) {
-        AI_Inputs = snake.getAIInputs ();
+        std::vector<myInt> AI_Inputs = snake.getAIInputs ();
 
-        genome.template loadInputs<float> (AI_Inputs);
+        for (unsigned int i = 0; i < 14; i++) {
+            genome.template loadInput<myInt> (AI_Inputs [i], i);
+        }
+        genome.template loadInput<float> (snake.getScore (), 14);
+
         genome.runNetwork ();
 
-        Snake_Inputs = genome.template getOutputs<float> ();
+        myInt Snake_Inputs = genome.template getOutput<myInt> (0);
 
         isFinished = snake.run (Snake_Inputs);
 
@@ -56,13 +59,22 @@ void playGameFitter (pneatm::Genome<Args...>& genome, const unsigned int maxIter
 }
 
 
-/* TYPES */
-
-
 /* ACTIVATION FUNCTIONS */
 
 std::function<float (float)> sigmoid_float2float = [] (float x) {
-    return (1.0f / (1.0f + (float) exp(-1 * 4.09 * x)));
+    return (1.0f / (1.0f + (float) exp(-1 * 4.09 * (double) x)));
+};
+
+std::function<myInt (myInt)> sigmoid_int2int = [] (myInt x) {
+    return myInt ((int) (1.0 / (1.0 + exp(-1 * 4.09 * (double) x))));
+};
+
+std::function<float (myInt)> sigmoid_int2float = [] (myInt x) {
+    return (1.0f / (1.0f + (float) exp(-1 * 4.09 * (double) x)));
+};
+
+std::function<myInt (float)> sigmoid_float2int = [] (float x) {
+    return myInt ((int) (1.0f / (1.0f + (float) exp(-1 * 4.09 * (double) x))));
 };
 
 #endif  // SETUP_HPP

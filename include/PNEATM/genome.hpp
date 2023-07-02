@@ -69,9 +69,9 @@ class Genome {
 
 		bool CheckNewConnectionValidity (unsigned int inNodeId, unsigned int outNodeId, unsigned int inNodeRecu, int* disabled_conn_id = nullptr);
 		bool CheckNewConnectionCircle (unsigned int inNodeId, unsigned int outNodeId);
-		void MutateWeights (float mutateWeightFullChangeThresh, float mutateWeightFactor);
+		void MutateWeights (float mutateWeightThresh, float mutateWeightFullChangeThresh, float mutateWeightFactor);
 		bool AddConnection (innovation_t* conn_innov, unsigned int maxRecurrency, unsigned int maxIterationsFindConnectionThresh, float reactivateConnectionThresh);
-		bool AddNode (innovation_t* conn_innov, unsigned int maxIterationsFindNodeThresh);
+		bool AddNode (innovation_t* conn_innov, unsigned int maxIterationsFindConnectionThresh);
 		bool AddTranstype (innovation_t* conn_innov, unsigned int maxRecurrency, unsigned int maxIterationsFindNodeThresh);
 		void UpdateLayers (int nodeId);
 		void UpdateLayers_Recursive (unsigned int nodeId);
@@ -329,13 +329,11 @@ T_out Genome<Args...>::getOutput (int output_id) {
 template <typename... Args>
 void Genome<Args...>::mutate(innovation_t* conn_innov, unsigned int maxRecurrency, float mutateWeightThresh, float mutateWeightFullChangeThresh, float mutateWeightFactor, float addConnectionThresh, unsigned int maxIterationsFindConnectionThresh, float reactivateConnectionThresh, float addNodeThresh, int maxIterationsFindNodeThresh, float addTranstypeThresh) {
 	// WEIGHTS
-	if (Random_Float (0.0f, 1.0f, true, false) < mutateWeightThresh) {
-		MutateWeights (mutateWeightFullChangeThresh, mutateWeightFactor);
-	}
-	
+	MutateWeights (mutateWeightThresh, mutateWeightFullChangeThresh, mutateWeightFactor);
+
 	// NODES
 	if (Random_Float (0.0f, 1.0f, true, false) < addNodeThresh) {
-		AddNode (conn_innov, maxIterationsFindNodeThresh);
+		AddNode (conn_innov, maxIterationsFindConnectionThresh);
 	}
 
 	// TRANSTYPE (aka add a bi-typed node and two connections)
@@ -407,17 +405,19 @@ bool Genome<Args...>::CheckNewConnectionCircle (unsigned int inNodeId, unsigned 
 }
 
 template <typename... Args>
-void Genome<Args...>::MutateWeights (float mutateWeightFullChangeThresh, float mutateWeightFactor) {
+void Genome<Args...>::MutateWeights (float mutateWeightThresh, float mutateWeightFullChangeThresh, float mutateWeightFactor) {
 	logger->trace ("mutating of weights");
 	for (size_t i = 0; i < connections.size (); i++) {
-		if (Random_Float (0.0f, 1.0f, true, false) < mutateWeightFullChangeThresh) {
-			// reset weight
-			logger->trace ("resetting connection{}'s weight", i);
-			connections [i].weight = Random_Float (- weightExtremumInit, weightExtremumInit);
-		} else {
-			// pertub weight
-			logger->trace ("pertubating connection{}'s weight", i);
-			connections [i].weight *= Random_Float (- mutateWeightFactor, mutateWeightFactor);
+		if (Random_Float (0.0f, 1.0f, true, false) < mutateWeightThresh) {
+			if (Random_Float (0.0f, 1.0f, true, false) < mutateWeightFullChangeThresh) {
+				// reset weight
+				logger->trace ("resetting connection{}'s weight", i);
+				connections [i].weight = Random_Float (- weightExtremumInit, weightExtremumInit);
+			} else {
+				// pertub weight
+				logger->trace ("pertubating connection{}'s weight", i);
+				connections [i].weight *= Random_Float (- mutateWeightFactor, mutateWeightFactor);
+			}
 		}
 	}
 }
@@ -482,17 +482,17 @@ bool Genome<Args...>::AddConnection (innovation_t* conn_innov, unsigned int maxR
 }
 
 template <typename... Args>
-bool Genome<Args...>::AddNode (innovation_t* conn_innov, unsigned int maxIterationsFindNodeThresh) {	// return true = node created, false = nothing created
+bool Genome<Args...>::AddNode (innovation_t* conn_innov, unsigned int maxIterationsFindConnectionThresh) {	// return true = node created, false = nothing created
 	logger->trace ("adding a node");
 	// choose at random an enabled connection
 	if (connections.size() > 0) {	// if there is no connection, we cannot add a node!
 		unsigned int iConn = Random_UInt (0, (unsigned int) connections.size () - 1);
 		unsigned int iterationNb = 0;
-		while (iterationNb < maxIterationsFindNodeThresh && !connections [iConn].enabled) {
+		while (iterationNb < maxIterationsFindConnectionThresh && !connections [iConn].enabled) {
 			iConn = Random_UInt (0, (unsigned int) connections.size () - 1);
 			iterationNb ++;
 		}
-		if (iterationNb < maxIterationsFindNodeThresh) {	// a connection has been found
+		if (iterationNb < maxIterationsFindConnectionThresh) {	// a connection has been found
 			// disable former connection
 			connections [iConn].enabled = false;
 			
@@ -587,7 +587,7 @@ bool Genome<Args...>::AddTranstype (innovation_t* conn_innov, unsigned int maxRe
 
 		// setup the node
 		nodes.back ()->id = newNodeId;
-		nodes.back ()->layer = -1;	// no layer for now
+		nodes.back ()->layer = 1;	// default to first layer
 		nodes.back ()->index_T_in = iT_in;
 		nodes.back ()->index_T_out = iT_out;
 		nodes.back ()->setActivationFn (
@@ -612,6 +612,7 @@ bool Genome<Args...>::AddTranstype (innovation_t* conn_innov, unsigned int maxRe
 			)
 		) {
 			inNodeId = Random_UInt (0, (unsigned int) nodes.size () - 1);
+			inNodeRecu = Random_UInt (0, maxRecurrency);
 			iterationNb ++;
 		}
 		if (iterationNb == maxIterationsFindNodeThresh) {
