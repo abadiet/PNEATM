@@ -44,16 +44,42 @@ int main () {
 
     Snake snake (8);
 
-    unsigned int maxRecurrency = 0;
-    float mutateWeightThresh = 0.2f;
-    float mutateWeightFullChangeThresh = 0.1f;
-    float mutateWeightFactor = 1.2f;
-    float addConnectionThresh = 0.15f;
-    unsigned int maxIterationsFindConnectionThresh = 100;
-    float reactivateConnectionThresh = 0.3f;
-    float addNodeThresh = 0.2f;
-    unsigned int maxIterationsFindNodeThresh = 200;
-    float addTranstypeThresh = 0.2f;
+    // init mutation parameters
+    mutationParams_t explorationSet;
+    explorationSet.nodes.rate = 0.25f;
+    explorationSet.nodes.monotypedRate = 0.5f;
+    explorationSet.nodes.monotyped.maxIterationsFindConnection = 100;
+    explorationSet.nodes.bityped.maxRecurrencyEntryConnection = 0;
+    explorationSet.nodes.bityped.maxIterationsFindNode = 100;
+    explorationSet.connections.rate = 0.25f;
+    explorationSet.connections.reactivateRate = 0.4f;
+    explorationSet.connections.maxRecurrency = 0;
+    explorationSet.connections.maxIterations = 100;
+    explorationSet.connections.maxIterationsFindNode = 100;
+    explorationSet.weights.rate = 0.15f;
+    explorationSet.weights.fullChangeRate = 0.3f;
+    explorationSet.weights.perturbationFactor = 1.6f;
+    mutationParams_t refinementSet;
+    refinementSet.nodes.rate = 0.1f;
+    refinementSet.nodes.monotypedRate = 0.5f;
+    refinementSet.nodes.monotyped.maxIterationsFindConnection = 100;
+    refinementSet.nodes.bityped.maxRecurrencyEntryConnection = 0;
+    refinementSet.nodes.bityped.maxIterationsFindNode = 100;
+    refinementSet.connections.rate = 0.1f;
+    refinementSet.connections.reactivateRate = 0.2f;
+    refinementSet.connections.maxRecurrency = 0;
+    refinementSet.connections.maxIterations = 100;
+    refinementSet.connections.maxIterationsFindNode = 100;
+    refinementSet.weights.rate = 0.08f;
+    refinementSet.weights.fullChangeRate = 0.1f;
+    refinementSet.weights.perturbationFactor = 1.2f;
+    std::function<mutationParams_t (float)> paramsMap = [=] (float fitness) {
+        // Here, the mutation map is very basic: if the genome is pretty good, we just refine his network, else we explore new networks
+        if (fitness > 800.0f) {
+            return refinementSet;
+        }
+        return explorationSet;
+    };
 
     unsigned int maxIterationThresh = 500;
     float bestFitness = 0.0f;
@@ -89,7 +115,7 @@ int main () {
         bestFitness = pop.getFitterGenome ().getFitness ();
         std::cout << "  - best fitness: " << bestFitness << std::endl;
         pop.crossover (true);
-        pop.mutate (maxRecurrency, mutateWeightThresh, mutateWeightFullChangeThresh, mutateWeightFactor, addConnectionThresh, maxIterationsFindConnectionThresh, reactivateConnectionThresh, addNodeThresh, maxIterationsFindNodeThresh, addTranstypeThresh);
+        pop.mutate (paramsMap);
     }
 
     // we have to run once again the network and to do a speciation to get the last fitter genome

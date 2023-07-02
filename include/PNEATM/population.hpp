@@ -12,6 +12,7 @@
 #include <vector>
 #include <spdlog/spdlog.h>
 #include <memory>
+#include <functional>
 
 /* HEADER */
 
@@ -49,14 +50,13 @@ class Population {
 		void setFitness (float fitness, unsigned int genome_id);
 		void speciate (unsigned int target = 5, unsigned int targetThresh = 0, float stepThresh = 0.5f, float a = 1.0f, float b = 1.0f, float c = 0.4f);
 		void crossover (bool elitism = false);
-		void mutate (unsigned int maxRecurrency, float mutateWeightThresh = 0.8f, float mutateWeightFullChangeThresh = 0.1f, float mutateWeightFactor = 1.2f, float addConnectionThresh = 0.05f, unsigned int maxIterationsFindConnectionThresh = 20, float reactivateConnectionThresh = 0.25f, float addNodeThresh = 0.03f, unsigned int maxIterationsFindNodeThresh = 20, float addTranstypeThresh = 0.02f);
-		
+		void mutate (mutationParams_t params);
+		void mutate (std::function<mutationParams_t (float)> paramsMap);
+
 		void print (std::string prefix = "");
 		void drawGenome (unsigned int genome_id, unsigned int windowWidth = 1300, unsigned int windowHeight = 800, float dotsRadius = 6.5f, std::string font_path = "/usr/share/fonts/OTF/SF-Pro-Display-Regular.otf");
 
-		/*
-		void printInfo (bool extendedGlobal = false, bool printSpecies = false, bool printGenomes = false, bool extendedGenomes = false);
-		void save (const std::string filepath = "./neat_backup.txt");
+		/*void save (const std::string filepath = "./neat_backup.txt");
 		void load (const std::string filepath = "./neat_backup.txt");*/
 
 	private:
@@ -486,7 +486,7 @@ void Population<Args...>::crossover (bool elitism) {
 		}
 	}
 
-	fittergenome_id = -1;	// avoid a missuse of fittergenome_id as there is no fitness for now, so no fitter genome
+	fittergenome_id = -1;	// avoid a missuse of fittergenome_id
 
 	generation ++;
 }
@@ -510,11 +510,20 @@ int Population<Args...>::SelectParent (unsigned int iSpe) {
 }
 
 template <typename... Args>
-void Population<Args...>::mutate (unsigned int maxRecurrency, float mutateWeightThresh, float mutateWeightFullChangeThresh, float mutateWeightFactor, float addConnectionThresh, unsigned int maxIterationsFindConnectionThresh, float reactivateConnectionThresh, float addNodeThresh, unsigned int maxIterationsFindNodeThresh, float addTranstypeThresh) {
+void Population<Args...>::mutate (mutationParams_t params) {
 	logger->info ("Mutations");
 	for (unsigned int i = 0; i < popSize; i++) {
 		logger->trace ("Mutation of genome{}", i);
-		genomes [i]->mutate (&conn_innov, maxRecurrency, mutateWeightThresh, mutateWeightFullChangeThresh, mutateWeightFactor, addConnectionThresh, maxIterationsFindConnectionThresh, reactivateConnectionThresh, addNodeThresh, maxIterationsFindNodeThresh, addTranstypeThresh);
+		genomes [i]->mutate (&conn_innov, params);
+	}
+}
+
+template <typename... Args>
+void Population<Args...>::mutate (std::function<mutationParams_t (float)> paramsMap) {
+	logger->info ("Mutations");
+	for (unsigned int i = 0; i < popSize; i++) {
+		logger->trace ("Mutation of genome{}", i);
+		genomes [i]->mutate (&conn_innov, paramsMap (genomes [i]->getFitness ()));
 	}
 }
 
@@ -574,76 +583,12 @@ void Population<Args...>::print (std::string prefix) {
 	}
 }
 
-
 template <typename... Args>
 void Population<Args...>::drawGenome (unsigned int genome_id, unsigned int windowWidth, unsigned int windowHeight, float dotsRadius, std::string font_path) {
 	logger->info ("Drawing genome{}'s network", genome_id);
 	genomes [genome_id]->draw (windowWidth, windowHeight, dotsRadius, font_path);
 }
-
 /*
-drawNetwork(unsigned int genome_id, sf::Vector2u windowSize, float dotsRadius) {
-	genomes[genome_id].drawNetwork(windowSize, dotsRadius);
-}
-
-template <typename... Args>
-void Population<Args...>::printInfo(bool extendedGlobal, bool printSpecies, bool printGenomes, bool extendedGenomes) {
-	std::cout << "GENERATION " << generation << std::endl;
-	
-	std::cout << "	" << "Global" << std::endl;
-	std::cout << "	" << "	" << "Average fitness: " << avgFitness << std::endl;
-	std::cout << "	" << "	" << "Average fitness (adjusted): " << avgFitnessAdjusted << std::endl;
-	std::cout << "	" << "	" << "Best fitness: " << genomes[fittergenome_id].fitness << std::endl;
-	if (extendedGlobal) {
-		std::cout << "	" << "	" << "Population size: " << popSize << std::endl;
-		std::cout << "	" << "	" << "Number of inputs: " << nbInput << std::endl;
-		std::cout << "	" << "	" << "Number of outputs: " << nbOutput << std::endl;
-		std::cout << "	" << "	" << "Speciation threshold: " << speciationThresh << std::endl;
-		std::cout << "	" << "	" << "Are recurrent connections allowed: ";
-		if (areRecurrentConnectionsAllowed) {
-			std::cout << "yes" << std::endl;
-		} else {
-			std::cout << "no" << std::endl;
-		}
-		std::cout << "	" << "	" << "When initializing a new genome" << std::endl;
-		std::cout << "	" << "	" << "	" << "Number of hidden nodes: " << nbHiddenInit << std::endl;
-		std::cout << "	" << "	" << "	" << "Proability of a connection to be created: " << probConnInit << std::endl;
-		std::cout << "	" << "	" << "	" << "Weight bounds: " << weightExtremumInit << std::endl;
-	
-	}
-	
-	if (printSpecies) {
-		std::cout << "	" << "Species [id, average fitness, average fitness (adjusted), number of allowed offspring(s), number of generations since improved, number of members, dead]" << std::endl;
-		for (int i = 0; i < (int) species.size(); i++) {
-			std::cout << "	" << "	" << species[i].id << "	" << species[i].avgFitness << "	" << species[i].avgFitnessAdjusted << "	" << species[i].allowedOffspring << "	" << species[i].gensSinceImproved << "	" << (int) species[i].members.size() << "	";
-			if (species[i].isDead) {
-				std::cout << "yes" << std::endl;
-			} else {
-				std::cout << "no" << std::endl;
-			}
-		}
-	}
-	
-	if (printGenomes) {
-		std::cout << "	" << "Genomes [id, fitness, id of the species]" << std::endl;
-		for (unsigned int i = 0; i < popSize; i++) {
-			std::cout << "	" << "	" << i << "	" << genomes[i].fitness << "	" << genomes[i].speciesId << std::endl;
-			if (extendedGenomes) {
-				for (int k = 0; k < (int) genomes[i].connections.size(); k++) {
-					std::cout << "	" << "	" << "	" << genomes[i].connections[k].inNodeId << " -> " << genomes[i].connections[k].outNodeId << "	(W: " << genomes[i].connections[k].weight << ", Innov: " << genomes[i].connections[k].innovId << ")";
-					if (genomes[i].connections[k].isRecurrent) {
-						std::cout << " R ";
-					}
-					if (!genomes[i].connections[k].enabled) {
-						std::cout << " D ";
-					}
-					std::cout << std::endl;
-				}
-			}
-		}
-	}
-}
-
 template <typename... Args>
 void Population<Args...>::save(const std::string filepath){
 	std::ofstream fileobj(filepath);

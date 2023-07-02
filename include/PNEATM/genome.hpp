@@ -19,6 +19,37 @@
 
 namespace pneatm {
 
+typedef struct mutationParams {
+	struct Nodes {
+		float rate = 0.03f;
+		float monotypedRate = 0.5f;
+		struct Monotyped {
+			unsigned int maxIterationsFindConnection = 20;
+		};
+		struct Monotyped monotyped;
+		struct Bityped {
+			unsigned int maxRecurrencyEntryConnection;
+			unsigned int maxIterationsFindNode = 20;
+		};
+		struct Bityped bityped;
+	};
+	struct Nodes nodes;
+	struct Connections {
+		float rate = 0.05f;
+		float reactivateRate = 0.25f;
+		unsigned int maxRecurrency;
+		unsigned int maxIterations = 20;
+		unsigned int maxIterationsFindNode;
+	};
+	struct Connections connections;
+	struct Weights {
+		float rate = 0.05f;
+		float fullChangeRate = 0.1f;
+		float perturbationFactor = 1.2f;
+	};
+	struct Weights weights;
+} mutationParams_t;
+
 template <typename... Args>
 class Genome {
 	public:
@@ -41,9 +72,9 @@ class Genome {
 		template <typename T_out>
 		T_out getOutput (int output_id);
 
-		void mutate (innovation_t* conn_innov, unsigned int maxRecurrency = 0, float mutateWeightThresh = 0.8f, float mutateWeightFullChangeThresh = 0.1f, float mutateWeightFactor = 1.2f, float addConnectionThresh = 0.05f, unsigned int maxIterationsFindConnectionThresh = 20, float reactivateConnectionThresh = 0.25f, float addNodeThresh = 0.03f, int maxIterationsFindNodeThresh = 20, float addTranstypeThresh = 0.02f);
+		void mutate (innovation_t* conn_innov, mutationParams_t params);
 
-		 std::unique_ptr<Genome<Args...>> clone ();
+		std::unique_ptr<Genome<Args...>> clone ();
 
 		void print (std::string prefix = "");
 		void draw (unsigned int windowWidth = 1300, unsigned int windowHeight = 800, float dotsRadius = 6.5f, std::string font_path = "/usr/share/fonts/OTF/SF-Pro-Display-Regular.otf");
@@ -59,7 +90,6 @@ class Genome {
 
 		std::vector <std::unique_ptr<NodeBase>> nodes;
 		std::vector <std::vector <void*>> prevNodes;	//TODO: void* -> const void*
-		unsigned int rec_max;
 		std::vector <Connection> connections;
 
 		float fitness;
@@ -206,7 +236,7 @@ Genome<Args...>::Genome (std::vector<size_t> bias_sch, std::vector<size_t> input
 
 			connections.push_back(Connection (innov_id, inNodeId, outNodeId, inNodeRecu, weight, true));
 
-			if (inNodeRecu == 0 && nodes [outNodeId]->layer == nodes [inNodeId]->layer) {
+			if (inNodeRecu == 0 && nodes [outNodeId]->layer <= nodes [inNodeId]->layer) {
 				nodes [outNodeId]->layer = nodes [inNodeId]->layer + 1;
 				UpdateLayers (outNodeId);
 			}
@@ -327,23 +357,22 @@ T_out Genome<Args...>::getOutput (int output_id) {
 }
 
 template <typename... Args>
-void Genome<Args...>::mutate(innovation_t* conn_innov, unsigned int maxRecurrency, float mutateWeightThresh, float mutateWeightFullChangeThresh, float mutateWeightFactor, float addConnectionThresh, unsigned int maxIterationsFindConnectionThresh, float reactivateConnectionThresh, float addNodeThresh, int maxIterationsFindNodeThresh, float addTranstypeThresh) {
+void Genome<Args...>::mutate(innovation_t* conn_innov, mutationParams_t params) {
 	// WEIGHTS
-	MutateWeights (mutateWeightThresh, mutateWeightFullChangeThresh, mutateWeightFactor);
+	MutateWeights (params.weights.rate, params.weights.fullChangeRate, params.weights.perturbationFactor);
 
 	// NODES
-	if (Random_Float (0.0f, 1.0f, true, false) < addNodeThresh) {
-		AddNode (conn_innov, maxIterationsFindConnectionThresh);
-	}
-
-	// TRANSTYPE (aka add a bi-typed node and two connections)
-	if (Random_Float (0.0f, 1.0f, true, false) < addTranstypeThresh) {
-		AddTranstype (conn_innov, maxRecurrency, maxIterationsFindNodeThresh);
+	if (Random_Float (0.0f, 1.0f, true, false) < params.nodes.rate) {
+		if (Random_Float (0.0f, 1.0f, true, false) < params.nodes.monotypedRate) {
+			AddNode (conn_innov, params.nodes.monotyped.maxIterationsFindConnection);
+		} else {
+			AddTranstype (conn_innov, params.nodes.bityped.maxRecurrencyEntryConnection, params.nodes.bityped.maxIterationsFindNode);
+		}
 	}
 
 	// CONNECTIONS
-	if (Random_Float (0.0f, 1.0f, true, false) < addConnectionThresh) {
-		AddConnection (conn_innov, maxRecurrency, maxIterationsFindConnectionThresh, reactivateConnectionThresh);
+	if (Random_Float (0.0f, 1.0f, true, false) < params.connections.rate) {
+		AddConnection (conn_innov, params.connections.maxRecurrency, params.connections.maxIterationsFindNode, params.connections.reactivateRate);
 	}
 }
 
@@ -679,9 +708,12 @@ void Genome<Args...>::UpdateLayers_Recursive (unsigned int nodeId) {
 			&& connections [iConn].inNodeId == nodeId
 		) {
 			unsigned int newNodeId = connections [iConn].outNodeId;
-			nodes [newNodeId]->layer = nodes [nodeId]->layer + 1;
 
-			UpdateLayers_Recursive (newNodeId);
+			if (nodes [newNodeId]->layer <= nodes [nodeId]->layer) {
+				nodes [newNodeId]->layer = nodes [nodeId]->layer + 1;
+
+				UpdateLayers_Recursive (newNodeId);
+			}
 		}
 	}
 }
@@ -721,6 +753,7 @@ std::unique_ptr<Genome<Args...>> Genome<Args...>::clone () {
 	}
 	genome->connections = connections;
 	genome->speciesId = speciesId;
+	genome->fitness = fitness;
 
 	return genome;
 }
@@ -733,10 +766,8 @@ void Genome<Args...>::print (std::string prefix) {
 	std::cout << prefix << "Number of Output Node: " << nbOutput << std::endl;
 	std::cout << prefix << "Weight's range at intialization: [" << -1.0f * weightExtremumInit << ", " << weightExtremumInit << "]" << std::endl;
 	std::cout << prefix << "Number of objects manipulated: " << N_types << std::endl;
-	std::cout << prefix << "Maximum recurrency: " << rec_max << std::endl;
 	std::cout << prefix << "Current Fitness: " << fitness << std::endl;
 	std::cout << prefix << "Current SpeciesID: " << speciesId << std::endl;
-	std::cout << prefix << "Maximum recurrency: " << rec_max << std::endl;
 	std::cout << prefix << "Number of Activation Functions [Input TypeID to Output TypeID (Number of functions)]: ";
 	for (size_t i = 0; i < activationFns.size (); i++) {
 		for (size_t j = 0; j < activationFns [i].size (); j++) {
