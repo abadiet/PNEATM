@@ -70,7 +70,7 @@ int main () {
     refinementSet.connections.maxRecurrency = 0;
     refinementSet.connections.maxIterations = 100;
     refinementSet.connections.maxIterationsFindNode = 100;
-    refinementSet.weights.rate = 0.08f;
+    refinementSet.weights.rate = 0.05f;
     refinementSet.weights.fullChangeRate = 0.1f;
     refinementSet.weights.perturbationFactor = 1.2f;
     std::function<mutationParams_t (float)> paramsMap = [=] (float fitness) {
@@ -83,7 +83,7 @@ int main () {
 
     unsigned int maxIterationThresh = 500;
     float bestFitness = 0.0f;
-    while (bestFitness < 2000.0f && pop.getGeneration () < 10000) {
+    while (bestFitness < 2500.0f && pop.getGeneration () < 10000) {
         std::cout << "generation " << pop.getGeneration () << std::endl;
 
         for (unsigned int genomeId = 0; genomeId < popSize; genomeId ++) {
