@@ -1,7 +1,7 @@
 # Polymorphic NeuroEvolution of Augmenting Topologies with Memory (PNEATM)
 C++ library for evolving neural networks with a modified NEAT that allows any kind of data and that is able to access any previous data.
 
-⚠️ WARNING: This projetc is currently developed. For now, it cannot be used for profuction as there are several issues.
+⚠️ WARNING: This projetc is currently being developed. For now, it cannot be used for profuction as there are several issues.
 
 <p align="center">
 	<img src="https://github.com/titofra/PNEATM/blob/main/resources/network.png">
@@ -26,5 +26,5 @@ A Snake AI powered by PNEATM is available on [/examples/snake/](https://github.c
 - [x] use of multiple kind over one network
 - [x] allow multiple activation function
 - [x] allow recurent connection from any level
-- [ ] memory arg on activation functions
+- [ ] ~~memory arg on activation functions~~
 - [ ] mem management: ptr -> unique_ptr, ...
