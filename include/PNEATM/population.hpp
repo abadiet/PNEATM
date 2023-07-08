@@ -302,7 +302,7 @@ float Population<Args...>::CompareGenomes (unsigned int ig1, unsigned int ig2, f
 			excessGenes += 1;
 		} else {
 			size_t i2 = 0;
-			
+
 			while (i2 < connEnabled2.size () && genomes [ig2]->connections [connEnabled2 [i2]].innovId != genomes [ig1]->connections [connEnabled1 [i1]].innovId) {
 				i2 ++;
 			}
@@ -322,7 +322,7 @@ float Population<Args...>::CompareGenomes (unsigned int ig1, unsigned int ig2, f
 			}
 		}
 	}
-	
+
 	for (size_t i2 = 0; i2 < connEnabled2.size (); i2++) {
 		// for each enabled connection of the second genome
 		if (genomes [ig2]->connections [connEnabled2 [i2]].innovId > maxInnovId1) {
@@ -363,7 +363,7 @@ void Population<Args...>::UpdateFitnesses () {
 	// process avgFitness and found fittergenome_id
 	for (unsigned int i = 0; i < popSize; i++) {
 		avgFitness += genomes [i]->fitness;
-		
+
 		if (genomes [i]->fitness > genomes [fittergenome_id]->fitness) {
 			fittergenome_id = i;
 		}
