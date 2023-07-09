@@ -121,6 +121,7 @@ Population<Args...>::Population(unsigned int popSize, std::vector<size_t> bias_s
 	logger->info ("Population initialization");
 	if (stats_filepath != "") {
 		statsFile.open (stats_filepath);
+		statsFile << "Generation,Best Fitness,Average Fitness,Average Fitness (Adjusted),Species0,Species1\n";
 	} 
 
 	generation = 0;
@@ -421,7 +422,7 @@ void Population<Args...>::UpdateFitnesses () {
 
 	// add satistics to the file
 	if (statsFile.is_open ()) {
-		statsFile << genomes [fittergenome_id]->fitness << "," << avgFitness << "," << avgFitnessAdjusted << ",";
+		statsFile << generation << "," << genomes [fittergenome_id]->fitness << "," << avgFitness << "," << avgFitnessAdjusted << ",";
 		for (size_t i = 0; i < species.size () - 1; i ++) {
 			statsFile << species [i].members.size () << ",";
 		}
