@@ -77,7 +77,7 @@ class Genome {
 		std::unique_ptr<Genome<Args...>> clone ();
 
 		void print (std::string prefix = "");
-		void draw (unsigned int windowWidth = 1300, unsigned int windowHeight = 800, float dotsRadius = 6.5f, std::string font_path = "/usr/share/fonts/OTF/SF-Pro-Display-Regular.otf");
+		void draw (std::string font_path, unsigned int windowWidth = 1300, unsigned int windowHeight = 800, float dotsRadius = 6.5f);
 
 	private:
 		unsigned int nbBias;
@@ -790,7 +790,7 @@ void Genome<Args...>::print (std::string prefix) {
 
 
 template <typename... Args>
-void Genome<Args...>::draw (unsigned int windowWidth, unsigned int windowHeight, float dotsRadius, std::string font_path) {
+void Genome<Args...>::draw (std::string font_path, unsigned int windowWidth, unsigned int windowHeight, float dotsRadius) {
 	sf::RenderWindow window (sf::VideoMode (windowWidth, windowHeight), "PNEATM - https://github.com/titofra");
 
     std::vector<sf::CircleShape> dots;
