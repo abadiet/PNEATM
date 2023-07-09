@@ -48,7 +48,7 @@ class Population {
 		T_out getOutput (unsigned int output_id, unsigned int genome_id);
 
 		void setFitness (float fitness, unsigned int genome_id);
-		void speciate (unsigned int target = 5, unsigned int targetThresh = 0, unsigned int maxIterationsReachTarget = 50, float stepThresh = 0.5f, float a = 1.0f, float b = 1.0f, float c = 0.4f);
+		void speciate (unsigned int target = 5, unsigned int targetThresh = 0, unsigned int maxIterationsReachTarget = 20, float stepThresh = 0.3f, float a = 1.0f, float b = 1.0f, float c = 0.4f);
 		void crossover (bool elitism = false);
 		void mutate (mutationParams_t params);
 		void mutate (std::function<mutationParams_t (float)> paramsMap);
@@ -121,7 +121,7 @@ Population<Args...>::Population(unsigned int popSize, std::vector<size_t> bias_s
 	logger->info ("Population initialization");
 	if (stats_filepath != "") {
 		statsFile.open (stats_filepath);
-		statsFile << "Generation,Best Fitness,Average Fitness,Average Fitness (Adjusted),speciation thresh,Species0,Species1\n";
+		statsFile << "Generation,Best Fitness,Average Fitness,Average Fitness (Adjusted),Species0,Species1\n";
 	} 
 
 	generation = 0;
@@ -208,6 +208,16 @@ void Population<Args...>::setFitness (float fitness, unsigned int genome_id) {
 template <typename... Args>
 void Population<Args...>::speciate (unsigned int target, unsigned int targetThresh, unsigned int maxIterationsReachTarget, float stepThresh, float a, float b, float c) {
 	logger->info ("Speciation");
+	// species randomization: we do that here to avoid the first species to become too large.
+	// Actually, as we are using a sequential process to assign a given to genome to a species, the first one may become to large
+	std::vector<Species> newSpecies;
+	while (species.size () > 0) {
+		unsigned int r = Random_UInt (0, (unsigned int) species.size () - 1);	// randomly select a species
+		newSpecies.push_back (species [r]);										// add it to the new ones
+		species.erase (species.begin () + r);									// remove it from the previous ones
+	}
+	species.clear ();
+	species = newSpecies;
 
 	std::vector<Species> tmpspecies;
 	unsigned int nbSpeciesAlive = 0;
@@ -228,46 +238,35 @@ void Population<Args...>::speciate (unsigned int target, unsigned int targetThre
 		}
 
 		// init tmpspecies with leaders
-		std::vector<size_t> aliveSpeciesIds;
-		for (size_t iSpe = 0; iSpe < tmpspecies.size(); iSpe++) {
+		for (size_t iSpe = 0; iSpe < tmpspecies.size (); iSpe++) {
 			if (!tmpspecies [iSpe].isDead) {	// if the species is still alive
-				aliveSpeciesIds.push_back (iSpe);
-
 				unsigned int iMainGenome = tmpspecies [iSpe].members [rand() % tmpspecies [iSpe].members.size ()];	// select a random member to be the main genome of the species
 				tmpspecies [iSpe].members.clear ();
 				tmpspecies [iSpe].members.push_back (iMainGenome);
-				genomes [iMainGenome]->speciesId = (int) iSpe;
+				genomes [iMainGenome]->speciesId = tmpspecies [iSpe].id;
 			}
 		}
 
 		// process the other genomes
 		for (unsigned int genome_id = 0; genome_id < popSize; genome_id++) {
 			if (genomes [genome_id]->speciesId == -1) {	// if the genome not already belong to a species
-				std::vector<size_t> toTest_aliveSpeciesIds = aliveSpeciesIds;
-
-				unsigned int itoTest_aliveSpeciesIds;
+				unsigned int itmpspecies = 0;
 				while (
-					toTest_aliveSpeciesIds.size () > 0	// there still some speices to check for
-					&& !(CompareGenomes (
-						tmpspecies [toTest_aliveSpeciesIds [
-							itoTest_aliveSpeciesIds = Random_UInt (0, (unsigned int) toTest_aliveSpeciesIds.size () - 1)
-						]].members [0], genome_id, a, b, c
-					) < speciationThresh)	// comparison leader vs genome_id
-				) {
-					toTest_aliveSpeciesIds.erase (toTest_aliveSpeciesIds.begin () + itoTest_aliveSpeciesIds);	// remove the tested species
+					itmpspecies < (unsigned int) tmpspecies.size ()
+					&& (
+						tmpspecies [itmpspecies].isDead
+						|| !(CompareGenomes (tmpspecies [itmpspecies].members [0], genome_id, a, b, c) < speciationThresh)	// comparison leader vs genome_id
+						)
+					)
+				{
+					itmpspecies++;	// the genome cannot belong to this species, let's check the next one
 				}
-
-				size_t speciesId;
-				if (toTest_aliveSpeciesIds.size () == 0) {
+				if (itmpspecies == (unsigned int) tmpspecies.size ()) {
 					// no species found for the current genome, we have to create one new
-					speciesId = tmpspecies.size ();
-					tmpspecies.push_back (Species ((unsigned int) speciesId));
-					aliveSpeciesIds.push_back (speciesId);	// the newly created species is alive!
-				} else {
-					speciesId = toTest_aliveSpeciesIds [itoTest_aliveSpeciesIds];
+					tmpspecies.push_back (Species (itmpspecies));
 				}
-				tmpspecies [speciesId].members.push_back (genome_id);
-				genomes [genome_id]->speciesId = (int) speciesId;
+				tmpspecies [itmpspecies].members.push_back (genome_id);
+				genomes [genome_id]->speciesId = tmpspecies [itmpspecies].id;
 			}
 		}
 
@@ -290,8 +289,15 @@ void Population<Args...>::speciate (unsigned int target, unsigned int targetThre
 		ite++;
 	}
 
+	// Set tmpspecies as species while sorting species by their ids
 	species.clear ();
-	species = tmpspecies;
+	while (species.size () < tmpspecies.size ()) {
+		size_t i = 0;
+		while (tmpspecies [i].id != species.size ()) {
+			i++;
+		}
+		species.push_back (tmpspecies [i]);
+	}
 
 	logger->trace ("speciation result in {0} alive species in {1} iteration(s)", nbSpeciesAlive, ite);
 
@@ -452,7 +458,7 @@ void Population<Args...>::UpdateFitnesses () {
 
 	// add satistics to the file
 	if (statsFile.is_open ()) {
-		statsFile << generation << "," << genomes [fittergenome_id]->fitness << "," << avgFitness << "," << avgFitnessAdjusted << "," << speciationThresh << ",";
+		statsFile << generation << "," << genomes [fittergenome_id]->fitness << "," << avgFitness << "," << avgFitnessAdjusted << ",";
 		for (size_t i = 0; i < species.size () - 1; i ++) {
 			statsFile << species [i].members.size () << ",";
 		}
@@ -471,7 +477,7 @@ void Population<Args...>::crossover (bool elitism) {
 		newGenomes.push_back (genomes [fittergenome_id]->clone ());
 	}
 
-	for (unsigned int iSpe = 0; iSpe < (unsigned int) species.size () ; iSpe ++) {
+	for (unsigned int iSpe = 0; iSpe < (unsigned int) species.size (); iSpe ++) {
 		for (int k = 0; k < species [iSpe].allowedOffspring; k++) {
 			// choose pseudo-randomly two parents. Don't care if they're identical as the child will be mutated...
 			unsigned int iParent1 = SelectParent (iSpe);
