@@ -1,4 +1,4 @@
-build/
-examples/snake/build/
-examples/tests
-log.txt
+build
+tests
+logs
+*.csv

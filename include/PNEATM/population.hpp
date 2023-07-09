@@ -21,7 +21,7 @@ namespace pneatm {
 template <typename... Args>
 class Population {
 	public:
-		Population (unsigned int popSize, std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_init, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, unsigned int N_ConnInit, float probRecuInit, float weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger, float speciationThreshInit = 100.0f, unsigned int threshGensSinceImproved = 15);
+		Population (unsigned int popSize, std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_init, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, unsigned int N_ConnInit, float probRecuInit, float weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger, float speciationThreshInit = 100.0f, unsigned int threshGensSinceImproved = 15, std::string stats_filepath = "");
 		~Population ();
 		//Population (const std::string filepath) {load(filepath);};
 
@@ -54,7 +54,7 @@ class Population {
 		void mutate (std::function<mutationParams_t (float)> paramsMap);
 
 		void print (std::string prefix = "");
-		void drawGenome (unsigned int genome_id, unsigned int windowWidth = 1300, unsigned int windowHeight = 800, float dotsRadius = 6.5f, std::string font_path = "/usr/share/fonts/OTF/SF-Pro-Display-Regular.otf");
+		void drawGenome (unsigned int genome_id, std::string font_path, unsigned int windowWidth = 1300, unsigned int windowHeight = 800, float dotsRadius = 6.5f);
 
 		/*void save (const std::string filepath = "./neat_backup.txt");
 		void load (const std::string filepath = "./neat_backup.txt");*/
@@ -86,6 +86,7 @@ class Population {
 		innovation_t conn_innov;
 
 		spdlog::logger* logger;
+		std::ofstream statsFile;
 
 		float CompareGenomes (unsigned int ig1, unsigned int ig2, float a, float b, float c);
 		void UpdateFitnesses ();
@@ -100,7 +101,7 @@ class Population {
 using namespace pneatm;
 
 template <typename... Args>
-Population<Args...>::Population(unsigned int popSize, std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_init, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, unsigned int N_ConnInit, float probRecuInit, float weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger, float speciationThreshInit, unsigned int threshGensSinceImproved) :
+Population<Args...>::Population(unsigned int popSize, std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_init, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, unsigned int N_ConnInit, float probRecuInit, float weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger, float speciationThreshInit, unsigned int threshGensSinceImproved, std::string stats_filepath) :
 	popSize (popSize),
 	speciationThresh (speciationThreshInit),
 	threshGensSinceImproved (threshGensSinceImproved),
@@ -118,6 +119,9 @@ Population<Args...>::Population(unsigned int popSize, std::vector<size_t> bias_s
 	logger (logger)
 {
 	logger->info ("Population initialization");
+	if (stats_filepath != "") {
+		statsFile.open (stats_filepath);
+	} 
 
 	generation = 0;
 	fittergenome_id = -1;
@@ -131,6 +135,7 @@ Population<Args...>::Population(unsigned int popSize, std::vector<size_t> bias_s
 template <typename... Args>
 Population<Args...>::~Population () {
 	logger->info ("Population destruction");
+	if (statsFile.is_open ()) statsFile.close ();
 }
 
 template <typename... Args>
@@ -409,8 +414,18 @@ void Population<Args...>::UpdateFitnesses () {
 			} else {
 				// the species cannot have offsprings it has not iproved for a long time
 				species[i].allowedOffspring = 0;
+				logger->trace ("species{} has not evolved for a long time: it is removed", i);
 			}
 		}
+	}
+
+	// add satistics to the file
+	if (statsFile.is_open ()) {
+		statsFile << genomes [fittergenome_id]->fitness << "," << avgFitness << "," << avgFitnessAdjusted << ",";
+		for (size_t i = 0; i < species.size () - 1; i ++) {
+			statsFile << species [i].members.size () << ",";
+		}
+		statsFile << species.back ().members.size () << "\n";
 	}
 }
 
@@ -584,9 +599,9 @@ void Population<Args...>::print (std::string prefix) {
 }
 
 template <typename... Args>
-void Population<Args...>::drawGenome (unsigned int genome_id, unsigned int windowWidth, unsigned int windowHeight, float dotsRadius, std::string font_path) {
+void Population<Args...>::drawGenome (unsigned int genome_id, std::string font_path, unsigned int windowWidth, unsigned int windowHeight, float dotsRadius) {
 	logger->info ("Drawing genome{}'s network", genome_id);
-	genomes [genome_id]->draw (windowWidth, windowHeight, dotsRadius, font_path);
+	genomes [genome_id]->draw (font_path, windowWidth, windowHeight, dotsRadius);
 }
 /*
 template <typename... Args>
