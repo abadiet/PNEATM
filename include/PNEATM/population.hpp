@@ -48,7 +48,7 @@ class Population {
 		T_out getOutput (unsigned int output_id, unsigned int genome_id);
 
 		void setFitness (float fitness, unsigned int genome_id);
-		void speciate (unsigned int target = 5, unsigned int targetThresh = 0, unsigned int maxIterationsReachTarget = 20, float stepThresh = 0.3f, float a = 1.0f, float b = 1.0f, float c = 0.4f);
+		void speciate (unsigned int target = 5, unsigned int targetThresh = 0, unsigned int maxIterationsReachTarget = 50, float stepThresh = 0.5f, float a = 1.0f, float b = 1.0f, float c = 0.4f);
 		void crossover (bool elitism = false);
 		void mutate (mutationParams_t params);
 		void mutate (std::function<mutationParams_t (float)> paramsMap);
@@ -228,8 +228,11 @@ void Population<Args...>::speciate (unsigned int target, unsigned int targetThre
 		}
 
 		// init tmpspecies with leaders
+		std::vector<size_t> aliveSpeciesIds;
 		for (size_t iSpe = 0; iSpe < tmpspecies.size(); iSpe++) {
 			if (!tmpspecies [iSpe].isDead) {	// if the species is still alive
+				aliveSpeciesIds.push_back (iSpe);
+
 				unsigned int iMainGenome = tmpspecies [iSpe].members [rand() % tmpspecies [iSpe].members.size ()];	// select a random member to be the main genome of the species
 				tmpspecies [iSpe].members.clear ();
 				tmpspecies [iSpe].members.push_back (iMainGenome);
@@ -240,23 +243,31 @@ void Population<Args...>::speciate (unsigned int target, unsigned int targetThre
 		// process the other genomes
 		for (unsigned int genome_id = 0; genome_id < popSize; genome_id++) {
 			if (genomes [genome_id]->speciesId == -1) {	// if the genome not already belong to a species
-				unsigned int speciesId = 0;
+				std::vector<size_t> toTest_aliveSpeciesIds = aliveSpeciesIds;
+
+				unsigned int itoTest_aliveSpeciesIds;
 				while (
-					speciesId < (unsigned int) tmpspecies.size ()
-					&& (
-						tmpspecies [speciesId].isDead
-						|| !(CompareGenomes (tmpspecies [speciesId].members [0], genome_id, a, b, c) < speciationThresh)	// comparison leader vs genome_id
-						)
-					)
-				{
-					speciesId ++;	// the genome cannot belong to this species, let's check the next one
+					toTest_aliveSpeciesIds.size () > 0	// there still some speices to check for
+					&& !(CompareGenomes (
+						tmpspecies [toTest_aliveSpeciesIds [
+							itoTest_aliveSpeciesIds = Random_UInt (0, (unsigned int) toTest_aliveSpeciesIds.size () - 1)
+						]].members [0], genome_id, a, b, c
+					) < speciationThresh)	// comparison leader vs genome_id
+				) {
+					toTest_aliveSpeciesIds.erase (toTest_aliveSpeciesIds.begin () + itoTest_aliveSpeciesIds);	// remove the tested species
 				}
-				if (speciesId == (unsigned int) tmpspecies.size ()) {
+
+				size_t speciesId;
+				if (toTest_aliveSpeciesIds.size () == 0) {
 					// no species found for the current genome, we have to create one new
-					tmpspecies.push_back (Species (speciesId));
+					speciesId = tmpspecies.size ();
+					tmpspecies.push_back (Species ((unsigned int) speciesId));
+					aliveSpeciesIds.push_back (speciesId);	// the newly created species is alive!
+				} else {
+					speciesId = toTest_aliveSpeciesIds [itoTest_aliveSpeciesIds];
 				}
 				tmpspecies [speciesId].members.push_back (genome_id);
-				genomes [genome_id]->speciesId = speciesId;
+				genomes [genome_id]->speciesId = (int) speciesId;
 			}
 		}
 
@@ -283,7 +294,6 @@ void Population<Args...>::speciate (unsigned int target, unsigned int targetThre
 	species = tmpspecies;
 
 	logger->trace ("speciation result in {0} alive species in {1} iteration(s)", nbSpeciesAlive, ite);
-	std::cout << ite << "  " << nbSpeciesAlive << std::endl;
 
 	// update all the fitness as we now know the species
 	UpdateFitnesses ();
