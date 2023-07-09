@@ -21,7 +21,7 @@ namespace pneatm {
 template <typename... Args>
 class Population {
 	public:
-		Population (unsigned int popSize, std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_init, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, unsigned int N_ConnInit, float probRecuInit, float weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger, float speciationThreshInit = 100.0f, unsigned int threshGensSinceImproved = 15, std::string stats_filepath = "");
+		Population (unsigned int popSize, std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_init, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, unsigned int N_ConnInit, float probRecuInit, float weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger, float speciationThreshInit = 10.0f, unsigned int threshGensSinceImproved = 15, std::string stats_filepath = "");
 		~Population ();
 		//Population (const std::string filepath) {load(filepath);};
 
@@ -48,7 +48,7 @@ class Population {
 		T_out getOutput (unsigned int output_id, unsigned int genome_id);
 
 		void setFitness (float fitness, unsigned int genome_id);
-		void speciate (unsigned int target = 5, unsigned int targetThresh = 0, float stepThresh = 0.5f, float a = 1.0f, float b = 1.0f, float c = 0.4f);
+		void speciate (unsigned int target = 5, unsigned int targetThresh = 0, unsigned int maxIterationsReachTarget = 20, float stepThresh = 0.3f, float a = 1.0f, float b = 1.0f, float c = 0.4f);
 		void crossover (bool elitism = false);
 		void mutate (mutationParams_t params);
 		void mutate (std::function<mutationParams_t (float)> paramsMap);
@@ -121,7 +121,7 @@ Population<Args...>::Population(unsigned int popSize, std::vector<size_t> bias_s
 	logger->info ("Population initialization");
 	if (stats_filepath != "") {
 		statsFile.open (stats_filepath);
-		statsFile << "Generation,Best Fitness,Average Fitness,Average Fitness (Adjusted),Species0,Species1\n";
+		statsFile << "Generation,Best Fitness,Average Fitness,Average Fitness (Adjusted),speciation thresh,Species0,Species1\n";
 	} 
 
 	generation = 0;
@@ -206,64 +206,84 @@ void Population<Args...>::setFitness (float fitness, unsigned int genome_id) {
 }
 
 template <typename... Args>
-void Population<Args...>::speciate (unsigned int target, unsigned int targetThresh, float stepThresh, float a, float b, float c) {
+void Population<Args...>::speciate (unsigned int target, unsigned int targetThresh, unsigned int maxIterationsReachTarget, float stepThresh, float a, float b, float c) {
 	logger->info ("Speciation");
-	// reset species
-	for (unsigned int i = 0; i < popSize; i++) {
-		genomes [i]->speciesId = -1;
-	}
 
-	// init species with leaders
-	for (size_t iSpe = 0; iSpe < species.size(); iSpe++) {
-		if (!species [iSpe].isDead) {	// if the species is still alive
-			unsigned int iMainGenome = species [iSpe].members [rand() % species [iSpe].members.size ()];	// select a random member to be the main genome of the species
-			species [iSpe].members.clear ();
-			species [iSpe].members.push_back (iMainGenome);
-			genomes [iMainGenome]->speciesId = (int) iSpe;
-		}
-	}
-
-	// process the other genomes
-	for (unsigned int genome_id = 0; genome_id < popSize; genome_id++) {
-		if (genomes [genome_id]->speciesId == -1) {	// if the genome not already belong to a species
-			unsigned int speciesId = 0;
-			while (
-				speciesId < (unsigned int) species.size()
-				&& (
-					species [speciesId].isDead
-					|| !(CompareGenomes (species [speciesId].members [0], genome_id, a, b, c) < speciationThresh)	// comparison leader vs genome_id
-					)
-				)
-			{
-				speciesId ++;	// the genome cannot belong to this species, let's check the next one
-			}
-			if (speciesId == (unsigned int) species.size ()) {
-				// no species found for the current genome, we have to create one new
-				species.push_back (Species (speciesId));
-			}
-			species [speciesId].members.push_back (genome_id);
-			genomes [genome_id]->speciesId = speciesId;
-		}
-	}
-
-	// check how many species are still alive
+	std::vector<Species> tmpspecies;
 	unsigned int nbSpeciesAlive = 0;
-	for (size_t iSpe = 0; iSpe < species.size (); iSpe++) {
-		if (!species [iSpe].isDead) {	// if the species is still alive
-			nbSpeciesAlive ++;
+	unsigned int ite = 0;
+
+	while (
+		ite < maxIterationsReachTarget
+		&& ((int) nbSpeciesAlive < (int) target - (int) targetThresh || nbSpeciesAlive > target + targetThresh)
+	) {
+		// init tmpspecies
+		tmpspecies.clear ();
+		tmpspecies = species;
+		nbSpeciesAlive = 0;
+
+		// reset species
+		for (unsigned int i = 0; i < popSize; i++) {
+			genomes [i]->speciesId = -1;
 		}
+
+		// init tmpspecies with leaders
+		for (size_t iSpe = 0; iSpe < tmpspecies.size(); iSpe++) {
+			if (!tmpspecies [iSpe].isDead) {	// if the species is still alive
+				unsigned int iMainGenome = tmpspecies [iSpe].members [rand() % tmpspecies [iSpe].members.size ()];	// select a random member to be the main genome of the species
+				tmpspecies [iSpe].members.clear ();
+				tmpspecies [iSpe].members.push_back (iMainGenome);
+				genomes [iMainGenome]->speciesId = (int) iSpe;
+			}
+		}
+
+		// process the other genomes
+		for (unsigned int genome_id = 0; genome_id < popSize; genome_id++) {
+			if (genomes [genome_id]->speciesId == -1) {	// if the genome not already belong to a species
+				unsigned int speciesId = 0;
+				while (
+					speciesId < (unsigned int) tmpspecies.size ()
+					&& (
+						tmpspecies [speciesId].isDead
+						|| !(CompareGenomes (tmpspecies [speciesId].members [0], genome_id, a, b, c) < speciationThresh)	// comparison leader vs genome_id
+						)
+					)
+				{
+					speciesId ++;	// the genome cannot belong to this species, let's check the next one
+				}
+				if (speciesId == (unsigned int) tmpspecies.size ()) {
+					// no species found for the current genome, we have to create one new
+					tmpspecies.push_back (Species (speciesId));
+				}
+				tmpspecies [speciesId].members.push_back (genome_id);
+				genomes [genome_id]->speciesId = speciesId;
+			}
+		}
+
+		// check how many species are still alive
+		for (size_t iSpe = 0; iSpe < tmpspecies.size (); iSpe++) {
+			if (!tmpspecies [iSpe].isDead) {	// if the species is still alive
+				nbSpeciesAlive ++;
+			}
+		}
+
+		// update speciationThresh
+		if ((int) nbSpeciesAlive < (int) target - (int) targetThresh) {
+			speciationThresh -= stepThresh;
+		} else {
+			if (nbSpeciesAlive > target + targetThresh) {
+				speciationThresh += stepThresh;
+			}
+		}
+
+		ite++;
 	}
 
-	logger->trace ("speciation result in {} alive species", nbSpeciesAlive);
+	species.clear ();
+	species = tmpspecies;
 
-	// update speciationThresh
-	if ((int) nbSpeciesAlive < (int) target - (int) targetThresh) {
-		speciationThresh -= stepThresh;
-	} else {
-		if (nbSpeciesAlive > target + targetThresh) {
-			speciationThresh += stepThresh;
-		}
-	}
+	logger->trace ("speciation result in {0} alive species in {1} iteration(s)", nbSpeciesAlive, ite);
+	std::cout << ite << "  " << nbSpeciesAlive << std::endl;
 
 	// update all the fitness as we now know the species
 	UpdateFitnesses ();
@@ -422,7 +442,7 @@ void Population<Args...>::UpdateFitnesses () {
 
 	// add satistics to the file
 	if (statsFile.is_open ()) {
-		statsFile << generation << "," << genomes [fittergenome_id]->fitness << "," << avgFitness << "," << avgFitnessAdjusted << ",";
+		statsFile << generation << "," << genomes [fittergenome_id]->fitness << "," << avgFitness << "," << avgFitnessAdjusted << "," << speciationThresh << ",";
 		for (size_t i = 0; i < species.size () - 1; i ++) {
 			statsFile << species [i].members.size () << ",";
 		}
