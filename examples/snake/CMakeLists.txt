@@ -17,9 +17,12 @@ target_compile_options(SnakePNEATM PRIVATE
 	$<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -Werror -O3 -Wfloat-equal -Wundef -Wcast-align -Wwrite-strings -Wunreachable-code -Wconversion -Wno-error=maybe-uninitialized -Wpedantic>
 )
 
-if(NOT TARGET spdlog)
-    # Stand-alone build
-    find_package(spdlog REQUIRED)
-endif()
+# Link libraries
+target_link_libraries(SnakePNEATM PRIVATE pneatm)
 
-target_link_libraries(SnakePNEATM PRIVATE pneatm spdlog::spdlog sfml-window sfml-system sfml-graphics)
+# Find and link spdlog library
+find_package(spdlog REQUIRED)
+target_link_libraries(SnakePNEATM PRIVATE spdlog::spdlog)
+
+# Link SFML libraries
+target_link_libraries(SnakePNEATM PRIVATE sfml-window sfml-system sfml-graphics)
