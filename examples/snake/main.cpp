@@ -3,10 +3,12 @@
 int main () {
     srand ((int) time (0));	// init seed for rand
 
-    // init logger
+    // init pneatm logger
 	spdlog::set_pattern ("[%Y-%m-%d %H:%M:%S.%e] [%t] [%^%l%$] %v");
-    spdlog::set_level(spdlog::level::warn);
-    auto logger = spdlog::basic_logger_mt("basic_logger", "log.txt");
+    spdlog::set_level(spdlog::level::err);
+    auto logger = spdlog::rotating_logger_mt("pneatm_logger", "logs/log.txt", 1048576 * 100, 10);
+
+    // init stats logger
 
     // init population
     unsigned int popSize = 100;
@@ -16,7 +18,7 @@ int main () {
     Snake snake (8);
 
     // init mutation parameters
-    std::function<mutationParams_t (float)> paramsMap = SetupMutationParametersMaps ();
+    std::function<pneatm::mutationParams_t (float)> paramsMap = SetupMutationParametersMaps ();
 
     unsigned int maxIterationThresh = 500;
     float bestFitness = 0.0f;
@@ -100,7 +102,7 @@ int main () {
 
     // print info and draw genome's network
     pop.getFitterGenome ().print ();
-    pop.getFitterGenome ().draw ();
+    pop.getFitterGenome ().draw ("/usr/share/fonts/OTF/SF-Pro-Rounded-Light.otf");
 
     // play a game by the fitter genome
     playGameFitter (pop.getFitterGenome (), maxIterationThresh, false, {800, 600}, 0.12f, 8);

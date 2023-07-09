@@ -8,7 +8,7 @@
 #include <PNEATM/genome.hpp>
 #include <functional>
 #include <spdlog/spdlog.h>
-#include <spdlog/sinks/basic_file_sink.h>
+#include <spdlog/sinks/rotating_file_sink.h>
 #include <myInt.hpp>
 
 /* SNAKE */
@@ -112,11 +112,11 @@ pneatm::Population<myInt, float> SetupPopulation (unsigned int popSize, spdlog::
     unsigned int maxRecuInit = 0;
     float speciationThreshInit = 100.0f;
     unsigned int threshGensSinceImproved = 15;
-    return pneatm::Population<myInt, float> (popSize, bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger, speciationThreshInit, threshGensSinceImproved);
+    return pneatm::Population<myInt, float> (popSize, bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger, speciationThreshInit, threshGensSinceImproved, "stats.csv");
 }
 
-std::function<mutationParams_t (float)> SetupMutationParametersMaps () {
-    mutationParams_t explorationSet;
+std::function<pneatm::mutationParams_t (float)> SetupMutationParametersMaps () {
+    pneatm::mutationParams_t explorationSet;
     explorationSet.nodes.rate = 0.25f;
     explorationSet.nodes.monotypedRate = 0.5f;
     explorationSet.nodes.monotyped.maxIterationsFindConnection = 100;
@@ -130,18 +130,18 @@ std::function<mutationParams_t (float)> SetupMutationParametersMaps () {
     explorationSet.weights.rate = 0.15f;
     explorationSet.weights.fullChangeRate = 0.3f;
     explorationSet.weights.perturbationFactor = 1.6f;
-    mutationParams_t refinementSet;
-    refinementSet.nodes.rate = 0.08f;
+    pneatm::mutationParams_t refinementSet;
+    refinementSet.nodes.rate = 0.1f;
     refinementSet.nodes.monotypedRate = 0.5f;
     refinementSet.nodes.monotyped.maxIterationsFindConnection = 100;
     refinementSet.nodes.bityped.maxRecurrencyEntryConnection = 0;
     refinementSet.nodes.bityped.maxIterationsFindNode = 100;
-    refinementSet.connections.rate = 0.08f;
+    refinementSet.connections.rate = 0.1f;
     refinementSet.connections.reactivateRate = 0.2f;
     refinementSet.connections.maxRecurrency = 0;
     refinementSet.connections.maxIterations = 100;
     refinementSet.connections.maxIterationsFindNode = 100;
-    refinementSet.weights.rate = 0.03f;
+    refinementSet.weights.rate = 0.05f;
     refinementSet.weights.fullChangeRate = 0.1f;
     refinementSet.weights.perturbationFactor = 1.2f;
     return [=] (float fitness) {
