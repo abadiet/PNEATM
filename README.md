@@ -20,6 +20,8 @@ This code depends on both SFML (for graphics) and spdlog (for logs) libraries:
 ## Examples
 A Snake AI powered by PNEATM is available on [/examples/snake/](https://github.com/titofra/PNEATM/tree/main/examples/snake).
 
+![](https://github.com/titofra/PNEATM/tree/main/examples/snake/resources/snakeGameplay.gif)
+
 ## TODO
 - [x] NEAT
 - [x] generic kind of obj (float, vectors...)
