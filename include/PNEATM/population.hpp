@@ -48,7 +48,7 @@ class Population {
 		T_out getOutput (unsigned int output_id, unsigned int genome_id);
 
 		void setFitness (float fitness, unsigned int genome_id);
-		void speciate (unsigned int target = 5, unsigned int targetThresh = 0, unsigned int maxIterationsReachTarget = 20, float stepThresh = 0.3f, float a = 1.0f, float b = 1.0f, float c = 0.4f);
+		void speciate (unsigned int target = 5, unsigned int targetThresh = 0, unsigned int maxIterationsReachTarget = 50, float stepThresh = 0.3f, float a = 1.0f, float b = 1.0f, float c = 0.4f);
 		void crossover (bool elitism = false);
 		void mutate (mutationParams_t params);
 		void mutate (std::function<mutationParams_t (float)> paramsMap);
@@ -240,7 +240,18 @@ void Population<Args...>::speciate (unsigned int target, unsigned int targetThre
 		// init tmpspecies with leaders
 		for (size_t iSpe = 0; iSpe < tmpspecies.size (); iSpe++) {
 			if (!tmpspecies [iSpe].isDead) {	// if the species is still alive
-				unsigned int iMainGenome = tmpspecies [iSpe].members [rand() % tmpspecies [iSpe].members.size ()];	// select a random member to be the main genome of the species
+				// the fitter genome is the leader
+				unsigned int iMainGenome = tmpspecies [iSpe].members [0];
+				for (size_t i = 1; i < tmpspecies [iSpe].members.size (); i++) {
+					if (
+						genomes [tmpspecies [iSpe].members [i]]->fitness > genomes [iMainGenome]->fitness	// fitter found
+						|| (
+							Eq_Float (genomes [tmpspecies [iSpe].members [i]]->fitness, genomes [iMainGenome]->fitness)	// another genome has this fitness
+							&& Random_Float (0, 1, true, false) < 0.5f
+							)
+					) iMainGenome = tmpspecies [iSpe].members [i];
+				}
+
 				tmpspecies [iSpe].members.clear ();
 				tmpspecies [iSpe].members.push_back (iMainGenome);
 				genomes [iMainGenome]->speciesId = tmpspecies [iSpe].id;
