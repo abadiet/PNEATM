@@ -6,7 +6,7 @@ int main () {
     // init pneatm logger
 	spdlog::set_pattern ("[%Y-%m-%d %H:%M:%S.%e] [%t] [%^%l%$] %v");
     spdlog::set_level(spdlog::level::err);
-    auto logger = spdlog::rotating_logger_mt("pneatm_logger", "logs/log.txt", 1048576 * 100, 10);
+    auto logger = spdlog::rotating_logger_mt("pneatm_logger", "logs/log.txt", 1048576 * 100, 500);
 
     // init stats logger
 
@@ -22,7 +22,7 @@ int main () {
 
     unsigned int maxIterationThresh = 500;
     float bestFitness = 0.0f;
-    while (bestFitness < 2000.0f && pop.getGeneration () < 10000) { // while goal is not reach
+    while (bestFitness < 2000.0f && pop.getGeneration () < 800) { // while goal is not reach
         std::cout << "generation " << pop.getGeneration () << std::endl;
 
         for (unsigned int genomeId = 0; genomeId < popSize; genomeId ++) {
@@ -58,7 +58,7 @@ int main () {
         }
 
         // speciation step
-        pop.speciate ();
+        pop.speciate (5, 0, 100, 0.5f);
 
         bestFitness = pop.getFitterGenome ().getFitness ();
         std::cout << "  - best fitness: " << bestFitness << std::endl;
