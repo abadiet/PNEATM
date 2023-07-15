@@ -460,9 +460,9 @@ void Population<Args...>::UpdateFitnesses () {
 					/ (avgFitnessAdjusted + std::numeric_limits<float>::min ())
 				);	// note that (int) 0.9f == 0.0f
 			} else {
-				// the species cannot have offsprings it has not iproved for a long time
+				// the species cannot have offsprings it has not improved for a long time
 				species[i].allowedOffspring = 0;
-				logger->trace ("species{} has not evolved for a long time: it is removed", i);
+				logger->trace ("species{} has not improved for a long time: it is removed", i);
 			}
 		}
 	}
@@ -489,32 +489,34 @@ void Population<Args...>::crossover (bool elitism) {
 	}
 
 	for (unsigned int iSpe = 0; iSpe < (unsigned int) species.size (); iSpe ++) {
-		for (int k = 0; k < species [iSpe].allowedOffspring; k++) {
-			// choose pseudo-randomly two parents. Don't care if they're identical as the child will be mutated...
-			unsigned int iParent1 = SelectParent (iSpe);
-			unsigned int iParent2 = SelectParent (iSpe);
+		if (!species [iSpe].isDead) {
+			for (int k = 0; k < species [iSpe].allowedOffspring; k++) {
+				// choose pseudo-randomly two parents. Don't care if they're identical as the child will be mutated...
+				unsigned int iParent1 = SelectParent (iSpe);
+				unsigned int iParent2 = SelectParent (iSpe);
 
-			// clone the fitter
-			unsigned int iMainParent;
-			unsigned int iSecondParent;
-			if (genomes [iParent1]->fitness > genomes [iParent2]->fitness) {
-				iMainParent = iParent1;
-				iSecondParent = iParent2;
-			} else {
-				iMainParent = iParent2;
-				iSecondParent = iParent1;
-			}
+				// clone the fitter
+				unsigned int iMainParent;
+				unsigned int iSecondParent;
+				if (genomes [iParent1]->fitness > genomes [iParent2]->fitness) {
+					iMainParent = iParent1;
+					iSecondParent = iParent2;
+				} else {
+					iMainParent = iParent2;
+					iSecondParent = iParent1;
+				}
 
-			logger->trace ("adding child from the parents genome{0} and genome{1} to the new generation", iMainParent, iSecondParent);
+				logger->trace ("adding child from the parents genome{0} and genome{1} to the new generation", iMainParent, iSecondParent);
 
-			newGenomes.push_back (genomes [iMainParent]->clone ());
+				newGenomes.push_back (genomes [iMainParent]->clone ());
 
-			// connections shared by both of the parents must be randomly wheighted
-			for (size_t iMainParentConn = 0; iMainParentConn < genomes [iMainParent]->connections.size (); iMainParentConn ++) {
-				for (size_t iSecondParentConn = 0; iSecondParentConn < genomes [iSecondParent]->connections.size (); iSecondParentConn ++) {
-					if (genomes [iMainParent]->connections [iMainParentConn].innovId == genomes [iSecondParent]->connections [iSecondParentConn].innovId) {
-						if (Random_Float (0.0f, 1.0f, true, false) < 0.5f) {	// 50 % of chance for each parent, newGenome already have the wheight of MainParent
-							newGenomes.back ()->connections [iMainParentConn].weight = genomes [iSecondParent]->connections [iSecondParentConn].weight;
+				// connections shared by both of the parents must be randomly wheighted
+				for (size_t iMainParentConn = 0; iMainParentConn < genomes [iMainParent]->connections.size (); iMainParentConn ++) {
+					for (size_t iSecondParentConn = 0; iSecondParentConn < genomes [iSecondParent]->connections.size (); iSecondParentConn ++) {
+						if (genomes [iMainParent]->connections [iMainParentConn].innovId == genomes [iSecondParent]->connections [iSecondParentConn].innovId) {
+							if (Random_Float (0.0f, 1.0f, true, false) < 0.5f) {	// 50 % of chance for each parent, newGenome already have the wheight of MainParent
+								newGenomes.back ()->connections [iMainParentConn].weight = genomes [iSecondParent]->connections [iSecondParentConn].weight;
+							}
 						}
 					}
 				}
@@ -560,6 +562,13 @@ int Population<Args...>::SelectParent (unsigned int iSpe) {
 	This works by randomly choosing a value between 0 and the sum of all the fitnesses then go through all the genomes
 	and add their fitness to a running sum and if that sum is greater than the random value generated,
 	that genome is chosen since players with a higher fitness function add more to the running sum then they have a higher chance of being chosen */
+
+	if (Eq_Float (species [iSpe].sumFitness, 0.0f)) {
+		// everyone as a null fitness: we return a random genome
+		return species [iSpe].members [
+			Random_UInt (0, (unsigned int) species [iSpe].members.size () - 1)
+		];
+	}
 
 	float randThresh = Random_Float (0.0f, species [iSpe].sumFitness, true, false);
 	float runningSum = 0.0f;
