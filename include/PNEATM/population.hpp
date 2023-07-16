@@ -49,7 +49,7 @@ class Population {
 		T_out getOutput (unsigned int output_id, unsigned int genome_id);
 
 		void setFitness (float fitness, unsigned int genome_id);
-		void speciate (unsigned int target = 5, unsigned int targetThresh = 0, unsigned int maxIterationsReachTarget = 100, float stepThresh = 0.3f, float a = 1.0f, float b = 1.0f, float c = 0.4f);
+		void speciate (unsigned int target = 5, unsigned int targetThresh = 0, unsigned int maxIterationsReachTarget = 100, float stepThresh = 0.3f, float a = 1.0f, float b = 1.0f, float c = 0.4f, float speciesSizeEvolutionLimit = 3.0f);
 		void crossover (bool elitism = false);
 		void mutate (mutationParams_t params);
 		void mutate (std::function<mutationParams_t (float)> paramsMap);
@@ -91,7 +91,7 @@ class Population {
 		std::ofstream statsFile;
 
 		float CompareGenomes (unsigned int ig1, unsigned int ig2, float a, float b, float c);
-		void UpdateFitnesses ();
+		void UpdateFitnesses (float speciesSizeEvolutionLimit);
 		int SelectParent (unsigned int iSpe);
 };
 
@@ -218,7 +218,7 @@ void Population<Args...>::setFitness (float fitness, unsigned int genome_id) {
 }
 
 template <typename... Args>
-void Population<Args...>::speciate (unsigned int target, unsigned int targetThresh, unsigned int maxIterationsReachTarget, float stepThresh, float a, float b, float c) {
+void Population<Args...>::speciate (unsigned int target, unsigned int targetThresh, unsigned int maxIterationsReachTarget, float stepThresh, float a, float b, float c, float speciesSizeEvolutionLimit) {
 	logger->info ("Speciation");
 	// species randomization: we do that here to avoid the first species to become too large.
 	// Actually, as we are using a sequential process to assign a given to genome to a species, the first one may become to large
@@ -325,7 +325,7 @@ void Population<Args...>::speciate (unsigned int target, unsigned int targetThre
 	logger->trace ("speciation result in {0} alive species in {1} iteration(s)", nbSpeciesAlive, ite);
 
 	// update all the fitness as we now know the species
-	UpdateFitnesses ();
+	UpdateFitnesses (speciesSizeEvolutionLimit);
 }
 
 template <typename... Args>
@@ -420,7 +420,7 @@ float Population<Args...>::CompareGenomes (unsigned int ig1, unsigned int ig2, f
 }
 
 template <typename... Args>
-void Population<Args...>::UpdateFitnesses () {
+void Population<Args...>::UpdateFitnesses (float speciesSizeEvolutionLimit) {
 	fittergenome_id = 0;
 	avgFitness = 0;
 	avgFitnessAdjusted = 0;
@@ -468,7 +468,7 @@ void Population<Args...>::UpdateFitnesses () {
 				// the species can have offsprings
 
 				float evolutionFactor = species [i].avgFitnessAdjusted / (avgFitnessAdjusted + std::numeric_limits<float>::min ());
-				//if (evolutionFactor > 5.0f) evolutionFactor = 5.0f;
+				if (evolutionFactor > speciesSizeEvolutionLimit) evolutionFactor = speciesSizeEvolutionLimit;	// we limit the speceis evolution factor: a species's size cannot skyrocket from few genomes
 
 				species [i].allowedOffspring = (int) ((float) species [i].members.size () * evolutionFactor);	// note that (int) 0.9f == 0.0f
 			} else {

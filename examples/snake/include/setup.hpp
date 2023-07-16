@@ -117,17 +117,17 @@ pneatm::Population<myInt, float> SetupPopulation (unsigned int popSize, spdlog::
 
 std::function<pneatm::mutationParams_t (float)> SetupMutationParametersMaps () {
     pneatm::mutationParams_t explorationSet;
-    explorationSet.nodes.rate = 0.8f;
+    explorationSet.nodes.rate = 0.3f;
     explorationSet.nodes.monotypedRate = 0.5f;
     explorationSet.nodes.monotyped.maxIterationsFindConnection = 100;
     explorationSet.nodes.bityped.maxRecurrencyEntryConnection = 0;
     explorationSet.nodes.bityped.maxIterationsFindNode = 100;
-    explorationSet.connections.rate = 0.8f;
-    explorationSet.connections.reactivateRate = 0.8f;
+    explorationSet.connections.rate = 0.3f;
+    explorationSet.connections.reactivateRate = 0.4f;
     explorationSet.connections.maxRecurrency = 0;
     explorationSet.connections.maxIterations = 100;
     explorationSet.connections.maxIterationsFindNode = 100;
-    explorationSet.weights.rate = 0.6f;
+    explorationSet.weights.rate = 0.3f;
     explorationSet.weights.fullChangeRate = 0.5f;
     explorationSet.weights.perturbationFactor = 2.0f;
     pneatm::mutationParams_t refinementSet;
