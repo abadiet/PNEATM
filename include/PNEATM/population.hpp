@@ -48,7 +48,7 @@ class Population {
 		T_out getOutput (unsigned int output_id, unsigned int genome_id);
 
 		void setFitness (float fitness, unsigned int genome_id);
-		void speciate (unsigned int target = 5, unsigned int targetThresh = 0, unsigned int maxIterationsReachTarget = 50, float stepThresh = 0.3f, float a = 1.0f, float b = 1.0f, float c = 0.4f);
+		void speciate (unsigned int target = 5, unsigned int targetThresh = 0, unsigned int maxIterationsReachTarget = 100, float stepThresh = 0.3f, float a = 1.0f, float b = 1.0f, float c = 0.4f);
 		void crossover (bool elitism = false);
 		void mutate (mutationParams_t params);
 		void mutate (std::function<mutationParams_t (float)> paramsMap);
@@ -454,16 +454,18 @@ void Population<Args...>::UpdateFitnesses () {
 		if (!species [i].isDead) {
 			if (species [i].gensSinceImproved < threshGensSinceImproved) {
 				// the species can have offsprings
-				species [i].allowedOffspring = (int) (
-					(float) species [i].members.size ()
-					* species [i].avgFitnessAdjusted
-					/ (avgFitnessAdjusted + std::numeric_limits<float>::min ())
-				);	// note that (int) 0.9f == 0.0f
+
+				float evolutionFactor = species [i].avgFitnessAdjusted / (avgFitnessAdjusted + std::numeric_limits<float>::min ());
+				//if (evolutionFactor > 5.0f) evolutionFactor = 5.0f;
+
+				species [i].allowedOffspring = (int) ((float) species [i].members.size () * evolutionFactor);	// note that (int) 0.9f == 0.0f
 			} else {
 				// the species cannot have offsprings it has not improved for a long time
 				species[i].allowedOffspring = 0;
 				logger->trace ("species{} has not improved for a long time: it is removed", i);
 			}
+
+			std::cout << species [i].id << "   " << species [i].avgFitnessAdjusted << "   " << species [i].members.size () << "   " << species [i].allowedOffspring << std::endl;
 		}
 	}
 
