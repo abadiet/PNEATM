@@ -3,7 +3,8 @@
 
 #include <PNEATM/genome.hpp>
 #include <PNEATM/species.hpp>
-#include <PNEATM/Connection/innovation.hpp>
+#include <PNEATM/Connection/innovation_connection.hpp>
+#include <PNEATM/Node/innovation_node.hpp>
 #include <PNEATM/utils.hpp>
 #include <fstream>
 #include <iostream>
@@ -28,7 +29,7 @@ class Population {
 		unsigned int getGeneration () {return generation;};
 		float getAvgFitness () {return avgFitness;};
 		float getAvgFitnessAdjusted () {return avgFitnessAdjusted;};
-		Genome<Args...>& getFitterGenome () {return *genomes [fittergenome_id];};
+		Genome<Args...>& getFitterGenome ();
 
 		template <typename T_in>
 		void loadInputs (std::vector<T_in> inputs);
@@ -83,7 +84,8 @@ class Population {
 		std::vector<std::unique_ptr<Genome<Args...>>> genomes;
 		std::vector<Species> species;
 		std::vector<std::vector<std::vector<void*>>> activationFns;
-		innovation_t conn_innov;
+		innovationConn_t conn_innov;
+		innovationNode_t node_innov;
 
 		spdlog::logger* logger;
 		std::ofstream statsFile;
@@ -129,7 +131,7 @@ Population<Args...>::Population(unsigned int popSize, std::vector<size_t> bias_s
 
 	genomes.reserve (popSize);
 	for (unsigned int i = 0; i < popSize; i++) {
-		genomes.push_back (std::make_unique<Genome<Args...>> (bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, &conn_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger));
+		genomes.push_back (std::make_unique<Genome<Args...>> (bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, &conn_innov, &node_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger));
 	}
 }
 
@@ -137,6 +139,16 @@ template <typename... Args>
 Population<Args...>::~Population () {
 	logger->info ("Population destruction");
 	if (statsFile.is_open ()) statsFile.close ();
+}
+
+template <typename... Args>
+Genome<Args...>& Population<Args...>::getFitterGenome () {
+	if (fittergenome_id < 0) {
+		// fitter genome cannot be found
+		logger->warn ("Calling Population<Args...>::getFitterGenome cannot determine which genome is the fitter: in order to know it, call Population<Args...>::speciate first. Returning the first genome.");
+		return *genomes [0];
+	}
+	return *genomes [fittergenome_id];
 }
 
 template <typename... Args>
@@ -529,7 +541,7 @@ void Population<Args...>::crossover (bool elitism) {
 	int previousSize = (int) newGenomes.size();
 	// add genomes if some are missing
 	for (int k = 0; k < (int) popSize - (int) previousSize; k++) {
-		newGenomes.push_back (std::make_unique<Genome<Args...>> (bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, &conn_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger));
+		newGenomes.push_back (std::make_unique<Genome<Args...>> (bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, &conn_innov, &node_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger));
 	}
 	// or remove some genomes if there is too many genomes
 	for (int k = 0; k < (int) previousSize - (int) popSize; k++) {
@@ -588,7 +600,7 @@ void Population<Args...>::mutate (mutationParams_t params) {
 	logger->info ("Mutations");
 	for (unsigned int i = 0; i < popSize; i++) {
 		logger->trace ("Mutation of genome{}", i);
-		genomes [i]->mutate (&conn_innov, params);
+		genomes [i]->mutate (&conn_innov, &node_innov, params);
 	}
 }
 
@@ -597,7 +609,7 @@ void Population<Args...>::mutate (std::function<mutationParams_t (float)> params
 	logger->info ("Mutations");
 	for (unsigned int i = 0; i < popSize; i++) {
 		logger->trace ("Mutation of genome{}", i);
-		genomes [i]->mutate (&conn_innov, paramsMap (genomes [i]->getFitness ()));
+		genomes [i]->mutate (&conn_innov, &node_innov, paramsMap (genomes [i]->getFitness ()));
 	}
 }
 
@@ -644,8 +656,10 @@ void Population<Args...>::print (std::string prefix) {
 		}
 	}
 	std::cout << std::endl;
-	std::cout << prefix << "Innovations:" << std::endl;
+	std::cout << prefix << "Connections Innovations:" << std::endl;
 	conn_innov.print (prefix + "   ");
+	std::cout << prefix << "Nodes Innovations:" << std::endl;
+	node_innov.print (prefix + "   ");
 	std::cout << prefix << "Genomes: " << std::endl;
 	for (size_t i = 0; i < genomes.size (); i++) {
 		std::cout << prefix << " * Genome " << i << std::endl;

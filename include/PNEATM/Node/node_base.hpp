@@ -29,9 +29,11 @@ class NodeBase{
 
 	protected:
 		unsigned int id;
+		unsigned int innovId;
 		int layer;
 		unsigned int index_T_in;
 		unsigned int index_T_out;
+		unsigned int index_activation_fn;
 
 	template <typename... Args>
 	friend class Genome;

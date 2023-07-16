@@ -51,6 +51,7 @@ Node<T_in, T_out>::Node () {
 	func = [] (T_in input) {	// default activation function is the identity (useful for bias/inputs/outputs)
 		return input;
 	};
+	index_activation_fn = 0;	// default activation function (identity) id is 0
 }
 
 template <typename T_in, typename T_out>
@@ -93,6 +94,7 @@ std::unique_ptr<NodeBase> Node<T_in, T_out>::clone () {
 	std::unique_ptr<NodeBase> node =  std::make_unique<Node<T_in, T_out>> ();
 
 	node->id = id;
+	node->innovId = innovId;
 	node->layer = layer;
 	node->index_T_in = index_T_in;
 	node->index_T_out = index_T_out;
@@ -107,9 +109,11 @@ std::unique_ptr<NodeBase> Node<T_in, T_out>::clone () {
 template <typename T_in, typename T_out>
 void Node<T_in, T_out>::print (std::string prefix) {
 	std::cout << prefix << "ID: " << id << std::endl;
+	std::cout << prefix << "Innovation ID: " << innovId << std::endl;
 	std::cout << prefix << "Layer: " << layer << std::endl;
 	std::cout << prefix << "Input Type ID: " << index_T_in << std::endl;
 	std::cout << prefix << "Output Type ID: " << index_T_out << std::endl;
+	std::cout << prefix << "Activation Function ID: " << index_activation_fn << std::endl;
 	std::cout << prefix << "Current Input Value: " << input << std::endl;
 	std::cout << prefix << "Current Output Value: " << output << std::endl;
 	std::cout << prefix << "Reset Value: " << resetValue << std::endl;

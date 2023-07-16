@@ -1,7 +1,7 @@
 #include <setup.hpp>
 
 int main () {
-    srand ((int) time (0));	// init seed for rand
+    srand ((int) time (0));	// init seed for rand function
 
     // init pneatm logger
 	spdlog::set_pattern ("[%Y-%m-%d %H:%M:%S.%e] [%t] [%^%l%$] %v");
@@ -102,7 +102,7 @@ int main () {
 
     // print info and draw genome's network
     //pop.getFitterGenome ().print ();
-    pop.getFitterGenome ().draw ("/usr/share/fonts/OTF/SF-Pro-Rounded-Light.otf");
+    //pop.getFitterGenome ().draw ("/usr/share/fonts/OTF/SF-Pro-Rounded-Light.otf");
 
     // play a game by the fitter genome
     //playGameFitter (pop.getFitterGenome (), maxIterationThresh, false, {800, 600}, 0.12f, 8);
