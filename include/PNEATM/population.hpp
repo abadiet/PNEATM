@@ -29,7 +29,7 @@ class Population {
 		unsigned int getGeneration () {return generation;};
 		float getAvgFitness () {return avgFitness;};
 		float getAvgFitnessAdjusted () {return avgFitnessAdjusted;};
-		Genome<Args...>& getFitterGenome ();
+		Genome<Args...>& getGenome (int id = -1);
 
 		template <typename T_in>
 		void loadInputs (std::vector<T_in> inputs);
@@ -142,13 +142,16 @@ Population<Args...>::~Population () {
 }
 
 template <typename... Args>
-Genome<Args...>& Population<Args...>::getFitterGenome () {
-	if (fittergenome_id < 0) {
-		// fitter genome cannot be found
-		logger->warn ("Calling Population<Args...>::getFitterGenome cannot determine which genome is the fitter: in order to know it, call Population<Args...>::speciate first. Returning the first genome.");
-		return *genomes [0];
+Genome<Args...>& Population<Args...>::getGenome (int id) {
+	if (id < 0 || id >= popSize) {
+		if (fittergenome_id < 0) {
+			// fitter genome cannot be found
+			logger->warn ("Calling Population<Args...>::getGenome cannot determine which is the more fit genome: in order to know it, call Population<Args...>::speciate first. Returning the first genome.");
+			return *genomes [0];
+		}
+		return *genomes [fittergenome_id];
 	}
-	return *genomes [fittergenome_id];
+	return *genomes [id];
 }
 
 template <typename... Args>
@@ -320,11 +323,11 @@ void Population<Args...>::speciate (unsigned int target, unsigned int targetThre
 	// update leaders
 	for (size_t iSpe = 0; iSpe < species.size (); iSpe++) {
 		if (!species [iSpe].isDead) {	// if the species is still alive, this also ensure that there is at least one member 
-			// the fitter genome is the leader (TODO to change to weighted centroid)
+			// the more fit genome is the leader (TODO to change to weighted centroid)
 			unsigned int ileader = species [iSpe].members [0];
 			for (size_t i = 1; i < species [iSpe].members.size (); i++) {
 				if (
-					genomes [species [iSpe].members [i]]->fitness > genomes [ileader]->fitness	// fitter found
+					genomes [species [iSpe].members [i]]->fitness > genomes [ileader]->fitness	// a better genome is found
 					|| (
 						Eq_Float (genomes [species [iSpe].members [i]]->fitness, genomes [ileader]->fitness)	// another genome has this fitness
 						&& Random_Float (0, 1, true, false) < 0.5f
@@ -509,8 +512,8 @@ void Population<Args...>::crossover (bool elitism) {
 	std::vector<std::unique_ptr<Genome<Args...>>> newGenomes;
 	newGenomes.reserve (popSize);
 
-	if (elitism) {	// elitism mode on = we conserve during generations the fitter genome
-		logger->trace ("elitism is on: adding the fitter genome to the new generation");
+	if (elitism) {	// elitism mode on = we conserve during generations the more fit genome
+		logger->trace ("elitism is on: adding the more fit genome to the new generation");
 		newGenomes.push_back (genomes [fittergenome_id]->clone ());
 	}
 
@@ -521,7 +524,7 @@ void Population<Args...>::crossover (bool elitism) {
 				unsigned int iParent1 = SelectParent (iSpe);
 				unsigned int iParent2 = SelectParent (iSpe);
 
-				// clone the fitter
+				// clone the more fit
 				unsigned int iMainParent;
 				unsigned int iSecondParent;
 				if (genomes [iParent1]->fitness > genomes [iParent2]->fitness) {
@@ -660,7 +663,7 @@ void Population<Args...>::print (std::string prefix) {
 	std::cout << prefix << "   Probability of adding recurrency: " << probRecuInit << std::endl;
 	std::cout << prefix << "   Maximum recurrency at initialization: " << maxRecuInit << std::endl;
 	std::cout << prefix << "   Weight's range at intialization: [" << -1.0f * weightExtremumInit << ", " << weightExtremumInit << "]" << std::endl;
-	std::cout << prefix << "Current Fitter Genome ID: " <<fittergenome_id << std::endl;
+	std::cout << prefix << "Current More Fit Genome ID: " << fittergenome_id << std::endl;
 	std::cout << prefix << "Number of Activation Functions [Input TypeID to Output TypeID (Number of functions)]: ";
 	for (size_t i = 0; i < activationFns.size (); i++) {
 		for (size_t j = 0; j < activationFns [i].size (); j++) {
