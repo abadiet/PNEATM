@@ -24,9 +24,10 @@ class Connection {
 
 	template <typename... Args>
 	friend class Genome;
-
 	template <typename... Args>
 	friend class Population;
+	template <typename... Args>
+	friend class Species;
 };
 
 }

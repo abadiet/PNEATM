@@ -112,23 +112,23 @@ pneatm::Population<myInt, float> SetupPopulation (unsigned int popSize, spdlog::
     unsigned int maxRecuInit = 0;
     float speciationThreshInit = 20.0f;
     unsigned int threshGensSinceImproved = 15;
-    return pneatm::Population<myInt, float> (popSize, bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger, speciationThreshInit, threshGensSinceImproved, "stats15.csv");
+    return pneatm::Population<myInt, float> (popSize, bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger, speciationThreshInit, threshGensSinceImproved, "stats16.csv");
 }
 
 std::function<pneatm::mutationParams_t (float)> SetupMutationParametersMaps () {
     pneatm::mutationParams_t explorationSet;
-    explorationSet.nodes.rate = 0.3f;
+    explorationSet.nodes.rate = 0.25f;
     explorationSet.nodes.monotypedRate = 0.5f;
     explorationSet.nodes.monotyped.maxIterationsFindConnection = 100;
     explorationSet.nodes.bityped.maxRecurrencyEntryConnection = 0;
     explorationSet.nodes.bityped.maxIterationsFindNode = 100;
-    explorationSet.connections.rate = 0.3f;
-    explorationSet.connections.reactivateRate = 0.4f;
+    explorationSet.connections.rate = 0.25f;
+    explorationSet.connections.reactivateRate = 0.3f;
     explorationSet.connections.maxRecurrency = 0;
     explorationSet.connections.maxIterations = 100;
     explorationSet.connections.maxIterationsFindNode = 100;
-    explorationSet.weights.rate = 0.3f;
-    explorationSet.weights.fullChangeRate = 0.5f;
+    explorationSet.weights.rate = 0.15f;
+    explorationSet.weights.fullChangeRate = 0.3f;
     explorationSet.weights.perturbationFactor = 2.0f;
     pneatm::mutationParams_t refinementSet;
     refinementSet.nodes.rate = 0.1f;

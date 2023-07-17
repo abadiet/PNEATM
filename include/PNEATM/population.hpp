@@ -82,7 +82,7 @@ class Population {
 
 		int fittergenome_id;
 		std::vector<std::unique_ptr<Genome<Args...>>> genomes;
-		std::vector<Species> species;
+		std::vector<Species<Args...>> species;
 		std::vector<std::vector<std::vector<void*>>> activationFns;
 		innovationConn_t conn_innov;
 		innovationNode_t node_innov;	// innovation id is more like a global id to decerne two different nodes than something to track innovation
@@ -90,7 +90,7 @@ class Population {
 		spdlog::logger* logger;
 		std::ofstream statsFile;
 
-		float CompareGenomes (unsigned int ig1, unsigned int ig2, float a, float b, float c);
+		//float CompareGenomes (unsigned int ig1, unsigned int ig2, float a, float b, float c);
 		void UpdateFitnesses (float speciesSizeEvolutionLimit);
 		int SelectParent (unsigned int iSpe);
 };
@@ -220,9 +220,10 @@ void Population<Args...>::setFitness (float fitness, unsigned int genome_id) {
 template <typename... Args>
 void Population<Args...>::speciate (unsigned int target, unsigned int targetThresh, unsigned int maxIterationsReachTarget, float stepThresh, float a, float b, float c, float speciesSizeEvolutionLimit) {
 	logger->info ("Speciation");
+
 	// species randomization: we do that here to avoid the first species to become too large.
 	// Actually, as we are using a sequential process to assign a given to genome to a species, the first one may become to large
-	std::vector<Species> newSpecies;
+	std::vector<Species<Args...>> newSpecies;
 	while (species.size () > 0) {
 		unsigned int r = Random_UInt (0, (unsigned int) species.size () - 1);	// randomly select a species
 		newSpecies.push_back (species [r]);										// add it to the new ones
@@ -231,7 +232,7 @@ void Population<Args...>::speciate (unsigned int target, unsigned int targetThre
 	species.clear ();
 	species = newSpecies;
 
-	std::vector<Species> tmpspecies;
+	std::vector<Species<Args...>> tmpspecies;
 	unsigned int nbSpeciesAlive = 0;
 	unsigned int ite = 0;
 
@@ -239,6 +240,7 @@ void Population<Args...>::speciate (unsigned int target, unsigned int targetThre
 		ite < maxIterationsReachTarget
 		&& ((int) nbSpeciesAlive < (int) target - (int) targetThresh || nbSpeciesAlive > target + targetThresh)
 	) {
+
 		// init tmpspecies
 		tmpspecies.clear ();
 		tmpspecies = species;
@@ -249,24 +251,10 @@ void Population<Args...>::speciate (unsigned int target, unsigned int targetThre
 			genomes [i]->speciesId = -1;
 		}
 
-		// init tmpspecies with leaders
+		// reset tmpspecies
 		for (size_t iSpe = 0; iSpe < tmpspecies.size (); iSpe++) {
 			if (!tmpspecies [iSpe].isDead) {	// if the species is still alive
-				// the fitter genome is the leader
-				unsigned int iMainGenome = tmpspecies [iSpe].members [0];
-				for (size_t i = 1; i < tmpspecies [iSpe].members.size (); i++) {
-					if (
-						genomes [tmpspecies [iSpe].members [i]]->fitness > genomes [iMainGenome]->fitness	// fitter found
-						|| (
-							Eq_Float (genomes [tmpspecies [iSpe].members [i]]->fitness, genomes [iMainGenome]->fitness)	// another genome has this fitness
-							&& Random_Float (0, 1, true, false) < 0.5f
-							)
-					) iMainGenome = tmpspecies [iSpe].members [i];
-				}
-
 				tmpspecies [iSpe].members.clear ();
-				tmpspecies [iSpe].members.push_back (iMainGenome);
-				genomes [iMainGenome]->speciesId = tmpspecies [iSpe].id;
 			}
 		}
 
@@ -278,7 +266,7 @@ void Population<Args...>::speciate (unsigned int target, unsigned int targetThre
 					itmpspecies < (unsigned int) tmpspecies.size ()
 					&& (
 						tmpspecies [itmpspecies].isDead
-						|| !(CompareGenomes (tmpspecies [itmpspecies].members [0], genome_id, a, b, c) < speciationThresh)	// comparison leader vs genome_id
+						|| !(tmpspecies [itmpspecies].distanceWith (genomes [genome_id], a, b, c) < speciationThresh)	// comparison leader vs genome_id
 						)
 					)
 				{
@@ -286,8 +274,9 @@ void Population<Args...>::speciate (unsigned int target, unsigned int targetThre
 				}
 				if (itmpspecies == (unsigned int) tmpspecies.size ()) {
 					// no species found for the current genome, we have to create one new
-					tmpspecies.push_back (Species (itmpspecies));
+					tmpspecies.push_back (Species<Args...> (itmpspecies, genomes [genome_id]));
 				}
+
 				tmpspecies [itmpspecies].members.push_back (genome_id);
 				genomes [genome_id]->speciesId = tmpspecies [itmpspecies].id;
 			}
@@ -295,6 +284,10 @@ void Population<Args...>::speciate (unsigned int target, unsigned int targetThre
 
 		// check how many species are still alive
 		for (size_t iSpe = 0; iSpe < tmpspecies.size (); iSpe++) {
+			if (tmpspecies [iSpe].members.size () == 0) {
+				// the species has no member, the species is dead
+				tmpspecies [iSpe].isDead = true;
+			}
 			if (!tmpspecies [iSpe].isDead) {	// if the species is still alive
 				nbSpeciesAlive ++;
 			}
@@ -324,11 +317,30 @@ void Population<Args...>::speciate (unsigned int target, unsigned int targetThre
 
 	logger->trace ("speciation result in {0} alive species in {1} iteration(s)", nbSpeciesAlive, ite);
 
+	// update leaders
+	for (size_t iSpe = 0; iSpe < species.size (); iSpe++) {
+		if (!species [iSpe].isDead) {	// if the species is still alive, this also ensure that there is at least one member 
+			// the fitter genome is the leader (TODO to change to weighted centroid)
+			unsigned int ileader = species [iSpe].members [0];
+			for (size_t i = 1; i < species [iSpe].members.size (); i++) {
+				if (
+					genomes [species [iSpe].members [i]]->fitness > genomes [ileader]->fitness	// fitter found
+					|| (
+						Eq_Float (genomes [species [iSpe].members [i]]->fitness, genomes [ileader]->fitness)	// another genome has this fitness
+						&& Random_Float (0, 1, true, false) < 0.5f
+						)
+				) ileader = species [iSpe].members [i];
+			}
+
+			species [iSpe].leader = genomes [ileader]->clone ();
+		}
+	}
+
 	// update all the fitness as we now know the species
 	UpdateFitnesses (speciesSizeEvolutionLimit);
 }
 
-template <typename... Args>
+/*template <typename... Args>
 float Population<Args...>::CompareGenomes (unsigned int ig1, unsigned int ig2, float a, float b, float c) {
 	// get enabled connections and maxInnovId for genome 1
 	unsigned int maxInnovId1 = 0;
@@ -417,7 +429,7 @@ float Population<Args...>::CompareGenomes (unsigned int ig1, unsigned int ig2, f
 		// let's return the maximum float as they might be very differents
 		return std::numeric_limits<float>::max ();
 	}
-}
+}*/
 
 template <typename... Args>
 void Population<Args...>::UpdateFitnesses (float speciesSizeEvolutionLimit) {
@@ -477,7 +489,7 @@ void Population<Args...>::UpdateFitnesses (float speciesSizeEvolutionLimit) {
 				logger->trace ("species{} has not improved for a long time: it is removed", i);
 			}
 
-			std::cout << species [i].id << "   " << species [i].avgFitnessAdjusted << "   " << species [i].members.size () << "   " << species [i].allowedOffspring << std::endl;
+std::cout << species [i].id << "   " << species [i].avgFitnessAdjusted << "   " << species [i].members.size () << "   " << species [i].allowedOffspring << std::endl;
 		}
 	}
 
@@ -666,7 +678,7 @@ void Population<Args...>::print (std::string prefix) {
 		genomes [i]->print (prefix + "   ");
 	}
 	std::cout << prefix << "Species: " << std::endl;
-	for (Species spe : species) {
+	for (Species<Args...> spe : species) {
 		spe.print (prefix + "   ");
 	}
 }

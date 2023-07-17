@@ -22,7 +22,7 @@ int main () {
 
     unsigned int maxIterationThresh = 500;
     float bestFitness = 0.0f;
-    while (bestFitness < 2000.0f && pop.getGeneration () < 50) { // while goal is not reach
+    while (bestFitness < 2000.0f && pop.getGeneration () < 100) { // while goal is not reach
         std::cout << "generation " << pop.getGeneration () << std::endl;
 
         for (unsigned int genomeId = 0; genomeId < popSize; genomeId ++) {

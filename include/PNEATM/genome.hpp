@@ -55,6 +55,7 @@ class Genome {
 	public:
 		Genome (std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_init, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, innovationConn_t* conn_innov, innovationNode_t* node_innov, unsigned int N_ConnInit, float probRecuInit, float weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger);
 		Genome (unsigned int nbBias, unsigned int nbInput, unsigned int nbOutput, unsigned int N_types, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, float weightExtremumInit, spdlog::logger* logger);
+		//Genome () {};
 		~Genome ();
 
 		float getFitness () {return fitness;};
@@ -109,6 +110,8 @@ class Genome {
 
 	template <typename... Args2>
 	friend class Population;
+	template <typename... Args2>
+	friend class Species;
 };
 
 }
