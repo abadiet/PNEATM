@@ -26,12 +26,12 @@ int main () {
         std::cout << "generation " << pop.getGeneration () << std::endl;
 
         for (unsigned int genomeId = 0; genomeId < popSize; genomeId ++) {
-            // reset snake
-            snake.reset ();
 
-            int nbGame = 3;
+            int nbGame = 5;
             float score = 0.0f;
-            for (int i = 0; i < nbGame; i++) {
+            for (int g = 0; g < nbGame; g++) {
+                snake.reset ();
+
                 bool isFinished = false;
                 unsigned int iteration = 0;
                 while (iteration < maxIterationThresh && !isFinished) { // while game has not ended

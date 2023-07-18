@@ -193,12 +193,14 @@ void Population<Args...>::loadInput(T_in input, unsigned int input_id, unsigned 
 template <typename... Args>
 void Population<Args...>::resetMemory () {
 	for (size_t i = 0; i < genomes.size (); i++) {
+		logger->trace ("Reset genome{}'s memory", i);
 		genomes [i]->resetMemory ();
 	}
 }
 
 template <typename... Args>
 void Population<Args...>::resetMemory (unsigned int genome_id) {
+	logger->trace ("Reset genome{}'s memory", genome_id);
 	genomes [genome_id]->resetMemory ();
 }
 
