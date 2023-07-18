@@ -51,7 +51,7 @@ class Population {
 
 		void setFitness (double fitness, unsigned int genome_id);
 		void speciate (unsigned int target = 5, unsigned int targetThresh = 0, unsigned int maxIterationsReachTarget = 100, double stepThresh = 0.3, double a = 1.0, double b = 1.0f, double c = 0.4, double speciesSizeEvolutionLimit = 3.0);
-		void crossover (bool elitism = false);
+		void crossover (bool elitism = false, double crossover_rate = 0.7);
 		void mutate (mutationParams_t params);
 		void mutate (std::function<mutationParams_t (double)> paramsMap);
 
@@ -446,7 +446,7 @@ std::cout << species [i].id << "   " << species [i].avgFitnessAdjusted << "   " 
 }
 
 template <typename... Args>
-void Population<Args...>::crossover (bool elitism) {
+void Population<Args...>::crossover (bool elitism, double crossover_rate) {
 	logger->info ("Crossover");
 	std::vector<std::unique_ptr<Genome<Args...>>> newGenomes;
 	newGenomes.reserve (popSize);
@@ -459,34 +459,43 @@ void Population<Args...>::crossover (bool elitism) {
 	for (unsigned int iSpe = 0; iSpe < (unsigned int) species.size (); iSpe ++) {
 		if (!species [iSpe].isDead) {
 			for (int k = 0; k < species [iSpe].allowedOffspring; k++) {
-				// choose pseudo-randomly two parents. Don't care if they're identical as the child will be mutated...
+
+				// choose pseudo-randomly a first parent
 				unsigned int iParent1 = SelectParent (iSpe);
-				unsigned int iParent2 = SelectParent (iSpe);
 
-				// clone the more fit
-				unsigned int iMainParent;
-				unsigned int iSecondParent;
-				if (genomes [iParent1]->fitness > genomes [iParent2]->fitness) {
-					iMainParent = iParent1;
-					iSecondParent = iParent2;
-				} else {
-					iMainParent = iParent2;
-					iSecondParent = iParent1;
-				}
+				if (Random_Double (0.0, 1.0, true, false) < crossover_rate && species [iSpe].members.size () > 1) {
+					// choose pseudo-randomly a second parent
+					unsigned int iParent2 = SelectParent (iSpe);	// TODO might be the same parent as iParent1: is that an issue?
 
-				logger->trace ("adding child from the parents genome{0} and genome{1} to the new generation", iMainParent, iSecondParent);
+					// clone the more fit
+					unsigned int iMainParent;
+					unsigned int iSecondParent;
+					if (genomes [iParent1]->fitness > genomes [iParent2]->fitness) {
+						iMainParent = iParent1;
+						iSecondParent = iParent2;
+					} else {
+						iMainParent = iParent2;
+						iSecondParent = iParent1;
+					}
 
-				newGenomes.push_back (genomes [iMainParent]->clone ());
+					logger->trace ("adding child from the parents genome{0} and genome{1} to the new generation", iMainParent, iSecondParent);
 
-				// connections shared by both of the parents must be randomly wheighted
-				for (size_t iMainParentConn = 0; iMainParentConn < genomes [iMainParent]->connections.size (); iMainParentConn ++) {
-					for (size_t iSecondParentConn = 0; iSecondParentConn < genomes [iSecondParent]->connections.size (); iSecondParentConn ++) {
-						if (genomes [iMainParent]->connections [iMainParentConn].innovId == genomes [iSecondParent]->connections [iSecondParentConn].innovId) {
-							if (Random_Double (0.0, 1.0, true, false) < 0.5) {	// 50 % of chance for each parent, newGenome already have the wheight of MainParent
-								newGenomes.back ()->connections [iMainParentConn].weight = genomes [iSecondParent]->connections [iSecondParentConn].weight;
+					newGenomes.push_back (genomes [iMainParent]->clone ());
+
+					// connections shared by both of the parents must be randomly wheighted
+					for (size_t iMainParentConn = 0; iMainParentConn < genomes [iMainParent]->connections.size (); iMainParentConn ++) {
+						for (size_t iSecondParentConn = 0; iSecondParentConn < genomes [iSecondParent]->connections.size (); iSecondParentConn ++) {
+							if (genomes [iMainParent]->connections [iMainParentConn].innovId == genomes [iSecondParent]->connections [iSecondParentConn].innovId) {
+								if (Random_Double (0.0, 1.0, true, false) < 0.5) {	// 50 % of chance for each parent, newGenome already have the wheight of MainParent
+									newGenomes.back ()->connections [iMainParentConn].weight = genomes [iSecondParent]->connections [iSecondParentConn].weight;
+								}
 							}
 						}
 					}
+				} else {
+					// the genome is kept for the new generation (there is no crossover which emphasize mutation's effect eg exploration)
+					logger->trace ("adding genome{} to the new generation", iParent1);
+					newGenomes.push_back (genomes [iParent1]->clone ());
 				}
 			}
 		}

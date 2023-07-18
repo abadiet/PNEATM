@@ -112,7 +112,7 @@ pneatm::Population<myInt, myFloat> SetupPopulation (unsigned int popSize, spdlog
     unsigned int maxRecuInit = 0;
     double speciationThreshInit = 20.0;
     unsigned int threshGensSinceImproved = 15;
-    return pneatm::Population<myInt, myFloat> (popSize, bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger, speciationThreshInit, threshGensSinceImproved, "stats17.csv");
+    return pneatm::Population<myInt, myFloat> (popSize, bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger, speciationThreshInit, threshGensSinceImproved, "stats18.csv");
 }
 
 std::function<pneatm::mutationParams_t (double)> SetupMutationParametersMaps () {
