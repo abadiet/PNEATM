@@ -18,17 +18,17 @@ class Species {
 		Species (unsigned int id, std::vector<Connection> connections);
 		~Species () {};
 
-		float distanceWith (const std::unique_ptr<Genome<Args...>>& genome, float a, float b, float c);
+		double distanceWith (const std::unique_ptr<Genome<Args...>>& genome, double a, double b, double c);
 
 		void print (std::string prefix = "");
 
 	private:
 		unsigned int id;
 		std::vector<Connection> connections;
-		float avgFitness;
-		float avgFitnessAdjusted;
+		double avgFitness;
+		double avgFitnessAdjusted;
 		int allowedOffspring;
-		float sumFitness;
+		double sumFitness;
 		unsigned int gensSinceImproved;
 		bool isDead;
 		std::vector<unsigned int> members;
@@ -57,7 +57,7 @@ Species<Args...>::Species(unsigned int id, std::vector<Connection> connections):
 }
 
 template <typename... Args>
-float Species<Args...>::distanceWith (const std::unique_ptr<Genome<Args...>>& genome, float a, float b, float c) {
+double Species<Args...>::distanceWith (const std::unique_ptr<Genome<Args...>>& genome, double a, double b, double c) {
 	// get enabled connections and maxInnovId for genome 1
 	unsigned int maxInnovId1 = 0;
 	std::vector<size_t> connEnabled1;
@@ -84,7 +84,7 @@ float Species<Args...>::distanceWith (const std::unique_ptr<Genome<Args...>>& ge
 
 	unsigned int excessGenes = 0;
 	unsigned int disjointGenes = 0;
-	float sumDiffWeights = 0.0f;
+	double sumDiffWeights = 0.0;
 	unsigned int nbCommonGenes = 0;
 
 	for (size_t i1 = 0; i1 < connEnabled1.size (); i1++) {
@@ -106,7 +106,7 @@ float Species<Args...>::distanceWith (const std::unique_ptr<Genome<Args...>>& ge
 			} else {
 				// one connection has the same innovation id
 				nbCommonGenes += 1;
-				float diff = connections [connEnabled2 [i2]].weight - genome->connections [connEnabled1 [i1]].weight;
+				double diff = connections [connEnabled2 [i2]].weight - genome->connections [connEnabled1 [i1]].weight;
 				if (diff > 0) {
 					sumDiffWeights += diff;
 				} else {
@@ -137,13 +137,13 @@ float Species<Args...>::distanceWith (const std::unique_ptr<Genome<Args...>>& ge
 
 	if (nbCommonGenes > 0) {
 		return (
-			(a * (float) excessGenes + b * (float) disjointGenes) / (float) std::max (connEnabled1.size (), connEnabled2.size ())
-			+ c * sumDiffWeights / (float) nbCommonGenes
+			(a * (double) excessGenes + b * (double) disjointGenes) / (double) std::max (connEnabled1.size (), connEnabled2.size ())
+			+ c * sumDiffWeights / (double) nbCommonGenes
 		);
 	} else {
 		// there is no common genes between genomes
-		// let's return the maximum float as they might be very differents
-		return std::numeric_limits<float>::max ();
+		// let's return the maximum double as they might be very differents
+		return std::numeric_limits<double>::max ();
 	}
 }
 

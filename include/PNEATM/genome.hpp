@@ -21,8 +21,8 @@ namespace pneatm {
 
 typedef struct mutationParams {
 	struct Nodes {
-		float rate = 0.03f;
-		float monotypedRate = 0.5f;
+		double rate = 0.03;
+		double monotypedRate = 0.5;
 		struct Monotyped {
 			unsigned int maxIterationsFindConnection = 20;
 		};
@@ -35,17 +35,17 @@ typedef struct mutationParams {
 	};
 	struct Nodes nodes;
 	struct Connections {
-		float rate = 0.05f;
-		float reactivateRate = 0.25f;
+		double rate = 0.05;
+		double reactivateRate = 0.25;
 		unsigned int maxRecurrency;
 		unsigned int maxIterations = 20;
 		unsigned int maxIterationsFindNode;
 	};
 	struct Connections connections;
 	struct Weights {
-		float rate = 0.05f;
-		float fullChangeRate = 0.1f;
-		float perturbationFactor = 1.2f;
+		double rate = 0.05;
+		double fullChangeRate = 0.1;
+		double perturbationFactor = 1.2;
 	};
 	struct Weights weights;
 } mutationParams_t;
@@ -53,12 +53,12 @@ typedef struct mutationParams {
 template <typename... Args>
 class Genome {
 	public:
-		Genome (std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_init, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, innovationConn_t* conn_innov, innovationNode_t* node_innov, unsigned int N_ConnInit, float probRecuInit, float weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger);
-		Genome (unsigned int nbBias, unsigned int nbInput, unsigned int nbOutput, unsigned int N_types, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, float weightExtremumInit, spdlog::logger* logger);
+		Genome (std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_init, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, innovationConn_t* conn_innov, innovationNode_t* node_innov, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger);
+		Genome (unsigned int nbBias, unsigned int nbInput, unsigned int nbOutput, unsigned int N_types, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, double weightExtremumInit, spdlog::logger* logger);
 		//Genome () {};
 		~Genome ();
 
-		float getFitness () {return fitness;};
+		double getFitness () {return fitness;};
 		int getSpeciesId () {return speciesId;};
 
 		template <typename T_in>
@@ -78,13 +78,13 @@ class Genome {
 		std::unique_ptr<Genome<Args...>> clone ();
 
 		void print (std::string prefix = "");
-		void draw (std::string font_path, unsigned int windowWidth = 1300, unsigned int windowHeight = 800, float dotsRadius = 6.5f);
+		void draw (std::string font_path, unsigned int windowWidth = 1300, unsigned int windowHeight = 800, double dotsRadius = 6.5);
 
 	private:
 		unsigned int nbBias;
 		unsigned int nbInput;
 		unsigned int nbOutput;
-		float weightExtremumInit;
+		double weightExtremumInit;
 		unsigned int N_types;
 		std::vector<std::vector<std::vector<void*>>> activationFns;
 		std::vector<void*> resetValues;
@@ -93,7 +93,7 @@ class Genome {
 		std::vector <std::vector <void*>> prevNodes;	//TODO: void* -> const void*
 		std::vector <Connection> connections;
 
-		float fitness;
+		double fitness;
 		int speciesId;
 
 		spdlog::logger* logger;
@@ -101,8 +101,8 @@ class Genome {
 		unsigned int RepetitionNodeCheck (unsigned int index_T_in, unsigned int index_T_out, unsigned int index_activation_fn);
 		bool CheckNewConnectionValidity (unsigned int inNodeId, unsigned int outNodeId, unsigned int inNodeRecu, int* disabled_conn_id = nullptr);
 		bool CheckNewConnectionCircle (unsigned int inNodeId, unsigned int outNodeId);
-		void MutateWeights (float mutateWeightThresh, float mutateWeightFullChangeThresh, float mutateWeightFactor);
-		bool AddConnection (innovationConn_t* conn_innov, unsigned int maxRecurrency, unsigned int maxIterationsFindConnectionThresh, float reactivateConnectionThresh);
+		void MutateWeights (double mutateWeightThresh, double mutateWeightFullChangeThresh, double mutateWeightFactor);
+		bool AddConnection (innovationConn_t* conn_innov, unsigned int maxRecurrency, unsigned int maxIterationsFindConnectionThresh, double reactivateConnectionThresh);
 		bool AddNode (innovationConn_t* conn_innov, innovationNode_t* node_innov, unsigned int maxIterationsFindConnectionThresh);
 		bool AddTranstype (innovationConn_t* conn_innov, innovationNode_t* node_innov, unsigned int maxRecurrency, unsigned int maxIterationsFindNodeThresh);
 		void UpdateLayers (int nodeId);
@@ -122,7 +122,7 @@ class Genome {
 using namespace pneatm;
 
 template <typename... Args>
-Genome<Args...>::Genome (std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_init, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, innovationConn_t* conn_innov, innovationNode_t* node_innov, unsigned int N_ConnInit, float probRecuInit, float weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger) :
+Genome<Args...>::Genome (std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_init, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, innovationConn_t* conn_innov, innovationNode_t* node_innov, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger) :
 	weightExtremumInit (weightExtremumInit),
 	activationFns (activationFns),
 	resetValues (resetValues),
@@ -224,9 +224,9 @@ Genome<Args...>::Genome (std::vector<size_t> bias_sch, std::vector<size_t> input
 				nodes.back ()->layer = 1;
 				nodes.back ()->index_T_in = (unsigned int) i;
 				nodes.back ()->index_T_out = (unsigned int) j;
-				nodes.back ()->index_activation_fn = Random_UInt (0, (unsigned int) activationFns [i][j].size () - 1);
+				nodes.back ()->index_activation_fn = Random_UInt (0, (unsigned int) activationFns [i][j].size () - 1) + 1;
 				nodes.back ()->setActivationFn (
-					activationFns [i][j][nodes.back ()->index_activation_fn]
+					activationFns [i][j][nodes.back ()->index_activation_fn - 1]
 				);
 				nodes.back ()->innovId = node_innov->getInnovId (
 					nodes.back ()->index_T_in,
@@ -251,7 +251,7 @@ Genome<Args...>::Genome (std::vector<size_t> bias_sch, std::vector<size_t> input
 
 		// inNodeRecu
 		unsigned int inNodeRecu = 0;
-		if (Random_Float (0.0f, 1.0f, true, false) < probRecuInit) {
+		if (Random_Double (0.0, 1.0, true, false) < probRecuInit) {
 			inNodeRecu = Random_UInt (0, maxRecuInit);
 		}
 		if (CheckNewConnectionValidity (inNodeId, outNodeId, inNodeRecu)) {	// we don't care of former connections as there is no disabled connection for now
@@ -259,7 +259,7 @@ Genome<Args...>::Genome (std::vector<size_t> bias_sch, std::vector<size_t> input
 			const unsigned int innov_id = conn_innov->getInnovId (nodes [inNodeId]->innovId, nodes [outNodeId]->innovId, inNodeRecu);
 
 			// weight
-			const float weight = Random_Float (- weightExtremumInit, weightExtremumInit);
+			const double weight = Random_Double (- weightExtremumInit, weightExtremumInit);
 
 			connections.push_back(Connection (innov_id, inNodeId, outNodeId, inNodeRecu, weight, true));
 
@@ -274,7 +274,7 @@ Genome<Args...>::Genome (std::vector<size_t> bias_sch, std::vector<size_t> input
 }
 
 template <typename... Args>
-Genome<Args...>::Genome (unsigned int nbBias, unsigned int nbInput, unsigned int nbOutput, unsigned int N_types, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, float weightExtremumInit, spdlog::logger* logger) :
+Genome<Args...>::Genome (unsigned int nbBias, unsigned int nbInput, unsigned int nbOutput, unsigned int N_types, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, double weightExtremumInit, spdlog::logger* logger) :
 	nbBias (nbBias),
 	nbInput (nbInput),
 	nbOutput (nbOutput),
@@ -389,8 +389,8 @@ void Genome<Args...>::mutate(innovationConn_t* conn_innov, innovationNode_t* nod
 	MutateWeights (params.weights.rate, params.weights.fullChangeRate, params.weights.perturbationFactor);
 
 	// NODES
-	if (Random_Float (0.0f, 1.0f, true, false) < params.nodes.rate) {
-		if (Random_Float (0.0f, 1.0f, true, false) < params.nodes.monotypedRate) {
+	if (Random_Double (0.0f, 1.0f, true, false) < params.nodes.rate) {
+		if (Random_Double (0.0f, 1.0f, true, false) < params.nodes.monotypedRate) {
 			AddNode (conn_innov, node_innov, params.nodes.monotyped.maxIterationsFindConnection);
 		} else {
 			AddTranstype (conn_innov, node_innov, params.nodes.bityped.maxRecurrencyEntryConnection, params.nodes.bityped.maxIterationsFindNode);
@@ -398,7 +398,7 @@ void Genome<Args...>::mutate(innovationConn_t* conn_innov, innovationNode_t* nod
 	}
 
 	// CONNECTIONS
-	if (Random_Float (0.0f, 1.0f, true, false) < params.connections.rate) {
+	if (Random_Double (0.0f, 1.0f, true, false) < params.connections.rate) {
 		AddConnection (conn_innov, params.connections.maxRecurrency, params.connections.maxIterationsFindNode, params.connections.reactivateRate);
 	}
 }
@@ -475,25 +475,25 @@ bool Genome<Args...>::CheckNewConnectionCircle (unsigned int inNodeId, unsigned 
 }
 
 template <typename... Args>
-void Genome<Args...>::MutateWeights (float mutateWeightThresh, float mutateWeightFullChangeThresh, float mutateWeightFactor) {
+void Genome<Args...>::MutateWeights (double mutateWeightThresh, double mutateWeightFullChangeThresh, double mutateWeightFactor) {
 	logger->trace ("mutating of weights");
 	for (size_t i = 0; i < connections.size (); i++) {
-		if (Random_Float (0.0f, 1.0f, true, false) < mutateWeightThresh) {
-			if (Random_Float (0.0f, 1.0f, true, false) < mutateWeightFullChangeThresh) {
+		if (Random_Double (0.0f, 1.0f, true, false) < mutateWeightThresh) {
+			if (Random_Double (0.0f, 1.0f, true, false) < mutateWeightFullChangeThresh) {
 				// reset weight
 				logger->trace ("resetting connection{}'s weight", i);
-				connections [i].weight = Random_Float (- weightExtremumInit, weightExtremumInit);
+				connections [i].weight = Random_Double (- weightExtremumInit, weightExtremumInit);
 			} else {
 				// pertub weight
 				logger->trace ("pertubating connection{}'s weight", i);
-				connections [i].weight *= Random_Float (- mutateWeightFactor, mutateWeightFactor);
+				connections [i].weight *= Random_Double (- mutateWeightFactor, mutateWeightFactor);
 			}
 		}
 	}
 }
 
 template <typename... Args>
-bool Genome<Args...>::AddConnection (innovationConn_t* conn_innov, unsigned int maxRecurrency, unsigned int maxIterationsFindConnectionThresh, float reactivateConnectionThresh) {	// return true if the process ended well, false in the other case
+bool Genome<Args...>::AddConnection (innovationConn_t* conn_innov, unsigned int maxRecurrency, unsigned int maxIterationsFindConnectionThresh, double reactivateConnectionThresh) {	// return true if the process ended well, false in the other case
 	logger->trace ("adding a new connection");
 
 	// find valid node pair
@@ -515,7 +515,7 @@ bool Genome<Args...>::AddConnection (innovationConn_t* conn_innov, unsigned int 
 	if (iterationNb < maxIterationsFindConnectionThresh) {	// a valid connection has been found
 		// mutating
 		if (disabled_conn_id >= 0) {	// it is a former connection
-			if (Random_Float (0.0f, 1.0f, true, false) < reactivateConnectionThresh) {
+			if (Random_Double (0.0f, 1.0f, true, false) < reactivateConnectionThresh) {
 				logger->trace ("connection{} is re-enabled", disabled_conn_id);
 				connections [disabled_conn_id].enabled = true;	// former connection is reactivated
 				return true;
@@ -528,7 +528,7 @@ bool Genome<Args...>::AddConnection (innovationConn_t* conn_innov, unsigned int 
 			const unsigned int innov_id = conn_innov->getInnovId (nodes [inNodeId]->innovId, nodes [outNodeId]->innovId, inNodeRecu);
 
 			// weight
-			const float weight = Random_Float (- weightExtremumInit, weightExtremumInit);
+			const double weight = Random_Double (- weightExtremumInit, weightExtremumInit);
 
 			connections.push_back (Connection (innov_id, inNodeId, outNodeId, inNodeRecu, weight, true));
 
@@ -581,9 +581,9 @@ bool Genome<Args...>::AddNode (innovationConn_t* conn_innov, innovationNode_t* n
 			nodes.back ()->layer = -1;	// no layer for now
 			nodes.back ()->index_T_in = iT_in;
 			nodes.back ()->index_T_out = iT_out;
-			nodes.back ()->index_activation_fn = Random_UInt (0, (unsigned int) activationFns [iT_in][iT_out].size () - 1);
+			nodes.back ()->index_activation_fn = Random_UInt (0, (unsigned int) activationFns [iT_in][iT_out].size () - 1) + 1;
 			nodes.back ()->setActivationFn (
-				activationFns [iT_in][iT_out][nodes.back ()->index_activation_fn]
+				activationFns [iT_in][iT_out][nodes.back ()->index_activation_fn - 1]
 			);
 			nodes.back ()->innovId = node_innov->getInnovId (
 				nodes.back ()->index_T_in,
@@ -598,7 +598,7 @@ bool Genome<Args...>::AddNode (innovationConn_t* conn_innov, innovationNode_t* n
 			int outNodeId = newNodeId;
 			unsigned int inNodeRecu = connections [iConn].inNodeRecu;
 			unsigned int innovId = conn_innov->getInnovId (nodes [inNodeId]->innovId, nodes [outNodeId]->innovId, inNodeRecu);
-			float weight = connections [iConn].weight;
+			double weight = connections [iConn].weight;
 
 			logger->trace ("adding connection{0} between node{1} and node{2}", connections.size (), inNodeId, outNodeId);
 
@@ -609,7 +609,7 @@ bool Genome<Args...>::AddNode (innovationConn_t* conn_innov, innovationNode_t* n
 			outNodeId = connections [iConn].outNodeId;
 			inNodeRecu = 0;
 			innovId = conn_innov->getInnovId (nodes [inNodeId]->innovId, nodes [outNodeId]->innovId, inNodeRecu);
-			weight = Random_Float (- weightExtremumInit, weightExtremumInit);
+			weight = Random_Double (- weightExtremumInit, weightExtremumInit);
 
 			logger->trace ("adding connection{0} between node{1} and node{2}", connections.size (), inNodeId, outNodeId);
 
@@ -665,9 +665,9 @@ bool Genome<Args...>::AddTranstype (innovationConn_t* conn_innov, innovationNode
 		nodes.back ()->layer = 1;	// default to first layer
 		nodes.back ()->index_T_in = iT_in;
 		nodes.back ()->index_T_out = iT_out;
-		nodes.back ()->index_activation_fn = Random_UInt (0, (unsigned int) activationFns [iT_in][iT_out].size () - 1);
+		nodes.back ()->index_activation_fn = Random_UInt (0, (unsigned int) activationFns [iT_in][iT_out].size () - 1) + 1;
 		nodes.back ()->setActivationFn (
-			activationFns [iT_in][iT_out][nodes.back ()->index_activation_fn]
+			activationFns [iT_in][iT_out][nodes.back ()->index_activation_fn - 1]
 		);
 		nodes.back ()->innovId = node_innov->getInnovId (
 			nodes.back ()->index_T_in,
@@ -701,7 +701,7 @@ bool Genome<Args...>::AddTranstype (innovationConn_t* conn_innov, innovationNode
 		}
 
 		unsigned int innov_id = conn_innov->getInnovId (nodes [inNodeId]->innovId, nodes [newNodeId]->innovId, inNodeRecu);
-		float weight = Random_Float (- weightExtremumInit, weightExtremumInit);
+		double weight = Random_Double (- weightExtremumInit, weightExtremumInit);
 
 		logger->trace ("adding connection{0} between node{1} and node{2}", connections.size (), inNodeId, newNodeId);
 
@@ -731,7 +731,7 @@ bool Genome<Args...>::AddTranstype (innovationConn_t* conn_innov, innovationNode
 		}
 
 		innov_id = conn_innov->getInnovId (nodes [newNodeId]->innovId, nodes [outNodeId]->innovId, inNodeRecu);
-		weight = Random_Float (- weightExtremumInit, weightExtremumInit);
+		weight = Random_Double (- weightExtremumInit, weightExtremumInit);
 
 		logger->trace ("adding connection{0} between node{1} and node{2}", connections.size (), newNodeId, outNodeId);
 
@@ -841,7 +841,7 @@ void Genome<Args...>::print (std::string prefix) {
 
 
 template <typename... Args>
-void Genome<Args...>::draw (std::string font_path, unsigned int windowWidth, unsigned int windowHeight, float dotsRadius) {
+void Genome<Args...>::draw (std::string font_path, unsigned int windowWidth, unsigned int windowHeight, double dotsRadius) {
 	sf::RenderWindow window (sf::VideoMode (windowWidth, windowHeight), "PNEATM - https://github.com/titofra");
 
     std::vector<sf::CircleShape> dots;
@@ -914,7 +914,7 @@ void Genome<Args...>::draw (std::string font_path, unsigned int windowWidth, uns
 	}
 	
 	// ### CONNECTIONS ###
-	float maxWeight = connections[0].weight;
+	double maxWeight = connections[0].weight;
 	for (size_t i = 1; i < connections.size(); i++) {
 		if (connections [i].weight * connections [i].weight > maxWeight * maxWeight) {
 			maxWeight = connections [i].weight;

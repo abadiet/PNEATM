@@ -23,13 +23,13 @@ namespace pneatm {
 template <typename... Args>
 class Population {
 	public:
-		Population (unsigned int popSize, std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_init, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, unsigned int N_ConnInit, float probRecuInit, float weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger, float speciationThreshInit = 10.0f, unsigned int threshGensSinceImproved = 15, std::string stats_filepath = "");
+		Population (unsigned int popSize, std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_init, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger, double speciationThreshInit = 10.0, unsigned int threshGensSinceImproved = 15, std::string stats_filepath = "");
 		~Population ();
 		//Population (const std::string filepath) {load(filepath);};
 
 		unsigned int getGeneration () {return generation;};
-		float getAvgFitness () {return avgFitness;};
-		float getAvgFitnessAdjusted () {return avgFitnessAdjusted;};
+		double getAvgFitness () {return avgFitness;};
+		double getAvgFitnessAdjusted () {return avgFitnessAdjusted;};
 		Genome<Args...>& getGenome (int id = -1);
 
 		template <typename T_in>
@@ -49,24 +49,24 @@ class Population {
 		template <typename T_out>
 		T_out getOutput (unsigned int output_id, unsigned int genome_id);
 
-		void setFitness (float fitness, unsigned int genome_id);
-		void speciate (unsigned int target = 5, unsigned int targetThresh = 0, unsigned int maxIterationsReachTarget = 100, float stepThresh = 0.3f, float a = 1.0f, float b = 1.0f, float c = 0.4f, float speciesSizeEvolutionLimit = 3.0f);
+		void setFitness (double fitness, unsigned int genome_id);
+		void speciate (unsigned int target = 5, unsigned int targetThresh = 0, unsigned int maxIterationsReachTarget = 100, double stepThresh = 0.3, double a = 1.0, double b = 1.0f, double c = 0.4, double speciesSizeEvolutionLimit = 3.0);
 		void crossover (bool elitism = false);
 		void mutate (mutationParams_t params);
-		void mutate (std::function<mutationParams_t (float)> paramsMap);
+		void mutate (std::function<mutationParams_t (double)> paramsMap);
 
 		void print (std::string prefix = "");
-		void drawGenome (unsigned int genome_id, std::string font_path, unsigned int windowWidth = 1300, unsigned int windowHeight = 800, float dotsRadius = 6.5f);
+		void drawGenome (unsigned int genome_id, std::string font_path, unsigned int windowWidth = 1300, unsigned int windowHeight = 800, double dotsRadius = 6.5);
 
 		/*void save (const std::string filepath = "./neat_backup.txt");
 		void load (const std::string filepath = "./neat_backup.txt");*/
 
 	private:
 		unsigned int generation;
-		float avgFitness;
-		float avgFitnessAdjusted;
+		double avgFitness;
+		double avgFitnessAdjusted;
 		unsigned int popSize;
-		float speciationThresh;
+		double speciationThresh;
 		unsigned int threshGensSinceImproved;
 
 		// useful parameters to create new genome
@@ -77,8 +77,8 @@ class Population {
 		std::vector<void*> bias_init;
 		std::vector<void*> resetValues;
 		unsigned int N_ConnInit;
-		float probRecuInit;
-		float weightExtremumInit;
+		double probRecuInit;
+		double weightExtremumInit;
 		unsigned int maxRecuInit;
 
 		int fittergenome_id;
@@ -92,7 +92,7 @@ class Population {
 		std::ofstream statsFile;
 
 		std::vector<Connection> GetWeightedCentroid (unsigned int speciesId);
-		void UpdateFitnesses (float speciesSizeEvolutionLimit);
+		void UpdateFitnesses (double speciesSizeEvolutionLimit);
 		int SelectParent (unsigned int iSpe);
 };
 
@@ -104,7 +104,7 @@ class Population {
 using namespace pneatm;
 
 template <typename... Args>
-Population<Args...>::Population(unsigned int popSize, std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_init, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, unsigned int N_ConnInit, float probRecuInit, float weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger, float speciationThreshInit, unsigned int threshGensSinceImproved, std::string stats_filepath) :
+Population<Args...>::Population(unsigned int popSize, std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_init, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger, double speciationThreshInit, unsigned int threshGensSinceImproved, std::string stats_filepath) :
 	popSize (popSize),
 	speciationThresh (speciationThreshInit),
 	threshGensSinceImproved (threshGensSinceImproved),
@@ -216,13 +216,13 @@ T_out Population<Args...>::getOutput (unsigned int output_id, unsigned int genom
 }
 
 template <typename... Args>
-void Population<Args...>::setFitness (float fitness, unsigned int genome_id) {
+void Population<Args...>::setFitness (double fitness, unsigned int genome_id) {
 	logger->trace ("setting genome{}'s fitness", genome_id);
 	genomes [genome_id]->fitness = fitness;
 }
 
 template <typename... Args>
-void Population<Args...>::speciate (unsigned int target, unsigned int targetThresh, unsigned int maxIterationsReachTarget, float stepThresh, float a, float b, float c, float speciesSizeEvolutionLimit) {
+void Population<Args...>::speciate (unsigned int target, unsigned int targetThresh, unsigned int maxIterationsReachTarget, double stepThresh, double a, double b, double c, double speciesSizeEvolutionLimit) {
 	logger->info ("Speciation");
 
 	// species randomization: we do that here to avoid the first species to become too large.
@@ -336,10 +336,10 @@ template <typename... Args>
 std::vector<Connection> Population<Args...>::GetWeightedCentroid (unsigned int speciesId) {
 	std::vector<Connection> result;
 
-	float sumFitness = 0.0f;
+	double sumFitness = 0.0;
 
 	for (size_t i = 0; i < species [speciesId].members.size (); i++) {	// for each genome in the species
-		float fitness = genomes [species [speciesId].members [i]]->fitness;
+		double fitness = genomes [species [speciesId].members [i]]->fitness;
 
 		for (const Connection& conn : genomes [species [speciesId].members [i]]->connections) {	// for each of its connections
 			size_t curResConn = 0;
@@ -364,7 +364,7 @@ std::vector<Connection> Population<Args...>::GetWeightedCentroid (unsigned int s
 	} else {
 		// null sumFitness
 		for (size_t i = 0; i < result.size (); i++) {
-			result [i].weight = std::numeric_limits<float>::max ();
+			result [i].weight = std::numeric_limits<double>::max ();
 		}
 	}
 
@@ -372,7 +372,7 @@ std::vector<Connection> Population<Args...>::GetWeightedCentroid (unsigned int s
 }
 
 template <typename... Args>
-void Population<Args...>::UpdateFitnesses (float speciesSizeEvolutionLimit) {
+void Population<Args...>::UpdateFitnesses (double speciesSizeEvolutionLimit) {
 	fittergenome_id = 0;
 	avgFitness = 0;
 	avgFitnessAdjusted = 0;
@@ -385,7 +385,7 @@ void Population<Args...>::UpdateFitnesses (float speciesSizeEvolutionLimit) {
 			fittergenome_id = i;
 		}
 	}
-	avgFitness /= (float) popSize;
+	avgFitness /= (double) popSize;
 
 	// process avgFitnessAdjusted
 	for (size_t i = 0; i < species.size (); i++) {
@@ -397,7 +397,7 @@ void Population<Args...>::UpdateFitnesses (float speciesSizeEvolutionLimit) {
 			}
 
 			// update species' gensSinceImproved
-			if (species [i].sumFitness / (float) species[i].members.size () > species [i].avgFitness) {
+			if (species [i].sumFitness / (double) species[i].members.size () > species [i].avgFitness) {
 				// the avgFitness of the species has increased
 				species [i].gensSinceImproved  = 0;
 			} else {
@@ -405,13 +405,13 @@ void Population<Args...>::UpdateFitnesses (float speciesSizeEvolutionLimit) {
 			}
 
 			// process species' avgFitness and avgFitnessAdjusted
-			species [i].avgFitness = species [i].sumFitness / (float) species [i].members.size ();
-			species [i].avgFitnessAdjusted = species [i].avgFitness / (float) species [i].members.size ();
+			species [i].avgFitness = species [i].sumFitness / (double) species [i].members.size ();
+			species [i].avgFitnessAdjusted = species [i].avgFitness / (double) species [i].members.size ();
 
 			avgFitnessAdjusted += species [i].avgFitness;
 		}
 	}
-	avgFitnessAdjusted /= (float) popSize;
+	avgFitnessAdjusted /= (double) popSize;
 
 	// process offsprings
 	for (size_t i = 0; i < species.size (); i ++) {
@@ -419,10 +419,10 @@ void Population<Args...>::UpdateFitnesses (float speciesSizeEvolutionLimit) {
 			if (species [i].gensSinceImproved < threshGensSinceImproved) {
 				// the species can have offsprings
 
-				float evolutionFactor = species [i].avgFitnessAdjusted / (avgFitnessAdjusted + std::numeric_limits<float>::min ());
+				double evolutionFactor = species [i].avgFitnessAdjusted / (avgFitnessAdjusted + std::numeric_limits<double>::min ());
 				if (evolutionFactor > speciesSizeEvolutionLimit) evolutionFactor = speciesSizeEvolutionLimit;	// we limit the speceis evolution factor: a species's size cannot skyrocket from few genomes
 
-				species [i].allowedOffspring = (int) ((float) species [i].members.size () * evolutionFactor);	// note that (int) 0.9f == 0.0f
+				species [i].allowedOffspring = (int) ((double) species [i].members.size () * evolutionFactor);	// note that (int) 0.9f == 0.0f
 			} else {
 				// the species cannot have offsprings it has not improved for a long time
 				species[i].allowedOffspring = 0;
@@ -480,7 +480,7 @@ void Population<Args...>::crossover (bool elitism) {
 				for (size_t iMainParentConn = 0; iMainParentConn < genomes [iMainParent]->connections.size (); iMainParentConn ++) {
 					for (size_t iSecondParentConn = 0; iSecondParentConn < genomes [iSecondParent]->connections.size (); iSecondParentConn ++) {
 						if (genomes [iMainParent]->connections [iMainParentConn].innovId == genomes [iSecondParent]->connections [iSecondParentConn].innovId) {
-							if (Random_Float (0.0f, 1.0f, true, false) < 0.5f) {	// 50 % of chance for each parent, newGenome already have the wheight of MainParent
+							if (Random_Double (0.0, 1.0, true, false) < 0.5) {	// 50 % of chance for each parent, newGenome already have the wheight of MainParent
 								newGenomes.back ()->connections [iMainParentConn].weight = genomes [iSecondParent]->connections [iSecondParentConn].weight;
 							}
 						}
@@ -529,15 +529,15 @@ int Population<Args...>::SelectParent (unsigned int iSpe) {
 	and add their fitness to a running sum and if that sum is greater than the random value generated,
 	that genome is chosen since players with a higher fitness function add more to the running sum then they have a higher chance of being chosen */
 
-	if (Eq_Float (species [iSpe].sumFitness, 0.0f)) {
+	if (Eq_Double (species [iSpe].sumFitness, 0.0)) {
 		// everyone as a null fitness: we return a random genome
 		return species [iSpe].members [
 			Random_UInt (0, (unsigned int) species [iSpe].members.size () - 1)
 		];
 	}
 
-	float randThresh = Random_Float (0.0f, species [iSpe].sumFitness, true, false);
-	float runningSum = 0.0f;
+	double randThresh = Random_Double (0.0, species [iSpe].sumFitness, true, false);
+	double runningSum = 0.0;
 	for (size_t i = 0; i < species [iSpe].members.size (); i++) {
 		runningSum += genomes [species [iSpe].members [i]]->fitness;
 		if (runningSum > randThresh) {
@@ -557,7 +557,7 @@ void Population<Args...>::mutate (mutationParams_t params) {
 }
 
 template <typename... Args>
-void Population<Args...>::mutate (std::function<mutationParams_t (float)> paramsMap) {
+void Population<Args...>::mutate (std::function<mutationParams_t (double)> paramsMap) {
 	logger->info ("Mutations");
 	for (unsigned int i = 0; i < popSize; i++) {
 		logger->trace ("Mutation of genome{}", i);
@@ -624,7 +624,7 @@ void Population<Args...>::print (std::string prefix) {
 }
 
 template <typename... Args>
-void Population<Args...>::drawGenome (unsigned int genome_id, std::string font_path, unsigned int windowWidth, unsigned int windowHeight, float dotsRadius) {
+void Population<Args...>::drawGenome (unsigned int genome_id, std::string font_path, unsigned int windowWidth, unsigned int windowHeight, double dotsRadius) {
 	logger->info ("Drawing genome{}'s network", genome_id);
 	genomes [genome_id]->draw (font_path, windowWidth, windowHeight, dotsRadius);
 }
@@ -831,7 +831,7 @@ void Population<Args...>::load(const std::string filepath){
 						std::cout << "Error while loading model" << std::endl;
 						throw 0;
 					}
-					genomes.back().nodes.back().sumInput = (float) stod(line.substr(0, pos));	// stdof's range is not the float's one... weird, anyway it works with stod of course
+					genomes.back().nodes.back().sumInput = (double) stod(line.substr(0, pos));	// stdof's range is not the double's one... weird, anyway it works with stod of course
 
 					line = line.substr(pos + 1);
 					pos = line.find(',');
@@ -839,7 +839,7 @@ void Population<Args...>::load(const std::string filepath){
 						std::cout << "Error while loading model" << std::endl;
 						throw 0;
 					}
-					genomes.back().nodes.back().sumOutput = (float) stod(line.substr(0, pos));	// stdof's range is not the float's one... weird, anyway it works with stod of course
+					genomes.back().nodes.back().sumOutput = (double) stod(line.substr(0, pos));	// stdof's range is not the double's one... weird, anyway it works with stod of course
 
 					line = line.substr(pos + 1);
 					pos = line.find(',');

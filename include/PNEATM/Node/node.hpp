@@ -14,14 +14,14 @@ namespace pneatm {
 template <typename T_in, typename T_out>
 class Node : public NodeBase {
 	public:
-		Node ();
+		Node (bool is_monotyped = false);
 		~Node () {};
 
 		void setActivationFn (void* f) override;
 		void setResetValue (void* value) override;
 
 		void loadInput (void* value) override;
-		void AddToInput (void* value, float scalar) override;	// TODO: too dirty
+		void AddToInput (void* value, double scalar) override;	// TODO: too dirty
 		void* getOutput () override;
 
 		void process () override;
@@ -47,11 +47,13 @@ class Node : public NodeBase {
 using namespace pneatm;
 
 template <typename T_in, typename T_out>
-Node<T_in, T_out>::Node () {
-	func = [] (T_in input) {	// default activation function is the identity (useful for bias/inputs/outputs)
-		return input;
-	};
-	index_activation_fn = 0;	// default activation function (identity) id is 0
+Node<T_in, T_out>::Node (bool is_monotyped) {
+	if (is_monotyped) {
+		func = [] (T_in input) -> T_out {	// default activation function is the identity (useful for bias/inputs/outputs)
+			return input;
+		};
+		index_activation_fn = 0;	// default activation function (identity) id is 0
+	}
 }
 
 template <typename T_in, typename T_out>
@@ -70,7 +72,7 @@ void Node<T_in, T_out>::loadInput (void* value) {
 }
 
 template <typename T_in, typename T_out>
-void Node<T_in, T_out>::AddToInput (void* value, float scalar) {
+void Node<T_in, T_out>::AddToInput (void* value, double scalar) {
 	input += *static_cast<T_in*> (value) * scalar;
 }
 

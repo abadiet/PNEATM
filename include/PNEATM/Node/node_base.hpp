@@ -17,7 +17,7 @@ class NodeBase{
 		virtual void setResetValue (void* value) = 0;
 
 		virtual void loadInput (void* value) = 0;	// for input/bias nodes only
-		virtual void AddToInput (void* value, float scalar) = 0;	// TODO: too dirty
+		virtual void AddToInput (void* value, double scalar) = 0;	// TODO: too dirty
 		virtual void* getOutput () = 0;
 
 		virtual void process () = 0;

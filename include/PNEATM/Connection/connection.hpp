@@ -8,7 +8,7 @@ namespace pneatm {
 
 class Connection {
 	public:
-		Connection (const unsigned int innovId, const unsigned int inNodeId, const unsigned int outNodeId, const unsigned int inNodeRecu, float weight, bool enabled);
+		Connection (const unsigned int innovId, const unsigned int inNodeId, const unsigned int outNodeId, const unsigned int inNodeRecu, double weight, bool enabled);
 
 		Connection& operator= (const Connection& other);
 
@@ -19,7 +19,7 @@ class Connection {
 		const unsigned int inNodeId;
 		const unsigned int outNodeId;
 		const unsigned int inNodeRecu;
-		float weight;
+		double weight;
 		bool enabled;
 
 	template <typename... Args>

@@ -15,12 +15,12 @@ struct CreateNode {
     static std::unique_ptr<NodeBase> get(size_t iT_in, size_t iT_out, bool mono_type = true, bool T2_is_first = false) {
         if (iT_in == 0 && iT_out == 0) {
             if (mono_type) {
-                return std::make_unique<Node <T1, T1>> ();
+                return std::make_unique<Node <T1, T1>> (iT_in == iT_out);
             }
             if (T2_is_first) {
-                return std::make_unique<Node <T2, T1>> ();
+                return std::make_unique<Node <T2, T1>> (iT_in == iT_out);
             } else {
-                return std::make_unique<Node <T1, T2>> ();
+                return std::make_unique<Node <T1, T2>> (iT_in == iT_out);
             }
         }
         size_t new_iT_in = iT_in;
@@ -48,21 +48,19 @@ struct CreateNode {
 
     template <typename T>
     static std::unique_ptr<NodeBase> get(size_t iT_in, size_t iT_out) {
-        return std::make_unique<Node <T, T>> ();
-        UNUSED (iT_in);
-        UNUSED (iT_out);
+        return std::make_unique<Node <T, T>> (iT_in == iT_out);
     }
 };
 
-bool Eq_Float (float a, float b, float epsi = 1e-6f) {
+bool Eq_Double (double a, double b, double epsi = 1e-12) {
     return a < b + epsi && a > b - epsi;
 }
 
-float Random_Float (float a, float b, bool a_included = true, bool b_included = true) {
+double Random_Double (double a, double b, bool a_included = true, bool b_included = true) {
     return (
-            ((float) rand () + (float) !a_included)
+            ((double) rand () + (double) !a_included)
         ) / (
-            (float) (RAND_MAX) + (float) !a_included + (float) !b_included
+            (double) (RAND_MAX) + (double) !a_included + (double) !b_included
         ) * (b - a) + a;
 }
 
