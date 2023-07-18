@@ -66,6 +66,8 @@ class Genome {
 		template <typename T_in>
 		void loadInput (T_in input, int input_id);
 
+		void resetMemory ();
+
 		void runNetwork ();
 
 		template <typename T_out>
@@ -305,6 +307,11 @@ template <typename... Args>
 template <typename T_in>
 void Genome<Args...>::loadInput (T_in input, int input_id) {
 	nodes [input_id + nbBias]->loadInput (static_cast<void*> (&input));
+}
+
+template <typename... Args>
+void Genome<Args...>::resetMemory () {
+	prevNodes.clear ();
 }
 
 template <typename... Args>

@@ -29,32 +29,40 @@ int main () {
             // reset snake
             snake.reset ();
 
-            bool isFinished = false;
-            unsigned int iteration = 0;
-            while (iteration < maxIterationThresh && !isFinished) { // while game has not ended
-                // get inputs from snake's eyes
-                std::vector<myInt> AI_Inputs = snake.getAIInputs ();
+            int nbGame = 3;
+            float score = 0.0f;
+            for (int i = 0; i < nbGame; i++) {
+                bool isFinished = false;
+                unsigned int iteration = 0;
+                while (iteration < maxIterationThresh && !isFinished) { // while game has not ended
+                    // get inputs from snake's eyes
+                    std::vector<myInt> AI_Inputs = snake.getAIInputs ();
 
-                // load inputs in the genome's network
-                for (unsigned int i = 0; i < 14; i++) {
-                    pop.template loadInput<myInt> (AI_Inputs [i], i, genomeId);
+                    // load inputs in the genome's network
+                    for (unsigned int i = 0; i < 14; i++) {
+                        pop.template loadInput<myInt> (AI_Inputs [i], i, genomeId);
+                    }
+                    pop.template loadInput<myFloat> (snake.getScore (), 14, genomeId);
+
+                    // run the network
+                    pop.runNetwork (genomeId);
+
+                    // get output, the movement order to give to the snake
+                    myInt Snake_Inputs = pop.template getOutput<myInt> (0, genomeId);
+
+                    // move the snake
+                    isFinished = snake.run (Snake_Inputs);
+
+                    iteration ++;
                 }
-                pop.template loadInput<myFloat> (snake.getScore (), 14, genomeId);
 
-                // run the network
-                pop.runNetwork (genomeId);
+                score += snake.getScore ();
 
-                // get output, the movement order to give to the snake
-                myInt Snake_Inputs = pop.template getOutput<myInt> (0, genomeId);
-
-                // move the snake
-                isFinished = snake.run (Snake_Inputs);
-
-                iteration ++;
+                pop.resetMemory (genomeId);
             }
 
             // game has ended, we set the score to the genome's fitness
-            pop.setFitness (snake.getScore (), genomeId);
+            pop.setFitness (score / (float) nbGame, genomeId);
         }
 
         // speciation step

@@ -41,6 +41,9 @@ class Population {
 		template <typename T_in>
 		void loadInput (T_in input, unsigned int input_id, unsigned int genome_id);
 
+		void resetMemory ();
+		void resetMemory (unsigned int genome_id);
+
 		void runNetwork ();
 		void runNetwork (unsigned int genome_id);
 
@@ -186,6 +189,19 @@ void Population<Args...>::loadInput(T_in input, unsigned int input_id, unsigned 
 	logger->trace ("Load genome{0}'s input{1}", genome_id, input_id);
 	genomes [genome_id]->template loadInput<T_in> (input, input_id);
 }
+
+template <typename... Args>
+void Population<Args...>::resetMemory () {
+	for (size_t i = 0; i < genomes.size (); i++) {
+		genomes [i]->resetMemory ();
+	}
+}
+
+template <typename... Args>
+void Population<Args...>::resetMemory (unsigned int genome_id) {
+	genomes [genome_id]->resetMemory ();
+}
+
 
 template <typename... Args>
 void Population<Args...>::runNetwork () {
