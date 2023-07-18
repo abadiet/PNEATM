@@ -1,6 +1,7 @@
 #ifndef SPECIES_HPP
 #define SPECIES_HPP
 
+#include <PNEATM/Connection/connection.hpp>
 #include <PNEATM/genome.hpp>
 #include <vector>
 #include <iostream>
@@ -14,11 +15,8 @@ namespace pneatm {
 template <typename... Args>
 class Species {
 	public:
-		Species (unsigned int id, const std::unique_ptr<Genome<Args...>>& leader);
-		Species(const Species<Args...>& other);
+		Species (unsigned int id, std::vector<Connection> connections);
 		~Species () {};
-
-		Species<Args...>& operator= (const Species& other);
 
 		float distanceWith (const std::unique_ptr<Genome<Args...>>& genome, float a, float b, float c);
 
@@ -26,7 +24,7 @@ class Species {
 
 	private:
 		unsigned int id;
-		std::unique_ptr<Genome<Args...>> leader;
+		std::vector<Connection> connections;
 		float avgFitness;
 		float avgFitnessAdjusted;
 		int allowedOffspring;
@@ -47,44 +45,15 @@ class Species {
 using namespace pneatm;
 
 template <typename... Args>
-Species<Args...>::Species(unsigned int id, const std::unique_ptr<Genome<Args...>>& leader): 
+Species<Args...>::Species(unsigned int id, std::vector<Connection> connections): 
 	id (id),
-	leader (leader->clone ()),
+	connections (connections),
 	avgFitness (0),
 	avgFitnessAdjusted (0),
 	allowedOffspring (0),
 	sumFitness (0),
 	gensSinceImproved (0),
 	isDead (false) {
-}
-
-template <typename... Args>
-Species<Args...>::Species (const Species<Args...>& other) :
-    id (other.id),
-    leader (other.leader->clone ()),
-    avgFitness (other.avgFitness),
-    avgFitnessAdjusted (other.avgFitnessAdjusted),
-    allowedOffspring (other.allowedOffspring),
-    sumFitness (other.sumFitness),
-    gensSinceImproved (other.gensSinceImproved),
-    isDead (other.isDead),
-    members (other.members) {
-}
-
-template <typename... Args>
-Species<Args...>& Species<Args...>::operator= (const Species& other) {
-    if (this != &other) {
-        id = other.id;
-        leader = other.leader->clone();
-        avgFitness = other.avgFitness;
-        avgFitnessAdjusted = other.avgFitnessAdjusted;
-        allowedOffspring = other.allowedOffspring;
-        sumFitness = other.sumFitness;
-        gensSinceImproved = other.gensSinceImproved;
-        isDead = other.isDead;
-        members = other.members;
-    }
-    return *this;
 }
 
 template <typename... Args>
@@ -104,11 +73,11 @@ float Species<Args...>::distanceWith (const std::unique_ptr<Genome<Args...>>& ge
 	// get enabled connections and maxInnovId for genome 2
 	unsigned int maxInnovId2 = 0;
 	std::vector<size_t> connEnabled2;
-	for (size_t i = 0; i < leader->connections.size (); i++) {
-		if (leader->connections [i].enabled) {
+	for (size_t i = 0; i < connections.size (); i++) {
+		if (connections [i].enabled) {
 			connEnabled2.push_back (i);
-			if (leader->connections [i].innovId > maxInnovId2) {
-				maxInnovId2 = leader->connections [i].innovId;
+			if (connections [i].innovId > maxInnovId2) {
+				maxInnovId2 = connections [i].innovId;
 			}
 		}
 	}
@@ -127,7 +96,7 @@ float Species<Args...>::distanceWith (const std::unique_ptr<Genome<Args...>>& ge
 		} else {
 			size_t i2 = 0;
 
-			while (i2 < connEnabled2.size () && leader->connections [connEnabled2 [i2]].innovId != genome->connections [connEnabled1 [i1]].innovId) {
+			while (i2 < connEnabled2.size () && connections [connEnabled2 [i2]].innovId != genome->connections [connEnabled1 [i1]].innovId) {
 				i2 ++;
 			}
 			if (i2 == connEnabled2.size ()) {
@@ -137,7 +106,7 @@ float Species<Args...>::distanceWith (const std::unique_ptr<Genome<Args...>>& ge
 			} else {
 				// one connection has the same innovation id
 				nbCommonGenes += 1;
-				float diff = leader->connections [connEnabled2 [i2]].weight - genome->connections [connEnabled1 [i1]].weight;
+				float diff = connections [connEnabled2 [i2]].weight - genome->connections [connEnabled1 [i1]].weight;
 				if (diff > 0) {
 					sumDiffWeights += diff;
 				} else {
@@ -149,13 +118,13 @@ float Species<Args...>::distanceWith (const std::unique_ptr<Genome<Args...>>& ge
 
 	for (size_t i2 = 0; i2 < connEnabled2.size (); i2++) {
 		// for each enabled connection of the second genome
-		if (leader->connections [connEnabled2 [i2]].innovId > maxInnovId1) {
+		if (connections [connEnabled2 [i2]].innovId > maxInnovId1) {
 			// if connection's innovId is over the maximum one of first genome's connections
 			// it is an excess gene
 			excessGenes += 1;
 		} else {
 			size_t i1 = 0;
-			while (i1 < connEnabled1.size () && leader->connections [connEnabled2 [i2]].innovId != genome->connections [connEnabled1 [i1]].innovId) {
+			while (i1 < connEnabled1.size () && connections [connEnabled2 [i2]].innovId != genome->connections [connEnabled1 [i1]].innovId) {
 				i1 ++;
 			}
 			if (i1 == connEnabled1.size ()) {

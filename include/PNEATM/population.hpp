@@ -3,6 +3,7 @@
 
 #include <PNEATM/genome.hpp>
 #include <PNEATM/species.hpp>
+#include <PNEATM/Connection/connection.hpp>
 #include <PNEATM/Connection/innovation_connection.hpp>
 #include <PNEATM/Node/innovation_node.hpp>
 #include <PNEATM/utils.hpp>
@@ -90,7 +91,7 @@ class Population {
 		spdlog::logger* logger;
 		std::ofstream statsFile;
 
-		//float CompareGenomes (unsigned int ig1, unsigned int ig2, float a, float b, float c);
+		std::vector<Connection> GetWeightedCentroid (unsigned int speciesId);
 		void UpdateFitnesses (float speciesSizeEvolutionLimit);
 		int SelectParent (unsigned int iSpe);
 };
@@ -143,7 +144,7 @@ Population<Args...>::~Population () {
 
 template <typename... Args>
 Genome<Args...>& Population<Args...>::getGenome (int id) {
-	if (id < 0 || id >= popSize) {
+	if (id < 0 || id >= (int) popSize) {
 		if (fittergenome_id < 0) {
 			// fitter genome cannot be found
 			logger->warn ("Calling Population<Args...>::getGenome cannot determine which is the more fit genome: in order to know it, call Population<Args...>::speciate first. Returning the first genome.");
@@ -277,7 +278,7 @@ void Population<Args...>::speciate (unsigned int target, unsigned int targetThre
 				}
 				if (itmpspecies == (unsigned int) tmpspecies.size ()) {
 					// no species found for the current genome, we have to create one new
-					tmpspecies.push_back (Species<Args...> (itmpspecies, genomes [genome_id]));
+					tmpspecies.push_back (Species<Args...> (itmpspecies, genomes [genome_id]->connections));
 				}
 
 				tmpspecies [itmpspecies].members.push_back (genome_id);
@@ -320,22 +321,10 @@ void Population<Args...>::speciate (unsigned int target, unsigned int targetThre
 
 	logger->trace ("speciation result in {0} alive species in {1} iteration(s)", nbSpeciesAlive, ite);
 
-	// update leaders
+	// update species
 	for (size_t iSpe = 0; iSpe < species.size (); iSpe++) {
 		if (!species [iSpe].isDead) {	// if the species is still alive, this also ensure that there is at least one member 
-			// the more fit genome is the leader (TODO to change to weighted centroid)
-			unsigned int ileader = species [iSpe].members [0];
-			for (size_t i = 1; i < species [iSpe].members.size (); i++) {
-				if (
-					genomes [species [iSpe].members [i]]->fitness > genomes [ileader]->fitness	// a better genome is found
-					|| (
-						Eq_Float (genomes [species [iSpe].members [i]]->fitness, genomes [ileader]->fitness)	// another genome has this fitness
-						&& Random_Float (0, 1, true, false) < 0.5f
-						)
-				) ileader = species [iSpe].members [i];
-			}
-
-			species [iSpe].leader = genomes [ileader]->clone ();
+			species [iSpe].connections = GetWeightedCentroid ((unsigned int) iSpe);
 		}
 	}
 
@@ -343,96 +332,44 @@ void Population<Args...>::speciate (unsigned int target, unsigned int targetThre
 	UpdateFitnesses (speciesSizeEvolutionLimit);
 }
 
-/*template <typename... Args>
-float Population<Args...>::CompareGenomes (unsigned int ig1, unsigned int ig2, float a, float b, float c) {
-	// get enabled connections and maxInnovId for genome 1
-	unsigned int maxInnovId1 = 0;
-	std::vector<size_t> connEnabled1;
-	for (size_t i = 0; i < genomes [ig1]->connections.size (); i++) {
-		if (genomes [ig1]->connections [i].enabled) {
-			connEnabled1.push_back(i);
-			if (genomes [ig1]->connections [i].innovId > maxInnovId1) {
-				maxInnovId1 = genomes [ig1]->connections [i].innovId;
+template <typename... Args>
+std::vector<Connection> Population<Args...>::GetWeightedCentroid (unsigned int speciesId) {
+	std::vector<Connection> result;
+
+	float sumFitness = 0.0f;
+
+	for (size_t i = 0; i < species [speciesId].members.size (); i++) {	// for each genome in the species
+		float fitness = genomes [species [speciesId].members [i]]->fitness;
+
+		for (const Connection& conn : genomes [species [speciesId].members [i]]->connections) {	// for each of its connections
+			size_t curResConn = 0;
+			while (curResConn < result.size () && result [curResConn].innovId != conn.innovId) {	// while we have not found any corresponding connection in result
+				curResConn++;
 			}
+			if (curResConn >= result.size ()) {	// there is no corresponding connections, we add it
+				result.push_back (conn);
+				result [curResConn].weight = 0.0f;	// set its weight as null as all the previous genomes doesn't contains it
+			}
+			result [curResConn].weight += conn.weight * fitness;	// we add the connection's weight dot the genome's fitness (weighted centroid, check below)
 		}
+
+		sumFitness += fitness;
 	}
 
-	// get enabled connections and maxInnovId for genome 2
-	unsigned int maxInnovId2 = 0;
-	std::vector<size_t> connEnabled2;
-	for (size_t i = 0; i < genomes [ig2]->connections.size (); i++) {
-		if (genomes [ig2]->connections [i].enabled) {
-			connEnabled2.push_back (i);
-			if (genomes [ig2]->connections [i].innovId > maxInnovId2) {
-				maxInnovId2 = genomes [ig2]->connections [i].innovId;
-			}
+	// we divide each weight by sumFitness to have the average (weighted centroid)
+	if (sumFitness > 0.0f) {
+		for (size_t i = 0; i < result.size (); i++) {
+			result [i].weight /= sumFitness;
 		}
-	}
-
-	unsigned int excessGenes = 0;
-	unsigned int disjointGenes = 0;
-	float sumDiffWeights = 0.0f;
-	unsigned int nbCommonGenes = 0;
-
-	for (size_t i1 = 0; i1 < connEnabled1.size (); i1++) {
-		// for each enabled connection of the first genome
-		if (genomes [ig1]->connections [connEnabled1 [i1]].innovId > maxInnovId2) {
-			// if connection's innovId is over the maximum one of second genome's connections
-			// it is an excess gene
-			excessGenes += 1;
-		} else {
-			size_t i2 = 0;
-
-			while (i2 < connEnabled2.size () && genomes [ig2]->connections [connEnabled2 [i2]].innovId != genomes [ig1]->connections [connEnabled1 [i1]].innovId) {
-				i2 ++;
-			}
-			if (i2 == connEnabled2.size ()) {
-				// no connection with the same innovation id have been found in the second genome
-				// it is a disjoint gene
-				disjointGenes += 1;
-			} else {
-				// one connection has the same innovation id
-				nbCommonGenes += 1;
-				float diff = genomes [ig2]->connections [connEnabled2 [i2]].weight - genomes [ig1]->connections [connEnabled1 [i1]].weight;
-				if (diff > 0) {
-					sumDiffWeights += diff;
-				} else {
-					sumDiffWeights += -1 * diff;
-				}
-			}
-		}
-	}
-
-	for (size_t i2 = 0; i2 < connEnabled2.size (); i2++) {
-		// for each enabled connection of the second genome
-		if (genomes [ig2]->connections [connEnabled2 [i2]].innovId > maxInnovId1) {
-			// if connection's innovId is over the maximum one of first genome's connections
-			// it is an excess gene
-			excessGenes += 1;
-		} else {
-			size_t i1 = 0;
-			while (i1 < connEnabled1.size () && genomes [ig2]->connections [connEnabled2 [i2]].innovId != genomes [ig1]->connections [connEnabled1 [i1]].innovId) {
-				i1 ++;
-			}
-			if (i1 == connEnabled1.size ()) {
-				// no connection with the same innovation id have been found in the first genome
-				// it is a disjoint gene
-				disjointGenes += 1;
-			}	// else, the weight's difference has already been processed in the previous for loop
-		}
-	}
-
-	if (nbCommonGenes > 0) {
-		return (
-			(a * (float) excessGenes + b * (float) disjointGenes) / (float) std::max (connEnabled1.size (), connEnabled2.size ())
-			+ c * sumDiffWeights / (float) nbCommonGenes
-		);
 	} else {
-		// there is no common genes between genomes
-		// let's return the maximum float as they might be very differents
-		return std::numeric_limits<float>::max ();
+		// null sumFitness
+		for (size_t i = 0; i < result.size (); i++) {
+			result [i].weight = std::numeric_limits<float>::max ();
+		}
 	}
-}*/
+
+	return result;
+}
 
 template <typename... Args>
 void Population<Args...>::UpdateFitnesses (float speciesSizeEvolutionLimit) {
