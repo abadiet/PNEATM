@@ -12,17 +12,17 @@ int main () {
 
     // init population
     unsigned int popSize = 100;
-    pneatm::Population<myInt, float> pop = SetupPopulation (popSize, logger.get ());
+    pneatm::Population<myInt, myFloat> pop = SetupPopulation (popSize, logger.get ());
 
     // init snake
     Snake snake (8);
 
     // init mutation parameters
-    std::function<pneatm::mutationParams_t (float)> paramsMap = SetupMutationParametersMaps ();
+    std::function<pneatm::mutationParams_t (double)> paramsMap = SetupMutationParametersMaps ();
 
     unsigned int maxIterationThresh = 500;
-    float bestFitness = 0.0f;
-    while (bestFitness < 2000.0f && pop.getGeneration () < 100) { // while goal is not reach
+    double bestFitness = 0.0;
+    while (bestFitness < 2000.0 && pop.getGeneration () < 100) { // while goal is not reach
         std::cout << "generation " << pop.getGeneration () << std::endl;
 
         for (unsigned int genomeId = 0; genomeId < popSize; genomeId ++) {
@@ -39,7 +39,7 @@ int main () {
                 for (unsigned int i = 0; i < 14; i++) {
                     pop.template loadInput<myInt> (AI_Inputs [i], i, genomeId);
                 }
-                pop.template loadInput<float> (snake.getScore (), 14, genomeId);
+                pop.template loadInput<myFloat> (snake.getScore (), 14, genomeId);
 
                 // run the network
                 pop.runNetwork (genomeId);
@@ -60,7 +60,7 @@ int main () {
         // speciation step
         pop.speciate ();
 
-        bestFitness = pop.getFitterGenome ().getFitness ();
+        bestFitness = pop.getGenome ().getFitness ();
         std::cout << "  - best fitness: " << bestFitness << std::endl;
 
         // crossover step
@@ -82,7 +82,7 @@ int main () {
             for (unsigned int i = 0; i < 14; i++) {
                 pop.template loadInput<myInt> (AI_Inputs [i], i, genomeId);
             }
-            pop.template loadInput<float> (snake.getScore (), 14, genomeId);
+            pop.template loadInput<myFloat> (snake.getScore (), 14, genomeId);
 
             pop.runNetwork (genomeId);
 

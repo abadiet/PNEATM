@@ -4,7 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <SFML/Graphics.hpp>
-#include <myInt.hpp>
+#include <myTypes.hpp>
 
 typedef struct vecXY {
     unsigned int x;
