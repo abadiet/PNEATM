@@ -324,7 +324,7 @@ void Population<Args...>::speciate (unsigned int target, unsigned int targetThre
 	// update species
 	for (size_t iSpe = 0; iSpe < species.size (); iSpe++) {
 		if (!species [iSpe].isDead) {	// if the species is still alive, this also ensure that there is at least one member 
-			species [iSpe].connections = GetWeightedCentroid ((unsigned int) iSpe);
+			//species [iSpe].connections = GetWeightedCentroid ((unsigned int) iSpe);
 		}
 	}
 
@@ -342,22 +342,24 @@ std::vector<Connection> Population<Args...>::GetWeightedCentroid (unsigned int s
 		double fitness = genomes [species [speciesId].members [i]]->fitness;
 
 		for (const Connection& conn : genomes [species [speciesId].members [i]]->connections) {	// for each of its connections
-			size_t curResConn = 0;
-			while (curResConn < result.size () && result [curResConn].innovId != conn.innovId) {	// while we have not found any corresponding connection in result
-				curResConn++;
+			if (conn.enabled) {	// only pay attention to active ones
+				size_t curResConn = 0;
+				while (curResConn < result.size () && result [curResConn].innovId != conn.innovId) {	// while we have not found any corresponding connection in result
+					curResConn++;
+				}
+				if (curResConn >= result.size ()) {	// there is no corresponding connections, we add it
+					result.push_back (conn);
+					result [curResConn].weight = 0.0;	// set its weight as null as all the previous genomes doesn't contains it
+				}
+				result [curResConn].weight += conn.weight * fitness;	// we add the connection's weight dot the genome's fitness (weighted centroid, check below)
 			}
-			if (curResConn >= result.size ()) {	// there is no corresponding connections, we add it
-				result.push_back (conn);
-				result [curResConn].weight = 0.0f;	// set its weight as null as all the previous genomes doesn't contains it
-			}
-			result [curResConn].weight += conn.weight * fitness;	// we add the connection's weight dot the genome's fitness (weighted centroid, check below)
 		}
 
 		sumFitness += fitness;
 	}
 
 	// we divide each weight by sumFitness to have the average (weighted centroid)
-	if (sumFitness > 0.0f) {
+	if (sumFitness > 0.0) {
 		for (size_t i = 0; i < result.size (); i++) {
 			result [i].weight /= sumFitness;
 		}
@@ -422,7 +424,7 @@ void Population<Args...>::UpdateFitnesses (double speciesSizeEvolutionLimit) {
 				double evolutionFactor = species [i].avgFitnessAdjusted / (avgFitnessAdjusted + std::numeric_limits<double>::min ());
 				if (evolutionFactor > speciesSizeEvolutionLimit) evolutionFactor = speciesSizeEvolutionLimit;	// we limit the speceis evolution factor: a species's size cannot skyrocket from few genomes
 
-				species [i].allowedOffspring = (int) ((double) species [i].members.size () * evolutionFactor);	// note that (int) 0.9f == 0.0f
+				species [i].allowedOffspring = (int) ((double) species [i].members.size () * evolutionFactor);	// note that (int) 0.9 == 0.0
 			} else {
 				// the species cannot have offsprings it has not improved for a long time
 				species[i].allowedOffspring = 0;
@@ -599,7 +601,7 @@ void Population<Args...>::print (std::string prefix) {
 	std::cout << prefix << "   Number of connections at initialization: " << N_ConnInit << std::endl;
 	std::cout << prefix << "   Probability of adding recurrency: " << probRecuInit << std::endl;
 	std::cout << prefix << "   Maximum recurrency at initialization: " << maxRecuInit << std::endl;
-	std::cout << prefix << "   Weight's range at intialization: [" << -1.0f * weightExtremumInit << ", " << weightExtremumInit << "]" << std::endl;
+	std::cout << prefix << "   Weight's range at intialization: [" << -1.0 * weightExtremumInit << ", " << weightExtremumInit << "]" << std::endl;
 	std::cout << prefix << "Current More Fit Genome ID: " << fittergenome_id << std::endl;
 	std::cout << prefix << "Number of Activation Functions [Input TypeID to Output TypeID (Number of functions)]: ";
 	for (size_t i = 0; i < activationFns.size (); i++) {
