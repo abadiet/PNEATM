@@ -6,6 +6,7 @@
 #include <snake.hpp>
 #include <PNEATM/population.hpp>
 #include <PNEATM/genome.hpp>
+#include <PNEATM/species.hpp>
 #include <functional>
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/rotating_file_sink.h>
@@ -110,9 +111,10 @@ pneatm::Population<myInt, myFloat> SetupPopulation (unsigned int popSize, spdlog
     double probRecuInit = 0.0;
     double weightExtremumInit = 20.0;
     unsigned int maxRecuInit = 0;
-    double speciationThreshInit = 20.0;
+    double speciationThreshInit = 10000.0;
+    distanceFn dstType = EUCLIDIAN;
     unsigned int threshGensSinceImproved = 15;
-    return pneatm::Population<myInt, myFloat> (popSize, bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger, speciationThreshInit, threshGensSinceImproved, "stats18.csv");
+    return pneatm::Population<myInt, myFloat> (popSize, bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger, dstType, speciationThreshInit, threshGensSinceImproved, "stats18.csv");
 }
 
 std::function<pneatm::mutationParams_t (double)> SetupMutationParametersMaps () {
@@ -146,6 +148,7 @@ std::function<pneatm::mutationParams_t (double)> SetupMutationParametersMaps () 
     refinementSet.weights.perturbationFactor = 1.2;
     return [=] (double fitness) {
         // Here, the mutation map is very basic: if the genome is pretty good, we just refine his network, else we explore new networks
+        return refinementSet;
         if (fitness > 800.0) {
             return refinementSet;
         }

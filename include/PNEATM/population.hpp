@@ -23,7 +23,7 @@ namespace pneatm {
 template <typename... Args>
 class Population {
 	public:
-		Population (unsigned int popSize, std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_init, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger, double speciationThreshInit = 10.0, unsigned int threshGensSinceImproved = 15, std::string stats_filepath = "");
+		Population (unsigned int popSize, std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_init, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger, distanceFn dstType = CONVENTIONAL, double speciationThreshInit = 10.0, unsigned int threshGensSinceImproved = 15, std::string stats_filepath = "");
 		~Population ();
 		//Population (const std::string filepath) {load(filepath);};
 
@@ -53,7 +53,7 @@ class Population {
 		T_out getOutput (unsigned int output_id, unsigned int genome_id);
 
 		void setFitness (double fitness, unsigned int genome_id);
-		void speciate (unsigned int target = 5, unsigned int targetThresh = 0, unsigned int maxIterationsReachTarget = 100, double stepThresh = 0.3, double a = 1.0, double b = 1.0f, double c = 0.4, double speciesSizeEvolutionLimit = 3.0);
+		void speciate (unsigned int target = 5, unsigned int targetThresh = 0, unsigned int maxIterationsReachTarget = 100, double stepThresh = 0.3, double a = 1.0, double b = 1.0, double c = 0.4, double speciesSizeEvolutionLimit = 3.0);
 		void crossover (bool elitism = false, double crossover_rate = 0.7);
 		void mutate (mutationParams_t params);
 		void mutate (std::function<mutationParams_t (double)> paramsMap);
@@ -84,6 +84,8 @@ class Population {
 		double weightExtremumInit;
 		unsigned int maxRecuInit;
 
+		distanceFn dstType;
+
 		int fittergenome_id;
 		std::vector<std::unique_ptr<Genome<Args...>>> genomes;
 		std::vector<Species<Args...>> species;
@@ -107,7 +109,7 @@ class Population {
 using namespace pneatm;
 
 template <typename... Args>
-Population<Args...>::Population(unsigned int popSize, std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_init, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger, double speciationThreshInit, unsigned int threshGensSinceImproved, std::string stats_filepath) :
+Population<Args...>::Population(unsigned int popSize, std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_init, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger, distanceFn dstType, double speciationThreshInit, unsigned int threshGensSinceImproved, std::string stats_filepath) :
 	popSize (popSize),
 	speciationThresh (speciationThreshInit),
 	threshGensSinceImproved (threshGensSinceImproved),
@@ -121,6 +123,7 @@ Population<Args...>::Population(unsigned int popSize, std::vector<size_t> bias_s
 	probRecuInit (probRecuInit),
 	weightExtremumInit (weightExtremumInit),
 	maxRecuInit (maxRecuInit),
+	dstType (dstType),
 	activationFns (activationFns),
 	logger (logger)
 {
@@ -235,7 +238,7 @@ T_out Population<Args...>::getOutput (unsigned int output_id, unsigned int genom
 
 template <typename... Args>
 void Population<Args...>::setFitness (double fitness, unsigned int genome_id) {
-	logger->trace ("setting genome{}'s fitness", genome_id);
+	logger->trace ("Setting genome{}'s fitness", genome_id);
 	genomes [genome_id]->fitness = fitness;
 }
 
@@ -296,7 +299,7 @@ void Population<Args...>::speciate (unsigned int target, unsigned int targetThre
 				}
 				if (itmpspecies == (unsigned int) tmpspecies.size ()) {
 					// no species found for the current genome, we have to create one new
-					tmpspecies.push_back (Species<Args...> (itmpspecies, genomes [genome_id]->connections));
+					tmpspecies.push_back (Species<Args...> (itmpspecies, genomes [genome_id]->connections, dstType));
 				}
 
 				tmpspecies [itmpspecies].members.push_back (genome_id);

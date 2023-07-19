@@ -12,18 +12,24 @@
 
 namespace pneatm {
 
+enum distanceFn {
+	CONVENTIONAL,
+	EUCLIDIAN
+};
+
 template <typename... Args>
 class Species {
 	public:
-		Species (unsigned int id, std::vector<Connection> connections);
+		Species (unsigned int id, std::vector<Connection> connections, distanceFn dstType);
 		~Species () {};
 
-		double distanceWith (const std::unique_ptr<Genome<Args...>>& genome, double a, double b, double c);
+		double distanceWith (const std::unique_ptr<Genome<Args...>>& genome, double a = 1.0, double b = 1.0, double c = 0.4);
 
 		void print (std::string prefix = "");
 
 	private:
 		unsigned int id;
+		distanceFn dstType;
 		std::vector<Connection> connections;
 		double avgFitness;
 		double avgFitnessAdjusted;
@@ -32,6 +38,10 @@ class Species {
 		unsigned int gensSinceImproved;
 		bool isDead;
 		std::vector<unsigned int> members;
+
+		// distance functions
+		double ConventionalNEAT (const std::unique_ptr<Genome<Args...>>& genome, double a, double b, double c);
+		double Euclidian (const std::unique_ptr<Genome<Args...>>& genome);
 
 	template <typename... Args2>
 	friend class Population;
@@ -45,8 +55,9 @@ class Species {
 using namespace pneatm;
 
 template <typename... Args>
-Species<Args...>::Species(unsigned int id, std::vector<Connection> connections): 
+Species<Args...>::Species(unsigned int id, std::vector<Connection> connections, distanceFn dstType): 
 	id (id),
+	dstType (dstType),
 	connections (connections),
 	avgFitness (0),
 	avgFitnessAdjusted (0),
@@ -58,6 +69,20 @@ Species<Args...>::Species(unsigned int id, std::vector<Connection> connections):
 
 template <typename... Args>
 double Species<Args...>::distanceWith (const std::unique_ptr<Genome<Args...>>& genome, double a, double b, double c) {
+	switch (dstType) {
+		case CONVENTIONAL:
+			return ConventionalNEAT (genome, a, b, c);
+			break;
+		case EUCLIDIAN:
+			return Euclidian (genome);
+			break;
+	}
+	return 0.0;	// avoid compilation error
+}
+
+
+template <typename... Args>
+double Species<Args...>::ConventionalNEAT (const std::unique_ptr<Genome<Args...>>& genome, double a, double b, double c) {
 	// get enabled connections and maxInnovId for genome 1
 	unsigned int maxInnovId1 = 0;
 	std::vector<size_t> connEnabled1;
@@ -145,6 +170,40 @@ double Species<Args...>::distanceWith (const std::unique_ptr<Genome<Args...>>& g
 		// let's return the maximum double as they might be very differents
 		return std::numeric_limits<double>::max ();
 	}
+}
+
+template <typename... Args>
+double Species<Args...>::Euclidian (const std::unique_ptr<Genome<Args...>>& genome) {
+	double result = 0.0;
+
+	std::vector<size_t> usedId;
+	for (const Connection& conn : connections) {
+		size_t i = 0;
+		while (i < genome->connections.size () && genome->connections [i].innovId != conn.innovId) {
+			i++;
+		}
+		if (i >= genome->connections.size ()) {
+			// the connection is not in the genome
+			result += conn.weight * conn.weight;
+		} else {
+			usedId.push_back (i);
+			// the leader and the genome share this connection
+			result += (conn.weight - genome->connections [i].weight) * (conn.weight - genome->connections [i].weight);
+		}
+	}
+
+	for (size_t i = 0; i < genome->connections.size (); i++) {
+		size_t k = 0;
+		while (k < usedId.size () && usedId [k] != i) {
+			k++;
+		}
+		if (k >= usedId.size ()) {
+			// the connection has not been take into account
+			result += genome->connections [i].weight * genome->connections [i].weight;
+		}
+	}
+
+	return result;	// actualy the euclidian distance is equal to the squared root of result: but this has no effect as we are comparing values
 }
 
 template <typename... Args>
