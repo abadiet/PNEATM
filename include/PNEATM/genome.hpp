@@ -80,7 +80,7 @@ class Genome {
 		std::unique_ptr<Genome<Args...>> clone ();
 
 		void print (std::string prefix = "");
-		void draw (std::string font_path, unsigned int windowWidth = 1300, unsigned int windowHeight = 800, double dotsRadius = 6.5);
+		void draw (std::string font_path, unsigned int windowWidth = 1300, unsigned int windowHeight = 800, float dotsRadius = 6.5f);
 
 	private:
 		unsigned int nbBias;
@@ -409,7 +409,6 @@ void Genome<Args...>::mutate(innovationConn_t* conn_innov, innovationNode_t* nod
 		AddConnection (conn_innov, params.connections.maxRecurrency, params.connections.maxIterationsFindNode, params.connections.reactivateRate);
 	}
 }
-
 
 template <typename... Args>
 unsigned int Genome<Args...>::RepetitionNodeCheck (unsigned int index_T_in, unsigned int index_T_out, unsigned int index_activation_fn) {
@@ -848,7 +847,7 @@ void Genome<Args...>::print (std::string prefix) {
 
 
 template <typename... Args>
-void Genome<Args...>::draw (std::string font_path, unsigned int windowWidth, unsigned int windowHeight, double dotsRadius) {
+void Genome<Args...>::draw (std::string font_path, unsigned int windowWidth, unsigned int windowHeight, float dotsRadius) {
 	sf::RenderWindow window (sf::VideoMode (windowWidth, windowHeight), "PNEATM - https://github.com/titofra");
 
     std::vector<sf::CircleShape> dots;

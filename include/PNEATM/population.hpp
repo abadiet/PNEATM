@@ -286,26 +286,36 @@ void Population<Args...>::speciate (unsigned int target, unsigned int targetThre
 		// process the other genomes
 		for (unsigned int genome_id = 0; genome_id < popSize; genome_id++) {
 			if (genomes [genome_id]->speciesId == -1) {	// if the genome not already belong to a species
-				unsigned int itmpspecies = 0;
-				while (
-					itmpspecies < (unsigned int) tmpspecies.size ()
-					&& (
-						tmpspecies [itmpspecies].isDead
-						|| !(tmpspecies [itmpspecies].distanceWith (genomes [genome_id], a, b, c) < speciationThresh)	// comparison leader vs genome_id
-						)
-					)
-				{
-					itmpspecies++;	// the genome cannot belong to this species, let's check the next one
+
+				size_t itmpspeciesBest;
+				double dstBest;
+				if (tmpspecies.size () > 0) {	// if there is at least one species
+
+					// we search for the closest species
+					itmpspeciesBest = 0;
+					dstBest = tmpspecies [itmpspeciesBest].distanceWith (genomes [genome_id], a, b, c);
+					double dst;
+					for (size_t itmpspecies = 0; itmpspecies < tmpspecies.size (); itmpspecies++) {
+						if (!tmpspecies [itmpspecies].isDead && (dst = tmpspecies [itmpspecies].distanceWith (genomes [genome_id], a, b, c)) <= dstBest) {
+							// we found a closer one
+							itmpspeciesBest = itmpspecies;
+							dstBest = dst;
+						}
+					}
+
 				}
-				if (itmpspecies == (unsigned int) tmpspecies.size ()) {
-					// no species found for the current genome, we have to create one new
-					tmpspecies.push_back (Species<Args...> (itmpspecies, genomes [genome_id]->connections, dstType));
+				if (dstBest >= speciationThresh || tmpspecies.size () == 0) {
+					// the closest species is too far or there is no species: we create one new
+					itmpspeciesBest = tmpspecies.size ();
+					tmpspecies.push_back (Species<Args...> ((unsigned int) itmpspeciesBest, genomes [genome_id]->connections, dstType));
 				}
 
-				tmpspecies [itmpspecies].members.push_back (genome_id);
-				genomes [genome_id]->speciesId = tmpspecies [itmpspecies].id;
+				tmpspecies [itmpspeciesBest].members.push_back (genome_id);
+				genomes [genome_id]->speciesId = tmpspecies [itmpspeciesBest].id;
 			}
 		}
+
+		std::cout << speciationThresh << std::endl;
 
 		// check how many species are still alive
 		for (size_t iSpe = 0; iSpe < tmpspecies.size (); iSpe++) {

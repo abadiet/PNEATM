@@ -23,7 +23,7 @@ int main () {
     unsigned int maxIterationThresh = 500;
     int nbGame = 5;
     double bestFitness = 0.0;
-    while (bestFitness < 2000.0 && pop.getGeneration () < 100) { // while goal is not reach
+    while (bestFitness < 2000.0 && pop.getGeneration () < 150) { // while goal is not reach
         std::cout << "generation " << pop.getGeneration () << std::endl;
 
         for (unsigned int genomeId = 0; genomeId < popSize; genomeId ++) {
@@ -66,13 +66,13 @@ int main () {
         }
 
         // speciation step
-        pop.speciate ();
+        pop.speciate (5, 0, 100, 0.3);
 
         bestFitness = pop.getGenome ().getFitness ();
         std::cout << "  - best fitness: " << bestFitness << std::endl;
 
         // crossover step
-        pop.crossover (true, 1.0);
+        pop.crossover (true, 0.8);
 
         // mutation step
         pop.mutate (paramsMap);
@@ -116,14 +116,14 @@ int main () {
         // game has ended, we set the score to the genome's fitness
         pop.setFitness (score / (float) nbGame, genomeId);
     }
-    pop.speciate (10, 0, 100, 5.0);
+    pop.speciate (10, 0, 100, 0.3);
 
     // print info and draw genome's network
-    //pop.getFitterGenome ().print ();
-    //pop.getFitterGenome ().draw ("/usr/share/fonts/OTF/SF-Pro-Rounded-Light.otf");
+    pop.getGenome (-1).print ();
+    pop.getGenome (-1).draw ("/usr/share/fonts/OTF/SF-Pro-Rounded-Light.otf");
 
     // play a game by the fitter genome
-    //playGameFitter (pop.getFitterGenome (), maxIterationThresh, false, {800, 600}, 0.12f, 8);
+    playGameFitter (pop.getGenome (-1), maxIterationThresh, false, {800, 600}, 0.12f, 8);
 
     return 0;
 }
