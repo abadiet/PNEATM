@@ -261,10 +261,7 @@ void Population<Args...>::speciate (unsigned int target, unsigned int maxIterati
 	unsigned int nbSpeciesAlive = 0;
 	unsigned int ite = 0;
 
-	while (
-		ite < maxIterationsReachTarget
-		&& (nbSpeciesAlive < target || nbSpeciesAlive > target)
-	) {
+	while (ite < maxIterationsReachTarget && nbSpeciesAlive != target) {
 
 		// init tmpspecies
 		tmpspecies.clear ();
@@ -352,7 +349,7 @@ void Population<Args...>::speciate (unsigned int target, unsigned int maxIterati
 
 	// update species
 	for (size_t iSpe = 0; iSpe < species.size (); iSpe++) {
-		if (!species [iSpe].isDead) {	// if the species is still alive, this also ensure that there is at least one member 
+		if (!species [iSpe].isDead) {	// if the species is still alive, this also ensure that there is at least one member
 			//species [iSpe].connections = GetWeightedCentroid ((unsigned int) iSpe);
 		}
 	}
