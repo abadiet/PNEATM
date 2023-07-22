@@ -53,7 +53,7 @@ class Population {
 		T_out getOutput (unsigned int output_id, unsigned int genome_id);
 
 		void setFitness (double fitness, unsigned int genome_id);
-		void speciate (unsigned int target = 5, unsigned int targetThresh = 0, unsigned int maxIterationsReachTarget = 100, double stepThresh = 0.3, double a = 1.0, double b = 1.0, double c = 0.4, double speciesSizeEvolutionLimit = 3.0);
+		void speciate (unsigned int target = 5, unsigned int maxIterationsReachTarget = 100, double stepThresh = 0.3, double a = 1.0, double b = 1.0, double c = 0.4, double speciesSizeEvolutionLimit = 3.0);
 		void crossover (bool elitism = false, double crossover_rate = 0.7);
 		void mutate (mutationParams_t params);
 		void mutate (std::function<mutationParams_t (double)> paramsMap);
@@ -243,7 +243,7 @@ void Population<Args...>::setFitness (double fitness, unsigned int genome_id) {
 }
 
 template <typename... Args>
-void Population<Args...>::speciate (unsigned int target, unsigned int targetThresh, unsigned int maxIterationsReachTarget, double stepThresh, double a, double b, double c, double speciesSizeEvolutionLimit) {
+void Population<Args...>::speciate (unsigned int target, unsigned int maxIterationsReachTarget, double stepThresh, double a, double b, double c, double speciesSizeEvolutionLimit) {
 	logger->info ("Speciation");
 
 	// species randomization: we do that here to avoid the first species to become too large.
@@ -263,7 +263,7 @@ void Population<Args...>::speciate (unsigned int target, unsigned int targetThre
 
 	while (
 		ite < maxIterationsReachTarget
-		&& ((int) nbSpeciesAlive < (int) target - (int) targetThresh || nbSpeciesAlive > target + targetThresh)
+		&& (nbSpeciesAlive < target || nbSpeciesAlive > target)
 	) {
 
 		// init tmpspecies
@@ -315,8 +315,6 @@ void Population<Args...>::speciate (unsigned int target, unsigned int targetThre
 			}
 		}
 
-		std::cout << speciationThresh << std::endl;
-
 		// check how many species are still alive
 		for (size_t iSpe = 0; iSpe < tmpspecies.size (); iSpe++) {
 			if (tmpspecies [iSpe].members.size () == 0) {
@@ -329,10 +327,10 @@ void Population<Args...>::speciate (unsigned int target, unsigned int targetThre
 		}
 
 		// update speciationThresh
-		if ((int) nbSpeciesAlive < (int) target - (int) targetThresh) {
+		if (nbSpeciesAlive < target) {
 			speciationThresh -= stepThresh;
 		} else {
-			if (nbSpeciesAlive > target + targetThresh) {
+			if (nbSpeciesAlive > target) {
 				speciationThresh += stepThresh;
 			}
 		}

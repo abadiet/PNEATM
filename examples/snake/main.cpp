@@ -116,7 +116,7 @@ int main () {
         // game has ended, we set the score to the genome's fitness
         pop.setFitness (score / (float) nbGame, genomeId);
     }
-    pop.speciate (10, 0, 100, 0.3);
+    pop.speciate (5, 0, 100, 0.3);
 
     // print info and draw genome's network
     pop.getGenome (-1).print ();
