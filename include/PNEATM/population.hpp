@@ -91,7 +91,7 @@ class Population {
 		std::vector<Species<Args...>> species;
 		std::vector<std::vector<std::vector<void*>>> activationFns;
 		innovationConn_t conn_innov;
-		innovationNode_t node_innov;	// innovation id is more like a global id to decerne two different nodes than something to track innovation
+		innovationNode_t node_innov;	// node's innovation id is more like a global id to decerne two different nodes than something to track innovation
 
 		spdlog::logger* logger;
 		std::ofstream statsFile;
