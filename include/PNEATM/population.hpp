@@ -20,46 +20,197 @@
 
 namespace pneatm {
 
+/**
+ * @brief A template class representing a population.
+ * @tparam Args Variadic template arguments that contains all the manipulated types.
+ */
 template <typename... Args>
 class Population {
 	public:
-		Population (unsigned int popSize, std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_init, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger, distanceFn dstType = CONVENTIONAL, double speciationThreshInit = 10.0, unsigned int threshGensSinceImproved = 15, std::string stats_filepath = "");
+		/**
+		 * @brief Constructor for the Population class.
+		 * @param popSize The size of the population.
+		 * @param bias_sch The biases scheme (e.g., there is bias_sch[k] biases for type of index k).
+		 * @param inputs_sch The inputs scheme (e.g., there is inputs_sch[k] inputs for type of index k).
+		 * @param outputs_sch The outputs scheme (e.g., there is outputs_sch[k] outputs for type of index k).
+		 * @param hiddens_sch_init The initial hidden nodes scheme (e.g., there is hiddens_sch_init[i][j] hidden nodes of input type of index i and output type of index j).
+		 * @param bias_values The initial biases values (e.g., k-th bias will have value bias_values[k]).
+		 * @param resetValues The biases reset values (e.g., k-th bias can be resetted to resetValues[k]).
+		 * @param activationFns The activation functions (e.g., activationFns[i][j] is an activation function that takes an input of type of index i and return a type of index j output).
+		 * @param N_ConnInit The initial number of connections.
+		 * @param probRecuInit The initial probability of recurrence.
+		 * @param weightExtremumInit The initial weight extremum.
+		 * @param maxRecuInit The maximum recurrence value.
+		 * @param logger A pointer to the logger for logging.
+		 * @param dstType The distance function.
+		 * @param speciationThreshInit The initial speciation threshold. (default is 20.0)
+		 * @param threshGensSinceImproved The maximum number of generations without any improvement. (default is 15)
+		 * @param stats_filepath The filepath for statistics. (default is an empty string, which doesn't create any file)
+		 */
+		Population (unsigned int popSize, std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_values, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger, distanceFn dstType = CONVENTIONAL, double speciationThreshInit = 20.0, unsigned int threshGensSinceImproved = 15, std::string stats_filepath = "");
+
+		/**
+		 * @brief Destructor for the Population class.
+		 */
 		~Population ();
+
 		//Population (const std::string filepath) {load(filepath);};
 
+		/**
+		 * @brief Get the current generation number.
+		 * @return The current generation number.
+		 */
 		unsigned int getGeneration () {return generation;};
+
+		/**
+		 * @brief Get the average fitness.
+		 * @return The average fitness.
+		 */
 		double getAvgFitness () {return avgFitness;};
+
+		/**
+		 * @brief Get the adjusted average fitness.
+		 * @return The adjusted average fitness.
+		 */
 		double getAvgFitnessAdjusted () {return avgFitnessAdjusted;};
+
+		/**
+		 * @brief Get a reference to the Genome with the specified ID.
+		 * @param id The ID of the Genome to retrieve. If set to any negative number, the fitter genome will be returned. (default is -1)
+		 * @return A reference to the Genome with the specified ID.
+		 */
 		Genome<Args...>& getGenome (int id = -1);
 
+		/**
+		 * @brief Load the inputs for the entire population.
+		 * @tparam T_in The type of input data.
+		 * @param inputs A vector containing inputs to be loaded.
+		 */
 		template <typename T_in>
-		void loadInputs (std::vector<T_in> inputs);
-		template <typename T_in>
-		void loadInput (T_in input, unsigned int input_id);
-		template <typename T_in>
-		void loadInputs (std::vector<T_in> inputs, unsigned int genome_id);
-		template <typename T_in>
-		void loadInput (T_in input, unsigned int input_id, unsigned int genome_id);
+		void loadInputs(std::vector<T_in> inputs);
 
+		/**
+		 * @brief Load a single input for the entire population.
+		 * @tparam T_in The type of input data.
+		 * @param input The input data to be loaded.
+		 * @param input_id The ID of the input to load.
+		 */
+		template <typename T_in>
+		void loadInput(T_in input, unsigned int input_id);
+
+		/**
+		 * @brief Load the inputs for a specific genome.
+		 * @tparam T_in The type of input data.
+		 * @param inputs A vector containing inputs to be loaded.
+		 * @param genome_id The ID of the genome for which to load the inputs.
+		 */
+		template <typename T_in>
+		void loadInputs(std::vector<T_in> inputs, unsigned int genome_id);
+
+		/**
+		 * @brief Load a single input data for a specific genome.
+		 * @tparam T_in The type of input data.
+		 * @param input The input data to be loaded.
+		 * @param input_id The ID of the input to load.
+		 * @param genome_id The ID of the genome for which to load the input.
+		 */
+		template <typename T_in>
+		void loadInput(T_in input, unsigned int input_id, unsigned int genome_id);
+
+		/**
+		 * @brief Reset the memory of the entire population.
+		 */
 		void resetMemory ();
+
+		/**
+		 * @brief Reset the memory of a specific genome.
+		 * @param genome_id The ID of the genome for which to reset the memory.
+		 */
 		void resetMemory (unsigned int genome_id);
 
+		/**
+		 * @brief Run the network of the entire population.
+		 */
 		void runNetwork ();
+
+		/**
+		 * @brief Run the network of a specific genome.
+		 * @param genome_id The ID of the genome for which to run the newtork.
+		 */
 		void runNetwork (unsigned int genome_id);
 
+		/**
+		 * @brief Get the outputs of a specific genome.
+		 * @tparam T_out The type of output data.
+		 * @param genome_id The ID of the genome for which to get the outputs.
+		 * @return A vector containing the outputs of the specified genome.
+		 */
 		template <typename T_out>
 		std::vector<T_out> getOutputs (unsigned int genome_id);
+
+		/**
+		 * @brief Get a specific output of a specific genome.
+		 * @tparam T_out The type of output data.
+		 * @param output_id The ID of the output data.
+		 * @param genome_id The ID of the genome for which to get the outputs.
+		 * @return A vector containing the specified output of the specified genome.
+		 */
 		template <typename T_out>
 		T_out getOutput (unsigned int output_id, unsigned int genome_id);
 
+		/**
+		 * @brief Set the fitness of a specific genome.
+		 * @param fitness The fitness to set on.
+		 * @param genome_id The ID of the genome for which to set the fitness.
+		 */
 		void setFitness (double fitness, unsigned int genome_id);
+
+		/**
+		 * @brief Assign genomes to species based on their similarity.
+		 * @param target The target number of species. (default is 5)
+		 * @param maxIterationsReachTarget The maximum number of iterations to reach the target species count. (default is 100)
+		 * @param stepThresh The stepsize for adjusting the speciation threshold. (default is 0.3)
+		 * @param a Coefficient for computing the excess genes contribution to the distance [for CONVENTIONAL distance only]. (default is 1.0)
+		 * @param b Coefficient for computing the disjoint genes contribution to the distance [for CONVENTIONAL distance only]. (default is 1.0)
+		 * @param c Coefficient for computing the average weight difference contribution to the distance [for CONVENTIONAL distance only]. (default is 0.4)
+		 * @param speciesSizeEvolutionLimit The limit for the evolution of species size. (default is 3.0)
+		 */
 		void speciate (unsigned int target = 5, unsigned int maxIterationsReachTarget = 100, double stepThresh = 0.3, double a = 1.0, double b = 1.0, double c = 0.4, double speciesSizeEvolutionLimit = 3.0);
-		void crossover (bool elitism = false, double crossover_rate = 0.7);
+
+		/**
+		 * @brief Perform crossover operation to create the new generation.
+		 * @param elitism Set to true to keep the fitter genome in the new generation. (default is false)
+		 * @param crossover_rate The probability of performing crossover for each new genome. (default is 0.9)
+		 */
+		void crossover (bool elitism = false, double crossover_rate = 0.9);
+
+		/**
+		 * @brief Perform mutation operations over the entire population.
+		 * @param params Mutation parameters.
+		 */
 		void mutate (mutationParams_t params);
+
+		/**
+		 * @brief Perform mutation operations for the entire population.
+		 * @param paramsMap A function that returns mutation parameters relative to the genome's fitness.
+		 */
 		void mutate (std::function<mutationParams_t (double)> paramsMap);
 
+		/**
+		 * @brief Print information on the population.
+		 * @param prefix A prefix to print before each line. (default is an empty string)
+		 */
 		void print (std::string prefix = "");
-		void drawGenome (unsigned int genome_id, std::string font_path, unsigned int windowWidth = 1300, unsigned int windowHeight = 800, double dotsRadius = 6.5);
+
+		/**
+		 * @brief Draw a graphical representation of the specified genome's network.
+		 * @param genome_id The ID of the genome to draw.
+		 * @param font_path The filepath of the font to be used for labels.
+		 * @param windowWidth The width of the drawing window. (default is 1300)
+		 * @param windowHeight The height of the drawing window. (default is 800)
+		 * @param dotsRadius The radius of the dots representing nodes. (default is 6.5f)
+		 */
+		void drawGenome (unsigned int genome_id, std::string font_path, unsigned int windowWidth = 1300, unsigned int windowHeight = 800, float dotsRadius = 6.5f);
 
 		/*void save (const std::string filepath = "./neat_backup.txt");
 		void load (const std::string filepath = "./neat_backup.txt");*/
@@ -77,7 +228,7 @@ class Population {
 		std::vector<size_t> inputs_sch;
 		std::vector<size_t> outputs_sch;
 		std::vector<std::vector<size_t>> hiddens_sch_init;
-		std::vector<void*> bias_init;
+		std::vector<void*> bias_values;
 		std::vector<void*> resetValues;
 		unsigned int N_ConnInit;
 		double probRecuInit;
@@ -109,7 +260,7 @@ class Population {
 using namespace pneatm;
 
 template <typename... Args>
-Population<Args...>::Population(unsigned int popSize, std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_init, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger, distanceFn dstType, double speciationThreshInit, unsigned int threshGensSinceImproved, std::string stats_filepath) :
+Population<Args...>::Population(unsigned int popSize, std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_values, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger, distanceFn dstType, double speciationThreshInit, unsigned int threshGensSinceImproved, std::string stats_filepath) :
 	popSize (popSize),
 	speciationThresh (speciationThreshInit),
 	threshGensSinceImproved (threshGensSinceImproved),
@@ -117,7 +268,7 @@ Population<Args...>::Population(unsigned int popSize, std::vector<size_t> bias_s
 	inputs_sch (inputs_sch),
 	outputs_sch (outputs_sch),
 	hiddens_sch_init (hiddens_sch_init),
-	bias_init (bias_init),
+	bias_values (bias_values),
 	resetValues (resetValues),
 	N_ConnInit (N_ConnInit),
 	probRecuInit (probRecuInit),
@@ -138,7 +289,7 @@ Population<Args...>::Population(unsigned int popSize, std::vector<size_t> bias_s
 
 	genomes.reserve (popSize);
 	for (unsigned int i = 0; i < popSize; i++) {
-		genomes.push_back (std::make_unique<Genome<Args...>> (bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, &conn_innov, &node_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger));
+		genomes.push_back (std::make_unique<Genome<Args...>> (bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_values, resetValues, activationFns, &conn_innov, &node_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger));
 	}
 }
 
@@ -524,7 +675,7 @@ void Population<Args...>::crossover (bool elitism, double crossover_rate) {
 	int previousSize = (int) newGenomes.size();
 	// add genomes if some are missing
 	for (int k = 0; k < (int) popSize - (int) previousSize; k++) {
-		newGenomes.push_back (std::make_unique<Genome<Args...>> (bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, &conn_innov, &node_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger));
+		newGenomes.push_back (std::make_unique<Genome<Args...>> (bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_values, resetValues, activationFns, &conn_innov, &node_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger));
 	}
 	// or remove some genomes if there is too many genomes
 	for (int k = 0; k < (int) previousSize - (int) popSize; k++) {
@@ -655,7 +806,7 @@ void Population<Args...>::print (std::string prefix) {
 }
 
 template <typename... Args>
-void Population<Args...>::drawGenome (unsigned int genome_id, std::string font_path, unsigned int windowWidth, unsigned int windowHeight, double dotsRadius) {
+void Population<Args...>::drawGenome (unsigned int genome_id, std::string font_path, unsigned int windowWidth, unsigned int windowHeight, float dotsRadius) {
 	logger->info ("Drawing genome{}'s network", genome_id);
 	genomes [genome_id]->draw (font_path, windowWidth, windowHeight, dotsRadius);
 }

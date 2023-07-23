@@ -17,14 +17,40 @@ enum distanceFn {
 	EUCLIDIAN
 };
 
+/**
+ * @brief A template class representing a species.
+ * @tparam Args Variadic template arguments that contains all the manipulated types.
+ */
 template <typename... Args>
 class Species {
 	public:
+		/**
+		 * @brief Constructor for the Species class.
+		 * @param id the species ID.
+		 * @param connections A vector of connection that define the species traits. Will be used to process the distance between the species and genomes.
+		 * @param dstType The distance algorithm to use:\n	- CONVENTIONAL: algorithm used in the original NEAT\n	- EUCLIDIAN: euclidian distance in the connections's space
+		 */
 		Species (unsigned int id, std::vector<Connection> connections, distanceFn dstType);
+
+		/**
+		 * @brief Destructor for the Species class.
+		 */
 		~Species () {};
 
+		/**
+		 * @brief Return the distance between a given genome and the species.
+		 * @param genome A reference to the genome for which to calculate the distance.
+		 * @param a Coefficient for computing the excess genes contribution to the distance [for CONVENTIONAL distance only]. (default is 1.0)
+		 * @param b Coefficient for computing the disjoint genes contribution to the distance [for CONVENTIONAL distance only]. (default is 1.0)
+		 * @param c Coefficient for computing the average weight difference contribution to the distance [for CONVENTIONAL distance only]. (default is 0.4)
+		 * @return The distance between a given genome and the species
+		 */
 		double distanceWith (const std::unique_ptr<Genome<Args...>>& genome, double a = 1.0, double b = 1.0, double c = 0.4);
 
+		/**
+		 * @brief Print information on the species.
+		 * @param prefix A prefix to print before each line. (default is an empty string)
+		 */
 		void print (std::string prefix = "");
 
 	private:

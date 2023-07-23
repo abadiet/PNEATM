@@ -7,10 +7,25 @@
 
 namespace pneatm {
 
+/**
+ * @brief Structure representing the innovation tracker for connections.
+ *
+ * The `innovationConn` struct serves as an innovation tracker for connections in a neural network.
+ * It keeps track of the innovation IDs assigned to different connections based on input and output node
+ * innovation IDs and the connection's recurrency. It also provides a method to retrieve a unique
+ * innovation ID.
+ */
 typedef struct innovationConn {
     std::vector<std::vector<std::vector<int>>> connectionIds;
     int N_connectionId = 0;
 
+    /**
+     * @brief Get the innovation ID for a connection.
+     * @param inNodeInnovId The innovation ID of the input node.
+     * @param outNodeInnovId The innovation ID of the output node.
+     * @param inNodeRecu The recurrency of the input node.
+     * @return The innovation ID for the specified connection.
+     */
     unsigned int getInnovId (unsigned int inNodeInnovId, unsigned int outNodeInnovId, unsigned int inNodeRecu) {
         while ((unsigned int) connectionIds.size () < inNodeInnovId + 1) {
             connectionIds.push_back ({});
@@ -28,6 +43,10 @@ typedef struct innovationConn {
         return (unsigned int) connectionIds [inNodeInnovId][outNodeInnovId][inNodeRecu];
     }
 
+    /**
+     * @brief Print information about the innovation tracker.
+     * @param prefix A prefix to print before each line. (default is an empty string)
+     */
     void print (std::string prefix = "") {
         std::cout << prefix << "Number of attributed innovation: " << N_connectionId << std::endl;
     }

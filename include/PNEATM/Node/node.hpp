@@ -11,24 +11,81 @@
 
 namespace pneatm {
 
+/**
+ * @brief A template class representing a node in a neural network.
+ *
+ * The `Node` class is a template class representing a node in a neural network.
+ * It is derived from the `NodeBase` abstract base class and provides implementations
+ * for the virtual functions defined in the base class.
+ *
+ * @tparam T_in The input data type for the node.
+ * @tparam T_out The output data type for the node.
+ */
 template <typename T_in, typename T_out>
 class Node : public NodeBase {
 	public:
+		/**
+		 * @brief Constructor for the Node class.
+		 * @param is_monotyped A boolean indicating if the node is monotyped. (default is false)
+		 */
 		Node (bool is_monotyped = false);
+
+		/**
+		 * @brief Destructor for the Node class.
+		 */
 		~Node () {};
 
+		/**
+		 * @brief Set the activation function for the node.
+		 * @param f A pointer to the activation function to be set.
+		 */
 		void setActivationFn (void* f) override;
+
+		/**
+		 * @brief Set the reset value for the node.
+		 * @param value A pointer to the reset value to be set.
+		 */
 		void setResetValue (void* value) override;
 
+		/**
+		 * @brief Load an input value to the node.
+		 * @param value A pointer to the input value to be loaded.
+		 */
 		void loadInput (void* value) override;
+
+		/**
+		 * @brief Add a value to the node's input with a scalar factor.
+		 * @param value A pointer to the value to be added to the input.
+		 * @param scalar The scalar factor to multiply the input value with.
+		 */
 		void AddToInput (void* value, double scalar) override;	// TODO: too dirty
+
+		/**
+		 * @brief Get the output value of the node.
+		 * @return A pointer to the output value of the node.
+		 */
 		void* getOutput () override;
 
+		/**
+		 * @brief Process the node to compute its output value.
+		 */
 		void process () override;
+
+		/**
+		 * @brief Reset the node to its initial state.
+		 */
 		void reset () override;
 
+		/**
+		 * @brief Create a clone of the node.
+		 * @return A unique pointer to the cloned node.
+		 */
 		std::unique_ptr<NodeBase> clone () override;
 
+		/**
+		 * @brief Print information about the node.
+		 * @param prefix A prefix to print before each line. (default is an empty string)
+		 */
 		void print (std::string prefix = "") override;
 
 	private:

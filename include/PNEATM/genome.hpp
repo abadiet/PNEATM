@@ -21,65 +21,162 @@ namespace pneatm {
 
 typedef struct mutationParams {
 	struct Nodes {
-		double rate = 0.03;
-		double monotypedRate = 0.5;
+		double rate;
+		double monotypedRate;
 		struct Monotyped {
-			unsigned int maxIterationsFindConnection = 20;
+			unsigned int maxIterationsFindConnection;
 		};
 		struct Monotyped monotyped;
 		struct Bityped {
 			unsigned int maxRecurrencyEntryConnection;
-			unsigned int maxIterationsFindNode = 20;
+			unsigned int maxIterationsFindNode;
 		};
 		struct Bityped bityped;
 	};
 	struct Nodes nodes;
 	struct Connections {
-		double rate = 0.05;
-		double reactivateRate = 0.25;
+		double rate;
+		double reactivateRate;
 		unsigned int maxRecurrency;
-		unsigned int maxIterations = 20;
+		unsigned int maxIterations;
 		unsigned int maxIterationsFindNode;
 	};
 	struct Connections connections;
 	struct Weights {
-		double rate = 0.05;
-		double fullChangeRate = 0.1;
-		double perturbationFactor = 1.2;
+		double rate;
+		double fullChangeRate;
+		double perturbationFactor;
 	};
 	struct Weights weights;
 } mutationParams_t;
 
+/**
+ * @brief A template class representing a genome.
+ * @tparam Args Variadic template arguments that contains all the manipulated types.
+ */
 template <typename... Args>
 class Genome {
 	public:
-		Genome (std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_init, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, innovationConn_t* conn_innov, innovationNode_t* node_innov, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger);
+		/**
+		 * @brief Constructor for the Genome class.
+		 * @param bias_sch The biases scheme (e.g., there is bias_sch[k] biases for type of index k).
+		 * @param inputs_sch The inputs scheme (e.g., there is inputs_sch[k] inputs for type of index k).
+		 * @param outputs_sch The outputs scheme (e.g., there is outputs_sch[k] outputs for type of index k).
+		 * @param hiddens_sch_init The initial hidden nodes scheme (e.g., there is hiddens_sch_init[i][j] hidden nodes of input type of index i and output type of index j).
+		 * @param bias_values The initial biases values (e.g., k-th bias will have value bias_values[k]).
+		 * @param resetValues The biases reset values (e.g., k-th bias can be resetted to resetValues[k]).
+		 * @param activationFns The activation functions (e.g., activationFns[i][j] is an activation function that takes an input of type of index i and return a type of index j output).
+		 * @param conn_innov A pointer to the connections innovation tracker.
+		 * @param node_innov A pointer to the nodes innovation tracker.
+		 * @param N_ConnInit The initial number of connections.
+		 * @param probRecuInit The initial probability of recurrence.
+		 * @param weightExtremumInit The initial weight extremum.
+		 * @param maxRecuInit The maximum recurrence value.
+		 * @param logger A pointer to the logger for logging.
+		 */
+		Genome (std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_values, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, innovationConn_t* conn_innov, innovationNode_t* node_innov, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger);
+
+		/**
+		 * @brief Constructor for the Genome class. This constructor will not initialized any network.
+		 * @param nbBias The number of bias node.
+		 * @param nbInput The number of input node.
+		 * @param nbOutput The number of output node.
+		 * @param N_types The number of types involved in the network (the number of types in the variadic template Args).
+		 * @param resetValues The biases reset values (e.g., k-th bias can be resetted to resetValues[k]).
+		 * @param activationFns The activation functions (e.g., activationFns[i][j] is an activation function that takes an input of type of index i and return a type of index j output).
+		 * @param weightExtremumInit The initial weight extremum.
+		 * @param logger A pointer to the logger for logging.
+		 */
 		Genome (unsigned int nbBias, unsigned int nbInput, unsigned int nbOutput, unsigned int N_types, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, double weightExtremumInit, spdlog::logger* logger);
-		//Genome () {};
+
+		/**
+		 * @brief Destructor for the Genome class.
+		 */
 		~Genome ();
 
+		/**
+		 * @brief Get the fitness.
+		 * @return The fitness.
+		 */
 		double getFitness () {return fitness;};
+
+		/**
+		 * @brief Get the species ID which belong the genome.
+		 * @return The species ID which belong the genome.
+		 */
 		int getSpeciesId () {return speciesId;};
 
+		/**
+		 * @brief Load the inputs.
+		 * @tparam T_in The type of input data.
+		 * @param inputs A vector containing inputs to be loaded.
+		 */
 		template <typename T_in>
 		void loadInputs (std::vector<T_in> inputs);
+
+		/**
+		 * @brief Load an input.
+		 * @tparam T_in The type of input data.
+		 * @param inputs The input to be loaded.
+		 * @param input_id The ID of the input to load.
+		 */
 		template <typename T_in>
 		void loadInput (T_in input, int input_id);
 
+		/**
+		 * @brief Reset the memory.
+		 */
 		void resetMemory ();
 
+		/**
+		 * @brief Run the network.
+		 */
 		void runNetwork ();
 
+		/**
+		 * @brief Get the outputs.
+		 * @tparam T_out The type of output data.
+		 * @return A vector containing the outputs.
+		 */
 		template <typename T_out>
 		std::vector<T_out> getOutputs ();
+
+		/**
+		 * @brief Get a specific output.
+		 * @tparam T_out The type of output data.
+		 * @param output_id The ID of the output to get.
+		 * @return The ouput.
+		 */
 		template <typename T_out>
 		T_out getOutput (int output_id);
 
+		/**
+		 * @brief Perform mutation operations.
+		 * @param conn_innov A pointer to the connections innovation tracker.
+		 * @param node_innov A pointer to the nodes innovation tracker.
+		 * @param params Mutation parameters.
+		 */
 		void mutate (innovationConn_t* conn_innov, innovationNode_t* node_innov, mutationParams_t params);
 
+		/**
+		 * @brief Get a clone of the genome.
+		 * @return A unique pointer to the created clone of the genome.
+		 */
 		std::unique_ptr<Genome<Args...>> clone ();
 
+		/**
+		 * @brief Print information on the genome.
+		 * @param prefix A prefix to print before each line. (default is an empty string)
+		 */
 		void print (std::string prefix = "");
+
+		/**
+		 * @brief Draw a graphical representation of the network.
+		 * @param font_path The filepath of the font to be used for labels.
+		 * @param windowWidth The width of the drawing window. (default is 1300)
+		 * @param windowHeight The height of the drawing window. (default is 800)
+		 * @param dotsRadius The radius of the dots representing nodes. (default is 6.5f)
+		 */
 		void draw (std::string font_path, unsigned int windowWidth = 1300, unsigned int windowHeight = 800, float dotsRadius = 6.5f);
 
 	private:
@@ -124,7 +221,7 @@ class Genome {
 using namespace pneatm;
 
 template <typename... Args>
-Genome<Args...>::Genome (std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_init, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, innovationConn_t* conn_innov, innovationNode_t* node_innov, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger) :
+Genome<Args...>::Genome (std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_values, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, innovationConn_t* conn_innov, innovationNode_t* node_innov, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger) :
 	weightExtremumInit (weightExtremumInit),
 	activationFns (activationFns),
 	resetValues (resetValues),
@@ -154,7 +251,7 @@ Genome<Args...>::Genome (std::vector<size_t> bias_sch, std::vector<size_t> input
 				nodes.back ()->index_activation_fn,
 				RepetitionNodeCheck (nodes.back ()->index_T_in, nodes.back ()->index_T_out, nodes.back ()->index_activation_fn) - 1
 			);
-			nodes.back ()->loadInput (bias_init [i]);	// load input now as it will always be the same
+			nodes.back ()->loadInput (bias_values [i]);	// load input now as it will always be the same
 			nodes.back ()->process ();	// load output now as it will always be the same
 			// bias node doesn't requires a reset value as they are never changed
 
