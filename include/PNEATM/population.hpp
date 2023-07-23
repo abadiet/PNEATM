@@ -334,11 +334,21 @@ void Population<Args...>::speciate (unsigned int target, unsigned int maxIterati
 	}
 
 	// update species
-	/*for (size_t iSpe = 0; iSpe < species.size (); iSpe++) {
+	for (size_t iSpe = 0; iSpe < species.size (); iSpe++) {
 		if (!species [iSpe].isDead) {	// if the species is still alive, this also ensure that there is at least one member
-			species [iSpe].connections = GetWeightedCentroid ((unsigned int) iSpe);
+			//species [iSpe].connections = GetWeightedCentroid ((unsigned int) iSpe);
+
+			size_t leaderId = species [iSpe].members [0];
+			for (size_t i = 1; i < species [iSpe].members.size (); i++) {
+				if (genomes [species [iSpe].members [i]]->fitness >= genomes [leaderId]->fitness) {
+					if (genomes [species [iSpe].members [i]]->fitness > genomes [leaderId]->fitness || Random_Double (0.0, 1.0, true, false) < 0.5) {
+						leaderId = species [iSpe].members [i];
+					}
+				}
+			}
+			species [iSpe].connections = genomes [leaderId]->connections;	// species leader is the more fit genome
 		}
-	}*/
+	}
 
 	// update all the fitness as we now know the species
 	UpdateFitnesses (speciesSizeEvolutionLimit);
