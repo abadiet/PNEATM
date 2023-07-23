@@ -19,14 +19,28 @@
 
 namespace pneatm {
 
+/**
+ * @brief Mutation parameters used to control mutations.
+ */
 typedef struct mutationParams {
+	/**
+	 * @brief Mutations parameters to add a node.
+	 */
 	struct Nodes {
 		double rate;
 		double monotypedRate;
+
+		/**
+		 * @brief Mutations parameters to add a monotyped node.
+		 */
 		struct Monotyped {
 			unsigned int maxIterationsFindConnection;
 		};
 		struct Monotyped monotyped;
+
+		/**
+		 * @brief Mutations parameters to add a bityped node.
+		 */
 		struct Bityped {
 			unsigned int maxRecurrencyEntryConnection;
 			unsigned int maxIterationsFindNode;
@@ -34,6 +48,10 @@ typedef struct mutationParams {
 		struct Bityped bityped;
 	};
 	struct Nodes nodes;
+
+	/**
+	 * @brief Mutations parameters to add a connection.
+	 */
 	struct Connections {
 		double rate;
 		double reactivateRate;
@@ -42,6 +60,10 @@ typedef struct mutationParams {
 		unsigned int maxIterationsFindNode;
 	};
 	struct Connections connections;
+
+	/**
+	 * @brief Mutations parameters to change the weights.
+	 */
 	struct Weights {
 		double rate;
 		double fullChangeRate;
@@ -49,6 +71,11 @@ typedef struct mutationParams {
 	};
 	struct Weights weights;
 } mutationParams_t;
+
+// Forward declarations for nested structs
+struct mutationParams::Nodes;
+struct mutationParams::Connections;
+struct mutationParams::Weights;
 
 /**
  * @brief A template class representing a genome.
@@ -117,7 +144,7 @@ class Genome {
 		/**
 		 * @brief Load an input.
 		 * @tparam T_in The type of input data.
-		 * @param inputs The input to be loaded.
+		 * @param input The input to be loaded.
 		 * @param input_id The ID of the input to load.
 		 */
 		template <typename T_in>
@@ -535,7 +562,7 @@ bool Genome<Args...>::CheckNewConnectionValidity (unsigned int inNodeId, unsigne
 				return false;	// it is already an enabled connection
 			} else {
 				// it is a disabled connection
-				*disabled_conn_id = (int) i;
+				 *disabled_conn_id = (int) i;
 			}
 		}
 	}

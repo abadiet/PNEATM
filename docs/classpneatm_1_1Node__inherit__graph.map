@@ -1,0 +1,4 @@
+<map id="pneatm::Node&lt; T_in, T_out &gt;" name="pneatm::Node&lt; T_in, T_out &gt;">
+<area shape="rect" id="node1" title="A template class representing a node in a neural network." alt="" coords="5,80,165,121"/>
+<area shape="rect" id="node2" href="$classpneatm_1_1NodeBase.html" title="Abstract base class representing a generic node in a neural network." alt="" coords="12,5,159,32"/>
+</map>

@@ -3,3 +3,6 @@ tests
 logs
 *.csv
 .*
+Doxyfile
+html
+latex
