@@ -72,7 +72,7 @@ int main () {
         std::cout << "  - best fitness: " << bestFitness << std::endl;
 
         // crossover step
-        pop.crossover (true, 0.8);
+        pop.crossover (true, 0.9);
 
         // mutation step
         pop.mutate (paramsMap);

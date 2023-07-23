@@ -125,13 +125,13 @@ std::function<pneatm::mutationParams_t (double)> SetupMutationParametersMaps () 
     explorationSet.nodes.bityped.maxRecurrencyEntryConnection = 0;
     explorationSet.nodes.bityped.maxIterationsFindNode = 100;
     explorationSet.connections.rate = 0.1;
-    explorationSet.connections.reactivateRate = 0.3;
+    explorationSet.connections.reactivateRate = 0.8;
     explorationSet.connections.maxRecurrency = 0;
     explorationSet.connections.maxIterations = 100;
     explorationSet.connections.maxIterationsFindNode = 100;
-    explorationSet.weights.rate = 0.02;
-    explorationSet.weights.fullChangeRate = 0.2;
-    explorationSet.weights.perturbationFactor = 2.0;
+    explorationSet.weights.rate = 0.1;
+    explorationSet.weights.fullChangeRate = 0.4;
+    explorationSet.weights.perturbationFactor = 1.8;
     pneatm::mutationParams_t refinementSet;
     refinementSet.nodes.rate = 0.05;
     refinementSet.nodes.monotypedRate = 0.5;
@@ -139,11 +139,11 @@ std::function<pneatm::mutationParams_t (double)> SetupMutationParametersMaps () 
     refinementSet.nodes.bityped.maxRecurrencyEntryConnection = 0;
     refinementSet.nodes.bityped.maxIterationsFindNode = 100;
     refinementSet.connections.rate = 0.05;
-    refinementSet.connections.reactivateRate = 0.2;
+    refinementSet.connections.reactivateRate = 0.4;
     refinementSet.connections.maxRecurrency = 0;
     refinementSet.connections.maxIterations = 100;
     refinementSet.connections.maxIterationsFindNode = 100;
-    refinementSet.weights.rate = 0.01;
+    refinementSet.weights.rate = 0.05;
     refinementSet.weights.fullChangeRate = 0.1;
     refinementSet.weights.perturbationFactor = 1.2;
     return [=] (double fitness) {
