@@ -329,13 +329,16 @@ void Population<Args...>::speciate (unsigned int target, unsigned int maxIterati
 	species = tmpspecies;
 
 	logger->trace ("speciation result in {0} alive species in {1} iteration(s)", nbSpeciesAlive, ite);
+	if ((float) nbSpeciesAlive > (float) target * 1.3f || (float) nbSpeciesAlive < (float) target * 0.7f) {
+		logger->warn ("There is a huge difference between target ({0}) and the current number of species ({1})", target, nbSpeciesAlive);
+	}
 
 	// update species
-	for (size_t iSpe = 0; iSpe < species.size (); iSpe++) {
+	/*for (size_t iSpe = 0; iSpe < species.size (); iSpe++) {
 		if (!species [iSpe].isDead) {	// if the species is still alive, this also ensure that there is at least one member
-			//species [iSpe].connections = GetWeightedCentroid ((unsigned int) iSpe);
+			species [iSpe].connections = GetWeightedCentroid ((unsigned int) iSpe);
 		}
-	}
+	}*/
 
 	// update all the fitness as we now know the species
 	UpdateFitnesses (speciesSizeEvolutionLimit);
