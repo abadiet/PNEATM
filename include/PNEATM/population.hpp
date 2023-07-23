@@ -246,17 +246,6 @@ template <typename... Args>
 void Population<Args...>::speciate (unsigned int target, unsigned int maxIterationsReachTarget, double stepThresh, double a, double b, double c, double speciesSizeEvolutionLimit) {
 	logger->info ("Speciation");
 
-	// species randomization: we do that here to avoid the first species to become too large.
-	// Actually, as we are using a sequential process to assign a given to genome to a species, the first one may become to large
-	std::vector<Species<Args...>> newSpecies;
-	while (species.size () > 0) {
-		unsigned int r = Random_UInt (0, (unsigned int) species.size () - 1);	// randomly select a species
-		newSpecies.push_back (species [r]);										// add it to the new ones
-		species.erase (species.begin () + r);									// remove it from the previous ones
-	}
-	species.clear ();
-	species = newSpecies;
-
 	std::vector<Species<Args...>> tmpspecies;
 	unsigned int nbSpeciesAlive = 0;
 	unsigned int ite = 0;
@@ -335,15 +324,9 @@ void Population<Args...>::speciate (unsigned int target, unsigned int maxIterati
 		ite++;
 	}
 
-	// Set tmpspecies as species while sorting species by their ids
+	// Set tmpspecies as species
 	species.clear ();
-	while (species.size () < tmpspecies.size ()) {
-		size_t i = 0;
-		while (tmpspecies [i].id != species.size ()) {
-			i++;
-		}
-		species.push_back (tmpspecies [i]);
-	}
+	species = tmpspecies;
 
 	logger->trace ("speciation result in {0} alive species in {1} iteration(s)", nbSpeciesAlive, ite);
 
@@ -456,8 +439,6 @@ void Population<Args...>::UpdateFitnesses (double speciesSizeEvolutionLimit) {
 				species[i].allowedOffspring = 0;
 				logger->trace ("species{} has not improved for a long time: it is removed", i);
 			}
-
-std::cout << species [i].id << "   " << species [i].avgFitnessAdjusted << "   " << species [i].members.size () << "   " << species [i].allowedOffspring << std::endl;
 		}
 	}
 
