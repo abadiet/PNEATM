@@ -1,28 +1,34 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.5)
 
+# Project
 project(SnakePNEATM)
 
-include_directories(../../include)
-add_library(pneatm STATIC IMPORTED)
-set_property(TARGET pneatm PROPERTY IMPORTED_LOCATION ../../../lib/PNEATM/libpneatm.a)
+# Sources
+file(GLOB_RECURSE SOURCES src/*.cpp)
+file(GLOB_RECURSE HEADERS include/*.hpp)
 
-add_executable(SnakePNEATM main.cpp)
+# Executable
+add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 
-file(GLOB SOURCES src/*.cpp)
-target_sources(SnakePNEATM PRIVATE ${SOURCES})
-include_directories(include)
+# Includes
+target_include_directories(${PROJECT_NAME} PUBLIC include)
 
-target_compile_options(SnakePNEATM PRIVATE
+# Flags
+target_compile_options(${PROJECT_NAME} PRIVATE
 	$<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>
 	$<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-O3 -Wall -Wextra -Werror -Wfloat-equal -Wundef -Wcast-align -Wwrite-strings -Wunreachable-code -Wconversion -Wno-error=maybe-uninitialized -Wpedantic>
 )
 
-# Link libraries
-target_link_libraries(SnakePNEATM PRIVATE pneatm)
+# Libraries
 
-# Find and link spdlog library
+## PNEATM
+add_subdirectory(../../ ../../build)
+target_include_directories(${PROJECT_NAME} PUBLIC ../../include)
+target_link_libraries(${PROJECT_NAME} PUBLIC pneatm)
+
+## SFML
+target_link_libraries(${PROJECT_NAME} PRIVATE sfml-window sfml-system sfml-graphics)
+
+## SPDLOG
 find_package(spdlog REQUIRED)
-target_link_libraries(SnakePNEATM PRIVATE spdlog::spdlog)
-
-# Link SFML libraries
-target_link_libraries(SnakePNEATM PRIVATE sfml-window sfml-system sfml-graphics)
+target_link_libraries(${PROJECT_NAME} PRIVATE spdlog::spdlog)

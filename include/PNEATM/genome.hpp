@@ -72,11 +72,6 @@ typedef struct mutationParams {
 	struct Weights weights;
 } mutationParams_t;
 
-// Forward declarations for nested structs
-struct mutationParams::Nodes;
-struct mutationParams::Connections;
-struct mutationParams::Weights;
-
 /**
  * @brief A template class representing a genome.
  * @tparam Args Variadic template arguments that contains all the manipulated types.
