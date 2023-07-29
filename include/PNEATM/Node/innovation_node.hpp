@@ -16,8 +16,15 @@ namespace pneatm {
  * innovation ID.
  */
 typedef struct innovationNode {
-    std::vector<std::vector<std::vector<std::vector<int>>>> nodeIds;
-    int N_nodeId = 0;
+    /**
+     * @brief 4D array that represent the node's innovation ids in the (*input type index*, *output type index*, *activation function index*, *repetition level*) space.
+     */
+    std::vector<std::vector<std::vector<std::vector<unsigned int>>>> nodeIds;
+
+    /**
+     * @brief The next innovation id to give
+     */
+    unsigned int N_nodeId = 1; 
 
     /**
      * @brief Get the innovation ID for a node.
@@ -38,13 +45,13 @@ typedef struct innovationNode {
             nodeIds [index_T_in][index_T_out].push_back ({});
         }
         while ((unsigned int) nodeIds [index_T_in][index_T_out][index_activation_fn].size () < repetition + 1) {
-            nodeIds [index_T_in][index_T_out][index_activation_fn].push_back (-1);
+            nodeIds [index_T_in][index_T_out][index_activation_fn].push_back (0);
         }
-        if (nodeIds [index_T_in][index_T_out][index_activation_fn][repetition] == -1) {
+        if (nodeIds [index_T_in][index_T_out][index_activation_fn][repetition] == 0) {
             nodeIds [index_T_in][index_T_out][index_activation_fn][repetition] = N_nodeId;
             N_nodeId ++;
         }
-        return (unsigned int) nodeIds [index_T_in][index_T_out][index_activation_fn][repetition];
+        return nodeIds [index_T_in][index_T_out][index_activation_fn][repetition];
     }
 
     /**
@@ -52,7 +59,7 @@ typedef struct innovationNode {
      * @param prefix A prefix to print before each line. (default is an empty string)
      */
     void print (std::string prefix = "") {
-        std::cout << prefix << "Number of attributed innovation: " << N_nodeId << std::endl;
+        std::cout << prefix << "Number of attributed innovation: " << N_nodeId - 1 << std::endl;
     }
 } innovationNode_t;
 

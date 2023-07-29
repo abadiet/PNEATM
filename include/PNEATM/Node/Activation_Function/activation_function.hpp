@@ -29,22 +29,59 @@ namespace pneatm {
 template <typename T_in, typename T_out>
 class ActivationFn : public ActivationFnBase {
 	public:
+		/**
+		 * @brief Constructor for the ActivationFn class.
+		 *
+		 * The constructor initalized the activation function's parameters to their default values and initialized
+		 * mutation and printing functions to functions that does nothing.
+		 */
 		ActivationFn ();
 
+		/**
+		 * @brief Destructor for the ActivationFn class.
+		 */
 		~ActivationFn () {};
 
+		/**
+		 * @brief Set the activation function aka the function used to get the node's outpus from its input.
+		 * @param func A pointer to the activation function to be set.
+		 */
         void setFunction (void* func) override;
 
+		/**
+		 * @brief Set the mutation function aka the function used to mutate the activation function's parameters.
+		 * @param func A pointer to the mutation function to be set.
+		 */
         void setMutationFunction (std::function<void (activationFnParams_t*, double)> func) override;
 
+		/**
+		 * @brief Set the printing function aka the function used to print the activation function's parameters.
+		 * @param func A pointer to the printing function to be set.
+		 */
         void setPrintingFunction (std::function<void (activationFnParams_t*, std::string)> func) override;
 
+		/**
+		 * @brief Create a clone of the class: clone the activation function, the mutation function, the printing function and the parameters (optionally).
+		 * @param preserveParameters True if the parameters should be cloned, False else. (default is true)
+		 * @return A unique pointer to the cloned node.
+		 */
 		std::unique_ptr<ActivationFnBase> clone (bool preserveParameters = true) override;
 
+		/**
+		 * @brief Process the activation function to compute its output value.
+		 */
 		T_out process (T_in value);
 
+		/**
+		 * @brief Mutate the activatoin function's parameters.
+		 * @param fitness The current genome's fitness
+		 */
 		void mutate (double fitness) override;
 
+		/**
+		 * @brief Print information about the activation function's parameters.
+		 * @param prefix A prefix to print before each line. (default is an empty string)
+		 */
 		void print (std::string prefix = "");
 
     private:

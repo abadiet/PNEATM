@@ -16,8 +16,15 @@ namespace pneatm {
  * innovation ID.
  */
 typedef struct innovationConn {
-    std::vector<std::vector<std::vector<int>>> connectionIds;
-    int N_connectionId = 0;
+    /**
+     * @brief 3D array that represent the connection's innovation ids in the (*input node*, *output node*, *connection recurrency level*) space.
+     */
+    std::vector<std::vector<std::vector<unsigned int>>> connectionIds;
+
+    /**
+     * @brief The next innovation id to give.
+     */
+    unsigned int N_connectionId = 1;
 
     /**
      * @brief Get the innovation ID for a connection.
@@ -34,13 +41,13 @@ typedef struct innovationConn {
             connectionIds [inNodeInnovId].push_back ({});
         }
         while ((unsigned int) connectionIds [inNodeInnovId][outNodeInnovId].size () < inNodeRecu + 1) {
-            connectionIds [inNodeInnovId][outNodeInnovId].push_back (-1);
+            connectionIds [inNodeInnovId][outNodeInnovId].push_back (0);
         }
-        if (connectionIds [inNodeInnovId][outNodeInnovId][inNodeRecu] == -1) {
+        if (connectionIds [inNodeInnovId][outNodeInnovId][inNodeRecu] == 0) {
             connectionIds [inNodeInnovId][outNodeInnovId][inNodeRecu] = N_connectionId;
             N_connectionId ++;
         }
-        return (unsigned int) connectionIds [inNodeInnovId][outNodeInnovId][inNodeRecu];
+        return connectionIds [inNodeInnovId][outNodeInnovId][inNodeRecu];
     }
 
     /**
@@ -48,7 +55,7 @@ typedef struct innovationConn {
      * @param prefix A prefix to print before each line. (default is an empty string)
      */
     void print (std::string prefix = "") {
-        std::cout << prefix << "Number of attributed innovation: " << N_connectionId << std::endl;
+        std::cout << prefix << "Number of attributed innovation: " << N_connectionId - 1 << std::endl;
     }
 } innovationConn_t;
 

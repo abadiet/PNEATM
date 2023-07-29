@@ -80,19 +80,71 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:ac4b8b1f7df7c38bffc8a1231e56e9841"><td class="memItemLeft" align="right" valign="top"><a id="ac4b8b1f7df7c38bffc8a1231e56e9841"></a>
-double&#160;</td><td class="memItemRight" valign="bottom"><b>rate</b></td></tr>
+<tr class="memitem:ac4b8b1f7df7c38bffc8a1231e56e9841"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpneatm_1_1mutationParams_1_1Weights.html#ac4b8b1f7df7c38bffc8a1231e56e9841">rate</a></td></tr>
+<tr class="memdesc:ac4b8b1f7df7c38bffc8a1231e56e9841"><td class="mdescLeft">&#160;</td><td class="mdescRight">The mutation ratio of weights.  <a href="structpneatm_1_1mutationParams_1_1Weights.html#ac4b8b1f7df7c38bffc8a1231e56e9841">More...</a><br /></td></tr>
 <tr class="separator:ac4b8b1f7df7c38bffc8a1231e56e9841"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a48eefb0732d0aaa5f9a63d442053652b"><td class="memItemLeft" align="right" valign="top"><a id="a48eefb0732d0aaa5f9a63d442053652b"></a>
-double&#160;</td><td class="memItemRight" valign="bottom"><b>fullChangeRate</b></td></tr>
+<tr class="memitem:a48eefb0732d0aaa5f9a63d442053652b"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpneatm_1_1mutationParams_1_1Weights.html#a48eefb0732d0aaa5f9a63d442053652b">fullChangeRate</a></td></tr>
+<tr class="memdesc:a48eefb0732d0aaa5f9a63d442053652b"><td class="mdescLeft">&#160;</td><td class="mdescRight">The chance of fully change the weight instead of perturbing it.  <a href="structpneatm_1_1mutationParams_1_1Weights.html#a48eefb0732d0aaa5f9a63d442053652b">More...</a><br /></td></tr>
 <tr class="separator:a48eefb0732d0aaa5f9a63d442053652b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aef8414663114464a239e7e8454f29b7d"><td class="memItemLeft" align="right" valign="top"><a id="aef8414663114464a239e7e8454f29b7d"></a>
-double&#160;</td><td class="memItemRight" valign="bottom"><b>perturbationFactor</b></td></tr>
+<tr class="memitem:aef8414663114464a239e7e8454f29b7d"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpneatm_1_1mutationParams_1_1Weights.html#aef8414663114464a239e7e8454f29b7d">perturbationFactor</a></td></tr>
+<tr class="memdesc:aef8414663114464a239e7e8454f29b7d"><td class="mdescLeft">&#160;</td><td class="mdescRight">The perturbation factor.  <a href="structpneatm_1_1mutationParams_1_1Weights.html#aef8414663114464a239e7e8454f29b7d">More...</a><br /></td></tr>
 <tr class="separator:aef8414663114464a239e7e8454f29b7d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Mutations parameters to change the weights. </p>
-</div><hr/>The documentation for this struct was generated from the following file:<ul>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="a48eefb0732d0aaa5f9a63d442053652b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a48eefb0732d0aaa5f9a63d442053652b">&#9670;&nbsp;</a></span>fullChangeRate</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">double pneatm::mutationParams::Weights::fullChangeRate</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>The chance of fully change the weight instead of perturbing it. </p>
+<p>Once a weight is mutated, there is a chance of being re-initialized instead of perturbed. The value of <code>fullChangeRate</code> typically lies between 0.0 and 1.0, where 0.0 indicates that weights will simply be perturbaded, and 1.0 means that every weights will be re-initialized in every possible instance. </p>
+
+</div>
+</div>
+<a id="aef8414663114464a239e7e8454f29b7d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aef8414663114464a239e7e8454f29b7d">&#9670;&nbsp;</a></span>perturbationFactor</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">double pneatm::mutationParams::Weights::perturbationFactor</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>The perturbation factor. </p>
+<p>e.g. <code>perturbationFactor = 0.2</code> means that the <code>new_weight = current_weight +- x%</code> with x in [0.0, 20.0] aka the weight is at most changed of 20% </p>
+
+</div>
+</div>
+<a id="ac4b8b1f7df7c38bffc8a1231e56e9841"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac4b8b1f7df7c38bffc8a1231e56e9841">&#9670;&nbsp;</a></span>rate</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">double pneatm::mutationParams::Weights::rate</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>The mutation ratio of weights. </p>
+<p>The value of <code>rate</code> typically lies between 0.0 and 1.0, where 0.0 indicates that no weights will be mutated, and 1.0 means that every weights will be mutated in every possible instance. </p>
+
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
 <li><a class="el" href="genome_8hpp_source.html">genome.hpp</a></li>
 </ul>
 </div><!-- contents -->

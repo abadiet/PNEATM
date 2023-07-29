@@ -1,0 +1,4 @@
+<map id="pneatm::ActivationFnBase" name="pneatm::ActivationFnBase">
+<area shape="rect" id="node1" title="Abstract base class representing a generic node&#39;s activation function in a neural network." alt="" coords="5,5,200,32"/>
+<area shape="rect" id="node2" href="$classpneatm_1_1ActivationFn.html" title="A template class representing an activation function in a neural network." alt="" coords="21,80,184,121"/>
+</map>

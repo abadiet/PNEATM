@@ -1,7 +1,5 @@
 var searchData=
 [
-  ['_7egenome_44',['~Genome',['../classpneatm_1_1Genome.html#ab162fd64ae6cb15dd4fe4af14bebeb21',1,'pneatm::Genome']]],
-  ['_7enode_45',['~Node',['../classpneatm_1_1Node.html#a66c757657e2c6f87aeaae8d7fd969aac',1,'pneatm::Node']]],
-  ['_7epopulation_46',['~Population',['../classpneatm_1_1Population.html#a4c8cedd0f038e41746fb6084639f5616',1,'pneatm::Population']]],
-  ['_7especies_47',['~Species',['../classpneatm_1_1Species.html#af9f023703b76ebb93451d805f2eac647',1,'pneatm::Species']]]
+  ['weights_77',['Weights',['../structpneatm_1_1mutationParams_1_1Weights.html',1,'pneatm::mutationParams']]],
+  ['weights_78',['weights',['../structpneatm_1_1mutationParams.html#a646e33843800308660285cd6a9a11de8',1,'pneatm::mutationParams']]]
 ];

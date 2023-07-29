@@ -28,56 +28,160 @@ typedef struct mutationParams {
 	 * @brief Mutations parameters to add a node.
 	 */
 	struct Nodes {
+		/**
+		 * @brief The chance of having a node added.
+		 *
+		 * The value of `rate` typically lies between 0.0 and 1.0, where 0.0 indicates that no nodes will be added, and
+		 * 1.0 means that a node will be added in every possible instance.
+		 */
 		double rate;
+
+		/**
+		 * @brief The chance of having a monotyped node added.
+		 *
+		 * Once a node is added, it has a chance of being monotyped instead of bityped. A monotyped node is a node where
+		 * input and ouput types are the same.
+		 * The value of `rate` typically lies between 0.0 and 1.0, where 0.0 indicates that a bityped will be added, and
+		 * 1.0 means that a monotyped node will be added in every possible instance.
+		 */
 		double monotypedRate;
 
 		/**
 		 * @brief Mutations parameters to add a monotyped node.
 		 */
 		struct Monotyped {
+			/**
+			 * @brief The maximum number of iteration to find a valid connection.
+			 *
+			 * The main interest of this variable is just to avoid having an infinite loop.
+			 */
 			unsigned int maxIterationsFindConnection;
 		};
+		/**
+		 * @brief Mutations parameters to add a monotyped node.
+		 */
 		struct Monotyped monotyped;
 
 		/**
 		 * @brief Mutations parameters to add a bityped node.
 		 */
 		struct Bityped {
+			/**
+			 * @brief The maximum recurrency level of the connection that point to the new node.
+			 */
 			unsigned int maxRecurrencyEntryConnection;
+
+			/**
+			 * @brief The maximum number of iteration to find a valid node.
+			 *
+			 * The main interest of this variable is just to avoid having an infinite loop.
+			 */
 			unsigned int maxIterationsFindNode;
 		};
+		/**
+		 * @brief Mutations parameters to add a bityped node.
+		 */
 		struct Bityped bityped;
 	};
+	/**
+	 * @brief Mutations parameters to add a node.
+	 */
 	struct Nodes nodes;
 
 	/**
-	 * @brief Mutations parameters to change activation functions parameters.
+	 * @brief Mutations parameters to change activation functions's parameters.
 	 */
 	struct Activation_Functions {
+		/**
+		 * @brief The mutation ratio of activation functions.
+		 *
+		 * The value of `rate` typically lies between 0.0 and 1.0, where 0.0 indicates that no activation functions will be mutated, and
+		 * 1.0 means that every activation functions will be mutated in every possible instance.
+		 */
 		double rate;
 	};
+	/**
+	 * @brief Mutations parameters to change activation functions's parameters.
+	 */
 	struct Activation_Functions activation_functions;
 
 	/**
 	 * @brief Mutations parameters to add a connection.
 	 */
 	struct Connections {
+		/**
+		 * @brief The chance of having a connection added.
+		 *
+		 * The value of `rate` typically lies between 0.0 and 1.0, where 0.0 indicates that no activation functions will be mutated, and
+		 * 1.0 means that a every activation functions will be mutated in every possible instance.
+		 */
 		double rate;
+
+		/**
+		 * @brief The chance of reactivate a disabled connection.
+		 *
+		 * If after trying to add a connection we found a disabled one, there is a chance of reactivate it.
+		 * The value of `reactivateRate` typically lies between 0.0 and 1.0, where 0.0 indicates that the connection will not be reactivaded, and
+		 * 1.0 means that it will be reactivaded in every possible instance.
+		 */
 		double reactivateRate;
+
+		/**
+		 * @brief The maximum recurrency level of the connection.
+		 */
 		unsigned int maxRecurrency;
+
+		/**
+		 * @brief The maximum number of iteration to find a valid connection.
+		 *
+		 * The main interest of this variable is just to avoid having an infinite loop.
+		 */
 		unsigned int maxIterations;
+
+		/**
+		 * @brief The maximum number of iteration to find a valid node.
+		 *
+		 * The main interest of this variable is just to avoid having an infinite loop.
+		 */
 		unsigned int maxIterationsFindNode;
 	};
+	/**
+	 * @brief Mutations parameters to add a connection.
+	 */
 	struct Connections connections;
 
 	/**
 	 * @brief Mutations parameters to change the weights.
 	 */
 	struct Weights {
+		/**
+		 * @brief The mutation ratio of weights.
+		 *
+		 * The value of `rate` typically lies between 0.0 and 1.0, where 0.0 indicates that no weights will be mutated, and
+		 * 1.0 means that every weights will be mutated in every possible instance.
+		 */
 		double rate;
+
+		/**
+		 * @brief The chance of fully change the weight instead of perturbing it.
+		 *
+		 * Once a weight is mutated, there is a chance of being re-initialized instead of perturbed.
+		 * The value of `fullChangeRate` typically lies between 0.0 and 1.0, where 0.0 indicates that weights will simply be perturbaded, and
+		 * 1.0 means that every weights will be re-initialized in every possible instance.
+		 */
 		double fullChangeRate;
+
+		/**
+		 * @brief The perturbation factor.
+		 *
+		 * e.g. `perturbationFactor = 0.2` means that the `new_weight = current_weight +- x%` with x in [0.0, 20.0]
+		 * aka the weight is at most changed of 20%
+		 */
 		double perturbationFactor;
 	};
+	/**
+	 * @brief Mutations parameters to change the weights.
+	 */
 	struct Weights weights;
 } mutationParams_t;
 
@@ -636,7 +740,7 @@ void Genome<Args...>::MutateWeights (double mutateWeightThresh, double mutateWei
 			} else {
 				// pertub weight
 				logger->trace ("pertubating connection{}'s weight", i);
-				connections [i].weight *= Random_Double (- mutateWeightFactor, mutateWeightFactor);
+				connections [i].weight += connections [i].weight * Random_Double (- mutateWeightFactor, mutateWeightFactor);
 			}
 		}
 	}

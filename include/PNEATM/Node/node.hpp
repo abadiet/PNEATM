@@ -38,7 +38,7 @@ class Node : public NodeBase {
 
 		/**
 		 * @brief Set the activation function for the node.
-		 * @param f A pointer to the activation function to be set.
+		 * @param actfn A pointer to the activation function to be set.
 		 */
 		void setActivationFn (std::unique_ptr<ActivationFnBase> actfn) override;
 
@@ -72,6 +72,10 @@ class Node : public NodeBase {
 		 */
 		void process () override;
 
+		/**
+		 * @brief Mutate the activation function's parameters.
+		 * @param fitness The current genome's fitness
+		 */
 		void mutate (double fitness) override;
 
 		/**

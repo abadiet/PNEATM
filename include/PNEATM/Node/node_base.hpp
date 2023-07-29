@@ -22,7 +22,7 @@ class NodeBase{
 
 		/**
 		 * @brief Set the activation function for the node.
-		 * @param f A pointer to the activation function to be set.
+		 * @param actfn A pointer to the activation function to be set.
 		 */
 		virtual void setActivationFn (std::unique_ptr<ActivationFnBase> actfn) = 0;
 
@@ -56,6 +56,10 @@ class NodeBase{
 		 */
 		virtual void process () = 0;
 
+		/**
+		 * @brief Mutate the activation function's parameters.
+		 * @param fitness The current genome's fitness
+		 */
 		virtual void mutate (double fitness) = 0;
 
 		/**
@@ -76,11 +80,34 @@ class NodeBase{
 		virtual void print (std::string prefix = "") = 0;
 
 	protected:
+		/**
+		 * @brief The node's id in the genome's network.
+		 */
 		unsigned int id;
+
+		/**
+		 * @brief The node's innovation id.
+		 */
 		unsigned int innovId;
+
+		/**
+		 * @brief The node's layer in the genome's network.
+		 */
 		int layer;
+
+		/**
+		 * @brief The node's input type index.
+		 */
 		unsigned int index_T_in;
+
+		/**
+		 * @brief The node's output type index.
+		 */
 		unsigned int index_T_out;
+
+		/**
+		 * @brief The node's activation fucntion index.
+		 */
 		unsigned int index_activation_fn;
 
 	template <typename... Args>

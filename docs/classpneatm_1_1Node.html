@@ -98,16 +98,17 @@ Collaboration diagram for pneatm::Node&lt; T_in, T_out &gt;:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a327990e4a97f93d94bba6fa692bc947b"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Node.html#a327990e4a97f93d94bba6fa692bc947b">Node</a> (bool is_monotyped=false)</td></tr>
-<tr class="memdesc:a327990e4a97f93d94bba6fa692bc947b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor for the <a class="el" href="classpneatm_1_1Node.html" title="A template class representing a node in a neural network.">Node</a> class.  <a href="classpneatm_1_1Node.html#a327990e4a97f93d94bba6fa692bc947b">More...</a><br /></td></tr>
-<tr class="separator:a327990e4a97f93d94bba6fa692bc947b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad7a34779cad45d997bfd6d3d8043c75f"><td class="memItemLeft" align="right" valign="top"><a id="ad7a34779cad45d997bfd6d3d8043c75f"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Node.html#ad7a34779cad45d997bfd6d3d8043c75f">Node</a> ()</td></tr>
+<tr class="memdesc:ad7a34779cad45d997bfd6d3d8043c75f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor for the <a class="el" href="classpneatm_1_1Node.html" title="A template class representing a node in a neural network.">Node</a> class. <br /></td></tr>
+<tr class="separator:ad7a34779cad45d997bfd6d3d8043c75f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a66c757657e2c6f87aeaae8d7fd969aac"><td class="memItemLeft" align="right" valign="top"><a id="a66c757657e2c6f87aeaae8d7fd969aac"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Node.html#a66c757657e2c6f87aeaae8d7fd969aac">~Node</a> ()</td></tr>
 <tr class="memdesc:a66c757657e2c6f87aeaae8d7fd969aac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destructor for the <a class="el" href="classpneatm_1_1Node.html" title="A template class representing a node in a neural network.">Node</a> class. <br /></td></tr>
 <tr class="separator:a66c757657e2c6f87aeaae8d7fd969aac"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acf2569f60c7bc32b80a41272c6ecc05d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Node.html#acf2569f60c7bc32b80a41272c6ecc05d">setActivationFn</a> (void *f) override</td></tr>
-<tr class="memdesc:acf2569f60c7bc32b80a41272c6ecc05d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the activation function for the node.  <a href="classpneatm_1_1Node.html#acf2569f60c7bc32b80a41272c6ecc05d">More...</a><br /></td></tr>
-<tr class="separator:acf2569f60c7bc32b80a41272c6ecc05d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad4fed7fc86f9cb34dcf41bc754d85805"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Node.html#ad4fed7fc86f9cb34dcf41bc754d85805">setActivationFn</a> (std::unique_ptr&lt; <a class="el" href="classpneatm_1_1ActivationFnBase.html">ActivationFnBase</a> &gt; actfn) override</td></tr>
+<tr class="memdesc:ad4fed7fc86f9cb34dcf41bc754d85805"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the activation function for the node.  <a href="classpneatm_1_1Node.html#ad4fed7fc86f9cb34dcf41bc754d85805">More...</a><br /></td></tr>
+<tr class="separator:ad4fed7fc86f9cb34dcf41bc754d85805"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a94d48ef221c76fead41909f86a41b0c7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Node.html#a94d48ef221c76fead41909f86a41b0c7">setResetValue</a> (void *value) override</td></tr>
 <tr class="memdesc:a94d48ef221c76fead41909f86a41b0c7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the reset value for the node.  <a href="classpneatm_1_1Node.html#a94d48ef221c76fead41909f86a41b0c7">More...</a><br /></td></tr>
 <tr class="separator:a94d48ef221c76fead41909f86a41b0c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -124,6 +125,9 @@ Public Member Functions</h2></td></tr>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Node.html#a9b58cd683694126cd2d7a811e7961d98">process</a> () override</td></tr>
 <tr class="memdesc:a9b58cd683694126cd2d7a811e7961d98"><td class="mdescLeft">&#160;</td><td class="mdescRight">Process the node to compute its output value. <br /></td></tr>
 <tr class="separator:a9b58cd683694126cd2d7a811e7961d98"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af8b39f499eb615b2e31790fea252fa5c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Node.html#af8b39f499eb615b2e31790fea252fa5c">mutate</a> (double fitness) override</td></tr>
+<tr class="memdesc:af8b39f499eb615b2e31790fea252fa5c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mutate the activation function's parameters.  <a href="classpneatm_1_1Node.html#af8b39f499eb615b2e31790fea252fa5c">More...</a><br /></td></tr>
+<tr class="separator:af8b39f499eb615b2e31790fea252fa5c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aef0fa483cb9e2fdf8f9fae62835b04d0"><td class="memItemLeft" align="right" valign="top"><a id="aef0fa483cb9e2fdf8f9fae62835b04d0"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Node.html#aef0fa483cb9e2fdf8f9fae62835b04d0">reset</a> () override</td></tr>
 <tr class="memdesc:aef0fa483cb9e2fdf8f9fae62835b04d0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reset the node to its initial state. <br /></td></tr>
@@ -139,22 +143,28 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 Additional Inherited Members</h2></td></tr>
 <tr class="inherit_header pro_attribs_classpneatm_1_1NodeBase"><td colspan="2" onclick="javascript:toggleInherit('pro_attribs_classpneatm_1_1NodeBase')"><img src="closed.png" alt="-"/>&#160;Protected Attributes inherited from <a class="el" href="classpneatm_1_1NodeBase.html">pneatm::NodeBase</a></td></tr>
 <tr class="memitem:a78833339193157b6f2934ff6db0936cd inherit pro_attribs_classpneatm_1_1NodeBase"><td class="memItemLeft" align="right" valign="top"><a id="a78833339193157b6f2934ff6db0936cd"></a>
-unsigned int&#160;</td><td class="memItemRight" valign="bottom"><b>id</b></td></tr>
+unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1NodeBase.html#a78833339193157b6f2934ff6db0936cd">id</a></td></tr>
+<tr class="memdesc:a78833339193157b6f2934ff6db0936cd inherit pro_attribs_classpneatm_1_1NodeBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">The node's id in the genome's network. <br /></td></tr>
 <tr class="separator:a78833339193157b6f2934ff6db0936cd inherit pro_attribs_classpneatm_1_1NodeBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0c9f288985b7c1f1ab423c2116ba53ba inherit pro_attribs_classpneatm_1_1NodeBase"><td class="memItemLeft" align="right" valign="top"><a id="a0c9f288985b7c1f1ab423c2116ba53ba"></a>
-unsigned int&#160;</td><td class="memItemRight" valign="bottom"><b>innovId</b></td></tr>
+unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1NodeBase.html#a0c9f288985b7c1f1ab423c2116ba53ba">innovId</a></td></tr>
+<tr class="memdesc:a0c9f288985b7c1f1ab423c2116ba53ba inherit pro_attribs_classpneatm_1_1NodeBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">The node's innovation id. <br /></td></tr>
 <tr class="separator:a0c9f288985b7c1f1ab423c2116ba53ba inherit pro_attribs_classpneatm_1_1NodeBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0fb3999260c63d42428e17814c1f0d74 inherit pro_attribs_classpneatm_1_1NodeBase"><td class="memItemLeft" align="right" valign="top"><a id="a0fb3999260c63d42428e17814c1f0d74"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>layer</b></td></tr>
+int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1NodeBase.html#a0fb3999260c63d42428e17814c1f0d74">layer</a></td></tr>
+<tr class="memdesc:a0fb3999260c63d42428e17814c1f0d74 inherit pro_attribs_classpneatm_1_1NodeBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">The node's layer in the genome's network. <br /></td></tr>
 <tr class="separator:a0fb3999260c63d42428e17814c1f0d74 inherit pro_attribs_classpneatm_1_1NodeBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a818b58adcaa8d366d256d0efbfb94d2a inherit pro_attribs_classpneatm_1_1NodeBase"><td class="memItemLeft" align="right" valign="top"><a id="a818b58adcaa8d366d256d0efbfb94d2a"></a>
-unsigned int&#160;</td><td class="memItemRight" valign="bottom"><b>index_T_in</b></td></tr>
+unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1NodeBase.html#a818b58adcaa8d366d256d0efbfb94d2a">index_T_in</a></td></tr>
+<tr class="memdesc:a818b58adcaa8d366d256d0efbfb94d2a inherit pro_attribs_classpneatm_1_1NodeBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">The node's input type index. <br /></td></tr>
 <tr class="separator:a818b58adcaa8d366d256d0efbfb94d2a inherit pro_attribs_classpneatm_1_1NodeBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1bdd1352e307dfefba521cf912b17461 inherit pro_attribs_classpneatm_1_1NodeBase"><td class="memItemLeft" align="right" valign="top"><a id="a1bdd1352e307dfefba521cf912b17461"></a>
-unsigned int&#160;</td><td class="memItemRight" valign="bottom"><b>index_T_out</b></td></tr>
+unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1NodeBase.html#a1bdd1352e307dfefba521cf912b17461">index_T_out</a></td></tr>
+<tr class="memdesc:a1bdd1352e307dfefba521cf912b17461 inherit pro_attribs_classpneatm_1_1NodeBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">The node's output type index. <br /></td></tr>
 <tr class="separator:a1bdd1352e307dfefba521cf912b17461 inherit pro_attribs_classpneatm_1_1NodeBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a417869754bd3e48c814ca21a0eb4e98b inherit pro_attribs_classpneatm_1_1NodeBase"><td class="memItemLeft" align="right" valign="top"><a id="a417869754bd3e48c814ca21a0eb4e98b"></a>
-unsigned int&#160;</td><td class="memItemRight" valign="bottom"><b>index_activation_fn</b></td></tr>
+unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1NodeBase.html#a417869754bd3e48c814ca21a0eb4e98b">index_activation_fn</a></td></tr>
+<tr class="memdesc:a417869754bd3e48c814ca21a0eb4e98b inherit pro_attribs_classpneatm_1_1NodeBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">The node's activation fucntion index. <br /></td></tr>
 <tr class="separator:a417869754bd3e48c814ca21a0eb4e98b inherit pro_attribs_classpneatm_1_1NodeBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
@@ -170,36 +180,7 @@ class pneatm::Node&lt; T_in, T_out &gt;</h3>
   </table>
   </dd>
 </dl>
-</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="a327990e4a97f93d94bba6fa692bc947b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a327990e4a97f93d94bba6fa692bc947b">&#9670;&nbsp;</a></span>Node()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename T_in , typename T_out &gt; </div>
-      <table class="memname">
-        <tr>
-          <td class="memname">Node::Node </td>
-          <td>(</td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>is_monotyped</em> = <code>false</code></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Constructor for the <a class="el" href="classpneatm_1_1Node.html" title="A template class representing a node in a neural network.">Node</a> class. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">is_monotyped</td><td>A boolean indicating if the node is monotyped. (default is false) </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<h2 class="groupheader">Member Function Documentation</h2>
+</div><h2 class="groupheader">Member Function Documentation</h2>
 <a id="a0c1b8f85e09e9c95446d7401207744cf"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a0c1b8f85e09e9c95446d7401207744cf">&#9670;&nbsp;</a></span>AddToInput()</h2>
 
@@ -345,6 +326,44 @@ template&lt;typename T_in , typename T_out &gt; </div>
 
 </div>
 </div>
+<a id="af8b39f499eb615b2e31790fea252fa5c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af8b39f499eb615b2e31790fea252fa5c">&#9670;&nbsp;</a></span>mutate()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T_in , typename T_out &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Node::mutate </td>
+          <td>(</td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>fitness</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">override</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Mutate the activation function's parameters. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">fitness</td><td>The current genome's fitness </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p>Implements <a class="el" href="classpneatm_1_1NodeBase.html#a487b80ba6e347de5858b6c5e15fe6f23">pneatm::NodeBase</a>.</p>
+
+</div>
+</div>
 <a id="a000028b92748c96861163a2d4c9bd9b4"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a000028b92748c96861163a2d4c9bd9b4">&#9670;&nbsp;</a></span>print()</h2>
 
@@ -383,8 +402,8 @@ template&lt;typename T_in , typename T_out &gt; </div>
 
 </div>
 </div>
-<a id="acf2569f60c7bc32b80a41272c6ecc05d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acf2569f60c7bc32b80a41272c6ecc05d">&#9670;&nbsp;</a></span>setActivationFn()</h2>
+<a id="ad4fed7fc86f9cb34dcf41bc754d85805"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad4fed7fc86f9cb34dcf41bc754d85805">&#9670;&nbsp;</a></span>setActivationFn()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -397,8 +416,8 @@ template&lt;typename T_in , typename T_out &gt; </div>
         <tr>
           <td class="memname">void Node::setActivationFn </td>
           <td>(</td>
-          <td class="paramtype">void *&#160;</td>
-          <td class="paramname"><em>f</em></td><td>)</td>
+          <td class="paramtype">std::unique_ptr&lt; <a class="el" href="classpneatm_1_1ActivationFnBase.html">ActivationFnBase</a> &gt;&#160;</td>
+          <td class="paramname"><em>actfn</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -412,12 +431,12 @@ template&lt;typename T_in , typename T_out &gt; </div>
 <p>Set the activation function for the node. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">f</td><td>A pointer to the activation function to be set. </td></tr>
+    <tr><td class="paramname">actfn</td><td>A pointer to the activation function to be set. </td></tr>
   </table>
   </dd>
 </dl>
 
-<p>Implements <a class="el" href="classpneatm_1_1NodeBase.html#a79b40da7a64aa987349c0404bd7d379c">pneatm::NodeBase</a>.</p>
+<p>Implements <a class="el" href="classpneatm_1_1NodeBase.html#afe21146b2b6a7290ca0a8f7192c70f23">pneatm::NodeBase</a>.</p>
 
 </div>
 </div>
