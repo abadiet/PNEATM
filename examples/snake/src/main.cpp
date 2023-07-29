@@ -21,7 +21,7 @@ int main () {
     unsigned int maxIterationThresh = 500;
     int nbGame = 5;
     double bestFitness = 0.0;
-    while (bestFitness < 2500.0 && pop.getGeneration () < 10) { // while goal is not reach
+    while (bestFitness < 2500.0 && pop.getGeneration () < 150) { // while goal is not reach
         std::cout << "generation " << pop.getGeneration () << std::endl;
 
         for (unsigned int genomeId = 0; genomeId < popSize; genomeId ++) {
