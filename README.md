@@ -23,12 +23,3 @@ Documentation is available at [https://titofra.github.io/PNEATM/](https://titofr
 <p align="center">
 	<img src="https://github.com/titofra/PNEATM/blob/main/examples/snake/resources/snakeGameplay.gif">
 </p>
-
-## TODO
-- [x] NEAT
-- [x] generic kind of obj (float, vectors...)
-- [x] use of multiple kind over one network
-- [x] allow multiple activation function
-- [x] allow recurent connection from any level
-- [ ] ~~memory arg on activation functions~~
-- [ ] mem management: ptr -> unique_ptr, const, ...
