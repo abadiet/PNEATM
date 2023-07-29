@@ -1,4 +1,4 @@
-#include <snake.hpp>
+#include "snake.hpp"
 
 Snake::Snake (unsigned int playgroundSize) :
     playgroundSize (playgroundSize)

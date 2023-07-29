@@ -2,6 +2,8 @@
 #define NODE_HPP
 
 #include <PNEATM/Node/node_base.hpp>
+#include <PNEATM/Node/Activation_Function/activation_function_base.hpp>
+#include <PNEATM/Node/Activation_Function/activation_function.hpp>
 #include <functional>
 #include <iostream>
 #include <cstring>
@@ -26,9 +28,8 @@ class Node : public NodeBase {
 	public:
 		/**
 		 * @brief Constructor for the Node class.
-		 * @param is_monotyped A boolean indicating if the node is monotyped. (default is false)
 		 */
-		Node (bool is_monotyped = false);
+		Node ();
 
 		/**
 		 * @brief Destructor for the Node class.
@@ -39,7 +40,7 @@ class Node : public NodeBase {
 		 * @brief Set the activation function for the node.
 		 * @param f A pointer to the activation function to be set.
 		 */
-		void setActivationFn (void* f) override;
+		void setActivationFn (std::unique_ptr<ActivationFnBase> actfn) override;
 
 		/**
 		 * @brief Set the reset value for the node.
@@ -71,6 +72,8 @@ class Node : public NodeBase {
 		 */
 		void process () override;
 
+		void mutate (double fitness) override;
+
 		/**
 		 * @brief Reset the node to its initial state.
 		 */
@@ -91,7 +94,7 @@ class Node : public NodeBase {
 	private:
 		T_in input;
 		T_out output;
-		std::function<T_out (T_in)> func;
+		std::unique_ptr<ActivationFn<T_in, T_out>> activation_fn;
 
 		T_in resetValue;
 };
@@ -104,18 +107,11 @@ class Node : public NodeBase {
 using namespace pneatm;
 
 template <typename T_in, typename T_out>
-Node<T_in, T_out>::Node (bool is_monotyped) {
-	if (is_monotyped) {
-		func = [] (T_in input) -> T_out {	// default activation function is the identity (useful for bias/inputs/outputs)
-			return input;
-		};
-		index_activation_fn = 0;	// default activation function (identity) id is 0
-	}
-}
+Node<T_in, T_out>::Node () : activation_fn (std::make_unique<ActivationFn<T_in, T_out>> ()) {}
 
 template <typename T_in, typename T_out>
-void Node<T_in, T_out>::setActivationFn (void* f) {
-	func = *static_cast<std::function<T_out (T_in)>*> (f);
+void Node<T_in, T_out>::setActivationFn (std::unique_ptr<ActivationFnBase> actfn) {
+	activation_fn = std::unique_ptr<ActivationFn<T_in, T_out>> (static_cast<ActivationFn<T_in, T_out>*> (actfn.release ()));
 }
 
 template <typename T_in, typename T_out>
@@ -140,7 +136,12 @@ void* Node<T_in, T_out>::getOutput () {
 
 template <typename T_in, typename T_out>
 void Node<T_in, T_out>::process () {
-	output = func (input);
+	output = activation_fn->process (input);
+}
+
+template <typename T_in, typename T_out>
+void Node<T_in, T_out>::mutate (double fitness) {
+	activation_fn->mutate (fitness);
 }
 
 template <typename T_in, typename T_out>
@@ -158,7 +159,7 @@ std::unique_ptr<NodeBase> Node<T_in, T_out>::clone () {
 	node->index_T_in = index_T_in;
 	node->index_T_out = index_T_out;
 	node->setResetValue (static_cast<void*> (&resetValue));
-	node->setActivationFn (static_cast<void*> (&func));
+	node->setActivationFn (activation_fn->clone (true));	// note that we keep parameters as they are here
 	node->loadInput (static_cast<void*> (&input));
 	node->process ();
 
@@ -176,6 +177,8 @@ void Node<T_in, T_out>::print (std::string prefix) {
 	std::cout << prefix << "Current Input Value: " << input << std::endl;
 	std::cout << prefix << "Current Output Value: " << output << std::endl;
 	std::cout << prefix << "Reset Value: " << resetValue << std::endl;
+	std::cout << prefix << "Activation Function Parameters: ";
+	activation_fn->print (prefix);
 }
 
 #endif	// NODE_HPP

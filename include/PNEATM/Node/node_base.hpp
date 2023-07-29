@@ -1,6 +1,7 @@
 #ifndef NODE_BASE_HPP
 #define NODE_BASE_HPP
 
+#include <PNEATM/Node/Activation_Function/activation_function_base.hpp>
 #include <functional>
 #include <iostream>
 #include <cstring>
@@ -23,7 +24,7 @@ class NodeBase{
 		 * @brief Set the activation function for the node.
 		 * @param f A pointer to the activation function to be set.
 		 */
-		virtual void setActivationFn (void* f) = 0;
+		virtual void setActivationFn (std::unique_ptr<ActivationFnBase> actfn) = 0;
 
 		/**
 		 * @brief Set the reset value for the node.
@@ -55,6 +56,8 @@ class NodeBase{
 		 */
 		virtual void process () = 0;
 
+		virtual void mutate (double fitness) = 0;
+
 		/**
 		 * @brief Reset the node to its initial state.
 		 */
@@ -64,7 +67,7 @@ class NodeBase{
 		 * @brief Create a clone of the node.
 		 * @return A unique pointer to the cloned node.
 		 */
-		virtual  std::unique_ptr<NodeBase> clone () = 0;
+		virtual std::unique_ptr<NodeBase> clone () = 0;
 
 		/**
 		 * @brief Print information about the node.

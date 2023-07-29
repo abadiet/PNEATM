@@ -6,6 +6,7 @@
 #include <PNEATM/Connection/connection.hpp>
 #include <PNEATM/Connection/innovation_connection.hpp>
 #include <PNEATM/Node/innovation_node.hpp>
+#include <PNEATM/Node/Activation_Function/activation_function_base.hpp>
 #include <PNEATM/utils.hpp>
 #include <fstream>
 #include <iostream>
@@ -36,7 +37,7 @@ class Population {
 		 * @param hiddens_sch_init The initial hidden nodes scheme (e.g., there is hiddens_sch_init[i][j] hidden nodes of input type of index i and output type of index j).
 		 * @param bias_values The initial biases values (e.g., k-th bias will have value bias_values[k]).
 		 * @param resetValues The biases reset values (e.g., k-th bias can be resetted to resetValues[k]).
-		 * @param activationFns The activation functions (e.g., activationFns[i][j] is an activation function that takes an input of type of index i and return a type of index j output).
+		 * @param activationFns The activation functions (e.g., activationFns[i][j] is a pointer to an activation function that takes an input of type of index i and return a type of index j output).
 		 * @param N_ConnInit The initial number of connections.
 		 * @param probRecuInit The initial probability of recurrence.
 		 * @param weightExtremumInit The initial weight extremum.
@@ -47,7 +48,7 @@ class Population {
 		 * @param threshGensSinceImproved The maximum number of generations without any improvement. (default is 15)
 		 * @param stats_filepath The filepath for statistics. (default is an empty string, which doesn't create any file)
 		 */
-		Population (unsigned int popSize, std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_values, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger, distanceFn dstType = CONVENTIONAL, double speciationThreshInit = 20.0, unsigned int threshGensSinceImproved = 15, std::string stats_filepath = "");
+		Population (unsigned int popSize, std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_values, std::vector<void*> resetValues, std::vector<std::vector<std::vector<ActivationFnBase*>>> activationFns, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger, distanceFn dstType = CONVENTIONAL, double speciationThreshInit = 20.0, unsigned int threshGensSinceImproved = 15, std::string stats_filepath = "");
 
 		/**
 		 * @brief Destructor for the Population class.
@@ -240,7 +241,7 @@ class Population {
 		int fittergenome_id;
 		std::vector<std::unique_ptr<Genome<Args...>>> genomes;
 		std::vector<Species<Args...>> species;
-		std::vector<std::vector<std::vector<void*>>> activationFns;
+		std::vector<std::vector<std::vector<ActivationFnBase*>>> activationFns;
 		innovationConn_t conn_innov;
 		innovationNode_t node_innov;	// node's innovation id is more like a global id to decerne two different nodes than something to track innovation
 
@@ -260,7 +261,7 @@ class Population {
 using namespace pneatm;
 
 template <typename... Args>
-Population<Args...>::Population(unsigned int popSize, std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_values, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger, distanceFn dstType, double speciationThreshInit, unsigned int threshGensSinceImproved, std::string stats_filepath) :
+Population<Args...>::Population(unsigned int popSize, std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_values, std::vector<void*> resetValues, std::vector<std::vector<std::vector<ActivationFnBase*>>> activationFns, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger, distanceFn dstType, double speciationThreshInit, unsigned int threshGensSinceImproved, std::string stats_filepath) :
 	popSize (popSize),
 	speciationThresh (speciationThreshInit),
 	threshGensSinceImproved (threshGensSinceImproved),

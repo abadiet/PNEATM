@@ -32,12 +32,12 @@ struct CreateNode {
     static std::unique_ptr<NodeBase> get (size_t iT_in, size_t iT_out, bool mono_type = true, bool T2_is_first = false) {
         if (iT_in == 0 && iT_out == 0) {
             if (mono_type) {
-                return std::make_unique<Node <T1, T1>> (iT_in == iT_out);
+                return std::make_unique<Node <T1, T1>> ();
             }
             if (T2_is_first) {
-                return std::make_unique<Node <T2, T1>> (iT_in == iT_out);
+                return std::make_unique<Node <T2, T1>> ();
             } else {
-                return std::make_unique<Node <T1, T2>> (iT_in == iT_out);
+                return std::make_unique<Node <T1, T2>> ();
             }
         }
         size_t new_iT_in = iT_in;
@@ -66,13 +66,15 @@ struct CreateNode {
     /**
      * @brief Create a node with a single input/output type.
      * @tparam T The input and output type.
-     * @param iT_in The index of the input type.
-     * @param iT_out The index of the output type.
+     * @param iT_in *Unused*.
+     * @param iT_out *Unused*.
      * @return A unique pointer to the created NodeBase instance.
      */
     template <typename T>
     static std::unique_ptr<NodeBase> get (size_t iT_in, size_t iT_out) {
-        return std::make_unique<Node <T, T>> (iT_in == iT_out);
+        return std::make_unique<Node <T, T>> ();
+        UNUSED (iT_in);
+        UNUSED (iT_out);
     }
 };
 

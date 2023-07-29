@@ -1,4 +1,4 @@
-#include <setup.hpp>
+#include "setup.hpp"
 
 int main () {
     srand ((int) time (0));	// init seed for rand function
@@ -7,8 +7,6 @@ int main () {
 	spdlog::set_pattern ("[%Y-%m-%d %H:%M:%S.%e] [%t] [%^%l%$] %v");
     spdlog::set_level(spdlog::level::err);
     auto logger = spdlog::rotating_logger_mt("pneatm_logger", "logs/log.txt", 1048576 * 100, 500);
-
-    // init stats logger
 
     // init population
     unsigned int popSize = 100;
@@ -23,7 +21,7 @@ int main () {
     unsigned int maxIterationThresh = 500;
     int nbGame = 5;
     double bestFitness = 0.0;
-    while (bestFitness < 2500.0 && pop.getGeneration () < 1000) { // while goal is not reach
+    while (bestFitness < 2500.0 && pop.getGeneration () < 10) { // while goal is not reach
         std::cout << "generation " << pop.getGeneration () << std::endl;
 
         for (unsigned int genomeId = 0; genomeId < popSize; genomeId ++) {

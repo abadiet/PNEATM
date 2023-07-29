@@ -1,4 +1,4 @@
-#include <myTypes.hpp>
+#include "myTypes.hpp"
 
 myInt myInt::operator*(const double scalar) const {
     return myInt(static_cast<int>(static_cast<double>(value) * scalar));

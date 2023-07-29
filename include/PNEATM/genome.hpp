@@ -5,6 +5,7 @@
 #include <PNEATM/Node/innovation_node.hpp>
 #include <PNEATM/Connection/connection.hpp>
 #include <PNEATM/Connection/innovation_connection.hpp>
+#include <PNEATM/Node/Activation_Function/activation_function_base.hpp>
 #include <PNEATM/utils.hpp>
 #include <vector>
 #include <SFML/Graphics.hpp>
@@ -50,6 +51,14 @@ typedef struct mutationParams {
 	struct Nodes nodes;
 
 	/**
+	 * @brief Mutations parameters to change activation functions parameters.
+	 */
+	struct Activation_Functions {
+		double rate;
+	};
+	struct Activation_Functions activation_functions;
+
+	/**
 	 * @brief Mutations parameters to add a connection.
 	 */
 	struct Connections {
@@ -87,7 +96,7 @@ class Genome {
 		 * @param hiddens_sch_init The initial hidden nodes scheme (e.g., there is hiddens_sch_init[i][j] hidden nodes of input type of index i and output type of index j).
 		 * @param bias_values The initial biases values (e.g., k-th bias will have value bias_values[k]).
 		 * @param resetValues The biases reset values (e.g., k-th bias can be resetted to resetValues[k]).
-		 * @param activationFns The activation functions (e.g., activationFns[i][j] is an activation function that takes an input of type of index i and return a type of index j output).
+		 * @param activationFns The activation functions (e.g., activationFns[i][j] is a pointer to an activation function that takes an input of type of index i and return a type of index j output).
 		 * @param conn_innov A pointer to the connections innovation tracker.
 		 * @param node_innov A pointer to the nodes innovation tracker.
 		 * @param N_ConnInit The initial number of connections.
@@ -96,7 +105,7 @@ class Genome {
 		 * @param maxRecuInit The maximum recurrence value.
 		 * @param logger A pointer to the logger for logging.
 		 */
-		Genome (std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_values, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, innovationConn_t* conn_innov, innovationNode_t* node_innov, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger);
+		Genome (std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_values, std::vector<void*> resetValues, std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, innovationConn_t* conn_innov, innovationNode_t* node_innov, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger);
 
 		/**
 		 * @brief Constructor for the Genome class. This constructor will not initialized any network.
@@ -105,11 +114,11 @@ class Genome {
 		 * @param nbOutput The number of output node.
 		 * @param N_types The number of types involved in the network (the number of types in the variadic template Args).
 		 * @param resetValues The biases reset values (e.g., k-th bias can be resetted to resetValues[k]).
-		 * @param activationFns The activation functions (e.g., activationFns[i][j] is an activation function that takes an input of type of index i and return a type of index j output).
+		 * @param activationFns The activation functions (e.g., activationFns[i][j] is a pointer to an activation function that takes an input of type of index i and return a type of index j output).
 		 * @param weightExtremumInit The initial weight extremum.
 		 * @param logger A pointer to the logger for logging.
 		 */
-		Genome (unsigned int nbBias, unsigned int nbInput, unsigned int nbOutput, unsigned int N_types, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, double weightExtremumInit, spdlog::logger* logger);
+		Genome (unsigned int nbBias, unsigned int nbInput, unsigned int nbOutput, unsigned int N_types, std::vector<void*> resetValues, std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, double weightExtremumInit, spdlog::logger* logger);
 
 		/**
 		 * @brief Destructor for the Genome class.
@@ -207,7 +216,7 @@ class Genome {
 		unsigned int nbOutput;
 		double weightExtremumInit;
 		unsigned int N_types;
-		std::vector<std::vector<std::vector<void*>>> activationFns;
+		std::vector<std::vector<std::vector<ActivationFnBase*>>> activationFns;
 		std::vector<void*> resetValues;
 
 		std::vector <std::unique_ptr<NodeBase>> nodes;
@@ -223,9 +232,10 @@ class Genome {
 		bool CheckNewConnectionValidity (unsigned int inNodeId, unsigned int outNodeId, unsigned int inNodeRecu, int* disabled_conn_id = nullptr);
 		bool CheckNewConnectionCircle (unsigned int inNodeId, unsigned int outNodeId);
 		void MutateWeights (double mutateWeightThresh, double mutateWeightFullChangeThresh, double mutateWeightFactor);
+		void MutateActivationFn (double rate);
 		bool AddConnection (innovationConn_t* conn_innov, unsigned int maxRecurrency, unsigned int maxIterationsFindConnectionThresh, double reactivateConnectionThresh);
-		bool AddNode (innovationConn_t* conn_innov, innovationNode_t* node_innov, unsigned int maxIterationsFindConnectionThresh);
-		bool AddTranstype (innovationConn_t* conn_innov, innovationNode_t* node_innov, unsigned int maxRecurrency, unsigned int maxIterationsFindNodeThresh);
+		bool AddMonotypedNode (innovationConn_t* conn_innov, innovationNode_t* node_innov, unsigned int maxIterationsFindConnectionThresh);
+		bool AddBitypedNode (innovationConn_t* conn_innov, innovationNode_t* node_innov, unsigned int maxRecurrency, unsigned int maxIterationsFindNodeThresh);
 		void UpdateLayers (int nodeId);
 		void UpdateLayers_Recursive (unsigned int nodeId);
 
@@ -243,7 +253,7 @@ class Genome {
 using namespace pneatm;
 
 template <typename... Args>
-Genome<Args...>::Genome (std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_values, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, innovationConn_t* conn_innov, innovationNode_t* node_innov, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger) :
+Genome<Args...>::Genome (std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_values, std::vector<void*> resetValues, std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, innovationConn_t* conn_innov, innovationNode_t* node_innov, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger) :
 	weightExtremumInit (weightExtremumInit),
 	activationFns (activationFns),
 	resetValues (resetValues),
@@ -267,15 +277,19 @@ Genome<Args...>::Genome (std::vector<size_t> bias_sch, std::vector<size_t> input
 			nodes.back ()->layer = 0;
 			nodes.back ()->index_T_in = (unsigned int) i;
 			nodes.back ()->index_T_out = (unsigned int) i;
+			nodes.back ()->index_activation_fn = 0;	// identity function is set on the first position
+			nodes.back ()->setActivationFn (
+				activationFns [nodes.back ()->index_T_in][nodes.back ()->index_T_out][nodes.back ()->index_activation_fn]->clone (false)	//activation function with new fresh parameters
+			);
 			nodes.back ()->innovId = node_innov->getInnovId (
 				nodes.back ()->index_T_in,
 				nodes.back ()->index_T_out,
 				nodes.back ()->index_activation_fn,
 				RepetitionNodeCheck (nodes.back ()->index_T_in, nodes.back ()->index_T_out, nodes.back ()->index_activation_fn) - 1
 			);
+			nodes.back ()->setResetValue (resetValues [i]);	// useless as bias nodes are never resetted
 			nodes.back ()->loadInput (bias_values [i]);	// load input now as it will always be the same
 			nodes.back ()->process ();	// load output now as it will always be the same
-			// bias node doesn't requires a reset value as they are never changed
 
 			nbBias ++;
 		}
@@ -292,6 +306,10 @@ Genome<Args...>::Genome (std::vector<size_t> bias_sch, std::vector<size_t> input
 			nodes.back ()->layer = 0;
 			nodes.back ()->index_T_in = (unsigned int) i;
 			nodes.back ()->index_T_out = (unsigned int) i;
+			nodes.back ()->index_activation_fn = 0;	// identity function is set on the first position
+			nodes.back ()->setActivationFn (
+				activationFns [nodes.back ()->index_T_in][nodes.back ()->index_T_out][nodes.back ()->index_activation_fn]->clone (false)	//activation function with new fresh parameters
+			);
 			nodes.back ()->innovId = node_innov->getInnovId (
 				nodes.back ()->index_T_in,
 				nodes.back ()->index_T_out,
@@ -321,6 +339,10 @@ Genome<Args...>::Genome (std::vector<size_t> bias_sch, std::vector<size_t> input
 			nodes.back ()->layer = outputLayer;
 			nodes.back ()->index_T_in = (unsigned int) i;
 			nodes.back ()->index_T_out = (unsigned int) i;
+			nodes.back ()->index_activation_fn = 0;	// identity function is set on the first position
+			nodes.back ()->setActivationFn (
+				activationFns [nodes.back ()->index_T_in][nodes.back ()->index_T_out][nodes.back ()->index_activation_fn]->clone (false)	//activation function with new fresh parameters
+			);
 			nodes.back ()->innovId = node_innov->getInnovId (
 				nodes.back ()->index_T_in,
 				nodes.back ()->index_T_out,
@@ -345,9 +367,9 @@ Genome<Args...>::Genome (std::vector<size_t> bias_sch, std::vector<size_t> input
 				nodes.back ()->layer = 1;
 				nodes.back ()->index_T_in = (unsigned int) i;
 				nodes.back ()->index_T_out = (unsigned int) j;
-				nodes.back ()->index_activation_fn = Random_UInt (0, (unsigned int) activationFns [i][j].size () - 1) + 1;
+				nodes.back ()->index_activation_fn = Random_UInt (0, (unsigned int) activationFns [i][j].size () - 1);
 				nodes.back ()->setActivationFn (
-					activationFns [i][j][nodes.back ()->index_activation_fn - 1]
+					activationFns [nodes.back ()->index_T_in][nodes.back ()->index_T_out][nodes.back ()->index_activation_fn]->clone (false)	//activation function with new fresh parameters
 				);
 				nodes.back ()->innovId = node_innov->getInnovId (
 					nodes.back ()->index_T_in,
@@ -395,7 +417,7 @@ Genome<Args...>::Genome (std::vector<size_t> bias_sch, std::vector<size_t> input
 }
 
 template <typename... Args>
-Genome<Args...>::Genome (unsigned int nbBias, unsigned int nbInput, unsigned int nbOutput, unsigned int N_types, std::vector<void*> resetValues, std::vector<std::vector<std::vector<void*>>> activationFns, double weightExtremumInit, spdlog::logger* logger) :
+Genome<Args...>::Genome (unsigned int nbBias, unsigned int nbInput, unsigned int nbOutput, unsigned int N_types, std::vector<void*> resetValues, std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, double weightExtremumInit, spdlog::logger* logger) :
 	nbBias (nbBias),
 	nbInput (nbInput),
 	nbOutput (nbOutput),
@@ -514,12 +536,15 @@ void Genome<Args...>::mutate(innovationConn_t* conn_innov, innovationNode_t* nod
 	// WEIGHTS
 	MutateWeights (params.weights.rate, params.weights.fullChangeRate, params.weights.perturbationFactor);
 
+	// ACTIVATION FUNCTIONS
+	MutateActivationFn (params.activation_functions.rate);
+
 	// NODES
 	if (Random_Double (0.0f, 1.0f, true, false) < params.nodes.rate) {
 		if (Random_Double (0.0f, 1.0f, true, false) < params.nodes.monotypedRate) {
-			AddNode (conn_innov, node_innov, params.nodes.monotyped.maxIterationsFindConnection);
+			AddMonotypedNode (conn_innov, node_innov, params.nodes.monotyped.maxIterationsFindConnection);
 		} else {
-			AddTranstype (conn_innov, node_innov, params.nodes.bityped.maxRecurrencyEntryConnection, params.nodes.bityped.maxIterationsFindNode);
+			AddBitypedNode (conn_innov, node_innov, params.nodes.bityped.maxRecurrencyEntryConnection, params.nodes.bityped.maxIterationsFindNode);
 		}
 	}
 
@@ -603,7 +628,7 @@ template <typename... Args>
 void Genome<Args...>::MutateWeights (double mutateWeightThresh, double mutateWeightFullChangeThresh, double mutateWeightFactor) {
 	logger->trace ("mutating of weights");
 	for (size_t i = 0; i < connections.size (); i++) {
-		if (Random_Double (0.0f, 1.0f, true, false) < mutateWeightThresh) {
+		if (connections [i].enabled && Random_Double (0.0f, 1.0f, true, false) < mutateWeightThresh) {
 			if (Random_Double (0.0f, 1.0f, true, false) < mutateWeightFullChangeThresh) {
 				// reset weight
 				logger->trace ("resetting connection{}'s weight", i);
@@ -613,6 +638,17 @@ void Genome<Args...>::MutateWeights (double mutateWeightThresh, double mutateWei
 				logger->trace ("pertubating connection{}'s weight", i);
 				connections [i].weight *= Random_Double (- mutateWeightFactor, mutateWeightFactor);
 			}
+		}
+	}
+}
+
+template <typename... Args>
+void Genome<Args...>::MutateActivationFn (double rate) {
+	logger->trace ("mutating of actviation functions");
+	for (size_t i = 0; i < nodes.size (); i++) {
+		if (Random_Double (0.0f, 1.0f, true, false) < rate) {
+			logger->trace ("mutating node{}'s activation function", i);
+			nodes [i]->mutate (fitness);
 		}
 	}
 }
@@ -677,7 +713,7 @@ bool Genome<Args...>::AddConnection (innovationConn_t* conn_innov, unsigned int 
 }
 
 template <typename... Args>
-bool Genome<Args...>::AddNode (innovationConn_t* conn_innov, innovationNode_t* node_innov, unsigned int maxIterationsFindConnectionThresh) {	// return true = node created, false = nothing created
+bool Genome<Args...>::AddMonotypedNode (innovationConn_t* conn_innov, innovationNode_t* node_innov, unsigned int maxIterationsFindConnectionThresh) {	// return true = node created, false = nothing created
 	logger->trace ("adding a node");
 	// choose at random an enabled connection
 	if (connections.size() > 0) {	// if there is no connection, we cannot add a node!
@@ -706,9 +742,9 @@ bool Genome<Args...>::AddNode (innovationConn_t* conn_innov, innovationNode_t* n
 			nodes.back ()->layer = -1;	// no layer for now
 			nodes.back ()->index_T_in = iT_in;
 			nodes.back ()->index_T_out = iT_out;
-			nodes.back ()->index_activation_fn = Random_UInt (0, (unsigned int) activationFns [iT_in][iT_out].size () - 1) + 1;
+			nodes.back ()->index_activation_fn = Random_UInt (0, (unsigned int) activationFns [iT_in][iT_out].size () - 1);
 			nodes.back ()->setActivationFn (
-				activationFns [iT_in][iT_out][nodes.back ()->index_activation_fn - 1]
+				activationFns [iT_in][iT_out][nodes.back ()->index_activation_fn]->clone (false)	//activation function with new fresh parameters
 			);
 			nodes.back ()->innovId = node_innov->getInnovId (
 				nodes.back ()->index_T_in,
@@ -759,17 +795,17 @@ bool Genome<Args...>::AddNode (innovationConn_t* conn_innov, innovationNode_t* n
 			}
 			return true;
 		} else {
-			logger->warn ("maximum iteration threshold to find an active connection has been reached in Genome<Args...>::AddNode: no node is added");
+			logger->warn ("maximum iteration threshold to find an active connection has been reached in Genome<Args...>::AddMonotypedNode: no node is added");
 			return false;	// no active connection found
 		}
 	} else {
-		logger->warn ("there is no connection, no node is added in Genome<Args...>::AddNode");
+		logger->warn ("there is no connection, no node is added in Genome<Args...>::AddMonotypedNode");
 		return false;	// there is no connection, cannot add a node
 	}
 }
 
 template <typename... Args>
-bool Genome<Args...>::AddTranstype (innovationConn_t* conn_innov, innovationNode_t* node_innov, unsigned int maxRecurrency, unsigned int maxIterationsFindNodeThresh) {
+bool Genome<Args...>::AddBitypedNode (innovationConn_t* conn_innov, innovationNode_t* node_innov, unsigned int maxRecurrency, unsigned int maxIterationsFindNodeThresh) {
 	logger->trace ("adding a bi-typed node");
 	if (N_types > 1) {	// if there is only one type, we cannot add a bi-typed node!
 		// Add bi-typed node
@@ -790,9 +826,9 @@ bool Genome<Args...>::AddTranstype (innovationConn_t* conn_innov, innovationNode
 		nodes.back ()->layer = 1;	// default to first layer
 		nodes.back ()->index_T_in = iT_in;
 		nodes.back ()->index_T_out = iT_out;
-		nodes.back ()->index_activation_fn = Random_UInt (0, (unsigned int) activationFns [iT_in][iT_out].size () - 1) + 1;
+		nodes.back ()->index_activation_fn = Random_UInt (0, (unsigned int) activationFns [iT_in][iT_out].size () - 1);
 		nodes.back ()->setActivationFn (
-			activationFns [iT_in][iT_out][nodes.back ()->index_activation_fn - 1]
+			activationFns [iT_in][iT_out][nodes.back ()->index_activation_fn]->clone (false)	//activation function with new fresh parameters
 		);
 		nodes.back ()->innovId = node_innov->getInnovId (
 			nodes.back ()->index_T_in,
@@ -821,7 +857,7 @@ bool Genome<Args...>::AddTranstype (innovationConn_t* conn_innov, innovationNode
 			iterationNb ++;
 		}
 		if (iterationNb == maxIterationsFindNodeThresh) {
-			logger->warn ("maximum iteration threshold to find a valid connection has been reached in Genome<Args...>::AddTranstype: a bi-typed node has been added, but no connection point or start to it");
+			logger->warn ("maximum iteration threshold to find a valid connection has been reached in Genome<Args...>::AddBitypedNode: a bi-typed node has been added, but no connection point or start to it");
 			return false;
 		}
 
@@ -851,7 +887,7 @@ bool Genome<Args...>::AddTranstype (innovationConn_t* conn_innov, innovationNode
 			iterationNb ++;
 		}
 		if (iterationNb == maxIterationsFindNodeThresh) {
-			logger->warn ("maximum iteration threshold to find a valid connection has been reached in Genome<Args...>::AddTranstype: a bi-typed node has been added, but only one connection point or start to it");
+			logger->warn ("maximum iteration threshold to find a valid connection has been reached in Genome<Args...>::AddBitypedNode: a bi-typed node has been added, but only one connection point or start to it");
 			return false;
 		}
 
@@ -870,7 +906,7 @@ bool Genome<Args...>::AddTranstype (innovationConn_t* conn_innov, innovationNode
 
 		return true;
 	} else {
-		logger->warn ("the genome is processing one type of object: cannot add a bi-typed node in Genome<Args...>::AddTranstype");
+		logger->warn ("the genome is processing one type of object: cannot add a bi-typed node in Genome<Args...>::AddBitypedNode");
 		return false;	// there is only one type of object
 	}
 }
