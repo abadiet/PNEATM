@@ -7,6 +7,7 @@
 #include <PNEATM/Connection/innovation_connection.hpp>
 #include <PNEATM/Node/innovation_node.hpp>
 #include <PNEATM/Node/Activation_Function/activation_function_base.hpp>
+#include <PNEATM/Node/Activation_Function/create_activation_function.hpp>
 #include <PNEATM/utils.hpp>
 #include <fstream>
 #include <iostream>
@@ -50,6 +51,12 @@ class Population {
 		 */
 		Population (unsigned int popSize, std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_values, std::vector<void*> resetValues, std::vector<std::vector<std::vector<ActivationFnBase*>>> activationFns, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger, distanceFn dstType = CONVENTIONAL, double speciationThreshInit = 20.0, unsigned int threshGensSinceImproved = 15, std::string stats_filepath = "");
 
+		/**
+		 * @brief Constructor for the Population class from a file.
+		 * @param filepath The file path.
+		 * @param logger A pointer to the logger for logging.
+		 * @param stats_filepath The filepath for statistics. (default is an empty string, which doesn't create any file)
+		 */
 		Population (const std::string& filepath, spdlog::logger* logger, std::string stats_filepath = "");
 
 		/**
@@ -215,12 +222,28 @@ class Population {
 		 */
 		void drawGenome (unsigned int genome_id, std::string font_path, unsigned int windowWidth = 1300, unsigned int windowHeight = 800, float dotsRadius = 6.5f);
 
+		/**
+		 * @brief Save the Population instance to a file.
+		 * @param filepath The file path.
+		 */
 		void save (const std::string& filepath);
 
+		/**
+		 * @brief Load a Population instance from a file.
+		 * @param filepath ThePopulation file path.
+		 */
 		void load (const std::string& filepath);
 
+		/**
+		 * @brief Serialize the Population instance to an output file stream.
+		 * @param outFile The output file stream to which the Population instance will be written.
+		 */
 		void serialize (std::ofstream& outFile);
 
+		/**
+		 * @brief Deserialize a Population instance from an input file stream.
+		 * @param inFile The input file stream from which the Population instance will be read.
+		 */
 		void deserialize (std::ifstream& inFile);
 
 	private:
@@ -854,14 +877,17 @@ void Population<Args...>::serialize (std::ofstream& outFile) {
     Serialize (maxRecuInit, outFile);
     Serialize (dstType, outFile);
     Serialize (fittergenome_id, outFile);
+
     Serialize (genomes.size (), outFile);
 	for (size_t i = 0; i < genomes.size (); i++) {
 		genomes [i]->serialize (outFile);
 	}
+
     Serialize (species.size (), outFile);
 	for (size_t i = 0; i < species.size (); i++) {
 		species [i].serialize (outFile);
 	}
+
     Serialize (activationFns.size (), outFile);
 	for (size_t i = 0; i < activationFns.size (); i++) {
 
@@ -874,6 +900,7 @@ void Population<Args...>::serialize (std::ofstream& outFile) {
 			}
 		}
 	}
+
 	conn_innov.serialize (outFile);
 	node_innov.serialize (outFile);
 }
@@ -896,6 +923,49 @@ void Population<Args...>::deserialize (std::ifstream& inFile) {
     Deserialize (maxRecuInit, inFile);
     Deserialize (dstType, inFile);
     Deserialize (fittergenome_id, inFile);
+
+	size_t sz;
+	size_t sz1;
+	size_t sz2;
+
+	Deserialize (sz, inFile);
+	genomes.clear ();
+	genomes.reserve (sz);
+	for (size_t i = 0; i < sz; i++) {
+		genomes.push_back (std::make_unique<Genome<Args...>> (inFile, activationFns, logger));
+	}
+
+	Deserialize (sz, inFile);
+	species.clear ();
+	species.reserve (sz);
+	for (size_t i = 0; i < sz; i++) {
+		species.push_back (Species<Args...> (inFile));
+	}
+
+	Deserialize (sz, inFile);
+	activationFns.clear ();	// TODO each clear should be do with delete ()
+	activationFns.reserve (sz);
+	for (size_t i = 0; i < sz; i++) {
+		activationFns.push_back ({});
+
+		Deserialize (sz1, inFile);
+		activationFns [i].clear ();
+		activationFns [i].reserve (sz1);
+		for (size_t j = 0; j < sz1; j++) {
+			activationFns [i].push_back ({});
+
+			Deserialize (sz2, inFile);
+			activationFns [i][j].clear ();
+			activationFns [i][j].reserve (sz2);
+			for (size_t k = 0; k < sz2; k++) {
+				activationFns [i][j].push_back (CreateActivationFn::get<Args...> (i, j));
+				activationFns [i][j].back ()->deserialize (inFile);
+			}
+		}
+	}
+
+	conn_innov.deserialize (inFile);
+	node_innov.deserialize (inFile);
 }
 
 template <typename... Args>

@@ -11,6 +11,10 @@ Connection::Connection (const unsigned int innovId, const unsigned int inNodeId,
     enabled (enabled) {
 }
 
+Connection::Connection (std::ifstream& inFile) {
+    deserialize (inFile);
+}
+
 Connection& Connection::operator=(const Connection& other) {
     if (this == &other) {
         return *this;  // Self-assignment check
@@ -38,4 +42,13 @@ void Connection::serialize (std::ofstream& outFile) {
     Serialize (inNodeRecu, outFile);
     Serialize (weight, outFile);
     Serialize (enabled, outFile);
+}
+
+void Connection::deserialize (std::ifstream& inFile) {
+    Deserialize (innovId, inFile);
+    Deserialize (inNodeId, inFile);
+    Deserialize (outNodeId, inFile);
+    Deserialize (inNodeRecu, inFile);
+    Deserialize (weight, inFile);
+    Deserialize (enabled, inFile);
 }

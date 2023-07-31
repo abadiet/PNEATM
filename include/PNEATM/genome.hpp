@@ -227,6 +227,14 @@ class Genome {
 		Genome (unsigned int nbBias, unsigned int nbInput, unsigned int nbOutput, unsigned int N_types, std::vector<void*> resetValues, std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, double weightExtremumInit, spdlog::logger* logger);
 
 		/**
+		 * @brief Constructor for the Genome class from an input file stream.
+		 * @param inFile The input file stream.
+		 * @param activationFns The activation functions (e.g., activationFns[i][j] is a pointer to an activation function that takes an input of type of index i and return a type of index j output).
+		 * @param logger A pointer to the logger for logging.
+		 */
+		Genome (std::ifstream& inFile, std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, spdlog::logger* logger);
+
+		/**
 		 * @brief Destructor for the Genome class.
 		 */
 		~Genome ();
@@ -316,7 +324,17 @@ class Genome {
 		 */
 		void draw (const std::string& font_path, unsigned int windowWidth = 1300, unsigned int windowHeight = 800, float dotsRadius = 6.5f);
 
+		/**
+		 * @brief Serialize the Genome instance to an output file stream.
+		 * @param outFile The output file stream to which the Genome instance will be written.
+		 */
 		void serialize (std::ofstream& outFile);
+
+		/**
+		 * @brief Deserialize a Genome instance from an input file stream.
+		 * @param inFile The input file stream from which the Genome instance will be read.
+		 */
+		void deserialize (std::ifstream& inFile);
 
 	private:
 		unsigned int nbBias;
@@ -538,6 +556,17 @@ Genome<Args...>::Genome (unsigned int nbBias, unsigned int nbInput, unsigned int
 	logger->trace ("Genome initialization");
 	speciesId = -1;
 }
+
+template <typename... Args>
+Genome<Args...>::Genome (std::ifstream& inFile, std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, spdlog::logger* logger) :
+	activationFns (activationFns),
+	logger (logger)
+{
+	logger->trace ("Genome loading");
+
+	deserialize (inFile);
+}
+
 
 template <typename... Args>
 Genome<Args...>::~Genome () {
@@ -1276,21 +1305,10 @@ void Genome<Args...>::serialize (std::ofstream& outFile) {
 	Serialize (N_types, outFile);
 	Serialize (nbBias, outFile);
 
-    Serialize (activationFns.size (), outFile);
-	for (size_t i = 0; i < activationFns.size (); i++) {
-
-    	Serialize (activationFns [i].size (), outFile);
-		for (size_t j = 0; j < activationFns [i].size (); j++) {
-	
-    		Serialize (activationFns [i][j].size (), outFile);
-			for (size_t k = 0; k < activationFns [i][j].size (); k++) {
-				activationFns [i][j][k]->serialize (outFile);
-			}
-		}
-	}
-
 	Serialize (nodes.size (), outFile);
 	for (size_t k = 0; k < nodes.size (); k++) {
+		Serialize (nodes [k]->index_T_in, outFile);
+		Serialize (nodes [k]->index_T_out, outFile);
 		nodes [k]->serialize (outFile);
 	}
 
@@ -1301,6 +1319,39 @@ void Genome<Args...>::serialize (std::ofstream& outFile) {
 
 	Serialize (fitness, outFile);
 	Serialize (speciesId, outFile);
+}
+
+template <typename... Args>
+void Genome<Args...>:: deserialize (std::ifstream& inFile) {
+	Deserialize (nbBias, inFile);
+	Deserialize (nbInput, inFile);
+	Deserialize (nbOutput, inFile);
+	Deserialize (weightExtremumInit, inFile);
+	Deserialize (N_types, inFile);
+	Deserialize (nbBias, inFile);
+
+	size_t sz;
+
+	Deserialize (sz, inFile);
+	nodes.clear ();
+	nodes.reserve (sz);
+	for (size_t k = 0; k < sz; k++) {
+		unsigned int iT_in, iT_out;
+		Deserialize (iT_in, inFile);
+		Deserialize (iT_out, inFile);
+		nodes.push_back (CreateNode::get<Args...> (iT_in, iT_out));
+		nodes [k]->deserialize (inFile);
+	}
+
+	Deserialize (sz, inFile);
+	connections.clear ();
+	connections.reserve (sz);
+	for (size_t k = 0; k < sz; k++) {
+		connections.push_back (Connection (inFile));
+	}
+
+	Deserialize (fitness, inFile);
+	Deserialize (speciesId, inFile);
 }
 
 

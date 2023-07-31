@@ -83,6 +83,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a5ac4625bcaa0e36914cea5d677f49b71"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Population.html#a5ac4625bcaa0e36914cea5d677f49b71">Population</a> (unsigned int popSize, std::vector&lt; size_t &gt; bias_sch, std::vector&lt; size_t &gt; inputs_sch, std::vector&lt; size_t &gt; outputs_sch, std::vector&lt; std::vector&lt; size_t &gt;&gt; hiddens_sch_init, std::vector&lt; void * &gt; bias_values, std::vector&lt; void * &gt; resetValues, std::vector&lt; std::vector&lt; std::vector&lt; <a class="el" href="classpneatm_1_1ActivationFnBase.html">ActivationFnBase</a> * &gt;&gt;&gt; activationFns, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger *logger, distanceFn dstType=CONVENTIONAL, double speciationThreshInit=20.0, unsigned int threshGensSinceImproved=15, std::string stats_filepath=&quot;&quot;)</td></tr>
 <tr class="memdesc:a5ac4625bcaa0e36914cea5d677f49b71"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor for the <a class="el" href="classpneatm_1_1Population.html" title="A template class representing a population.">Population</a> class.  <a href="classpneatm_1_1Population.html#a5ac4625bcaa0e36914cea5d677f49b71">More...</a><br /></td></tr>
 <tr class="separator:a5ac4625bcaa0e36914cea5d677f49b71"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac8be7b0544c561d2c2ac7d8d591dc53b"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Population.html#ac8be7b0544c561d2c2ac7d8d591dc53b">Population</a> (const std::string &amp;filepath, spdlog::logger *logger, std::string stats_filepath=&quot;&quot;)</td></tr>
+<tr class="memdesc:ac8be7b0544c561d2c2ac7d8d591dc53b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor for the <a class="el" href="classpneatm_1_1Population.html" title="A template class representing a population.">Population</a> class from a file.  <a href="classpneatm_1_1Population.html#ac8be7b0544c561d2c2ac7d8d591dc53b">More...</a><br /></td></tr>
+<tr class="separator:ac8be7b0544c561d2c2ac7d8d591dc53b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4c8cedd0f038e41746fb6084639f5616"><td class="memItemLeft" align="right" valign="top"><a id="a4c8cedd0f038e41746fb6084639f5616"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Population.html#a4c8cedd0f038e41746fb6084639f5616">~Population</a> ()</td></tr>
 <tr class="memdesc:a4c8cedd0f038e41746fb6084639f5616"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destructor for the <a class="el" href="classpneatm_1_1Population.html" title="A template class representing a population.">Population</a> class. <br /></td></tr>
@@ -158,6 +161,18 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <tr class="memitem:a2bfe3181f9161eadc9e75fb9c26f8ec7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Population.html#a2bfe3181f9161eadc9e75fb9c26f8ec7">drawGenome</a> (unsigned int genome_id, std::string font_path, unsigned int windowWidth=1300, unsigned int windowHeight=800, float dotsRadius=6.5f)</td></tr>
 <tr class="memdesc:a2bfe3181f9161eadc9e75fb9c26f8ec7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Draw a graphical representation of the specified genome's network.  <a href="classpneatm_1_1Population.html#a2bfe3181f9161eadc9e75fb9c26f8ec7">More...</a><br /></td></tr>
 <tr class="separator:a2bfe3181f9161eadc9e75fb9c26f8ec7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a410fb1e8b548abbf1c50e32671b9423b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Population.html#a410fb1e8b548abbf1c50e32671b9423b">save</a> (const std::string &amp;filepath)</td></tr>
+<tr class="memdesc:a410fb1e8b548abbf1c50e32671b9423b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Save the <a class="el" href="classpneatm_1_1Population.html" title="A template class representing a population.">Population</a> instance to a file.  <a href="classpneatm_1_1Population.html#a410fb1e8b548abbf1c50e32671b9423b">More...</a><br /></td></tr>
+<tr class="separator:a410fb1e8b548abbf1c50e32671b9423b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a17160308b621d2bed85b9b0d5dd2ec39"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Population.html#a17160308b621d2bed85b9b0d5dd2ec39">load</a> (const std::string &amp;filepath)</td></tr>
+<tr class="memdesc:a17160308b621d2bed85b9b0d5dd2ec39"><td class="mdescLeft">&#160;</td><td class="mdescRight">Load a <a class="el" href="classpneatm_1_1Population.html" title="A template class representing a population.">Population</a> instance from a file.  <a href="classpneatm_1_1Population.html#a17160308b621d2bed85b9b0d5dd2ec39">More...</a><br /></td></tr>
+<tr class="separator:a17160308b621d2bed85b9b0d5dd2ec39"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5dd848337fef8512f1e89dcf844a9027"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Population.html#a5dd848337fef8512f1e89dcf844a9027">serialize</a> (std::ofstream &amp;outFile)</td></tr>
+<tr class="memdesc:a5dd848337fef8512f1e89dcf844a9027"><td class="mdescLeft">&#160;</td><td class="mdescRight">Serialize the <a class="el" href="classpneatm_1_1Population.html" title="A template class representing a population.">Population</a> instance to an output file stream.  <a href="classpneatm_1_1Population.html#a5dd848337fef8512f1e89dcf844a9027">More...</a><br /></td></tr>
+<tr class="separator:a5dd848337fef8512f1e89dcf844a9027"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac228c108dd87402819b0216ccc47103f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Population.html#ac228c108dd87402819b0216ccc47103f">deserialize</a> (std::ifstream &amp;inFile)</td></tr>
+<tr class="memdesc:ac228c108dd87402819b0216ccc47103f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deserialize a <a class="el" href="classpneatm_1_1Population.html" title="A template class representing a population.">Population</a> instance from an input file stream.  <a href="classpneatm_1_1Population.html#ac228c108dd87402819b0216ccc47103f">More...</a><br /></td></tr>
+<tr class="separator:ac228c108dd87402819b0216ccc47103f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><h3>template&lt;typename... Args&gt;<br />
@@ -172,7 +187,7 @@ class pneatm::Population&lt; Args &gt;</h3>
 </dl>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a5ac4625bcaa0e36914cea5d677f49b71"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5ac4625bcaa0e36914cea5d677f49b71">&#9670;&nbsp;</a></span>Population()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a5ac4625bcaa0e36914cea5d677f49b71">&#9670;&nbsp;</a></span>Population() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -315,6 +330,52 @@ template&lt;typename... Args&gt; </div>
 
 </div>
 </div>
+<a id="ac8be7b0544c561d2c2ac7d8d591dc53b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac8be7b0544c561d2c2ac7d8d591dc53b">&#9670;&nbsp;</a></span>Population() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename... Args&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">Population::Population </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>filepath</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">spdlog::logger *&#160;</td>
+          <td class="paramname"><em>logger</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string&#160;</td>
+          <td class="paramname"><em>stats_filepath</em> = <code>&quot;&quot;</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Constructor for the <a class="el" href="classpneatm_1_1Population.html" title="A template class representing a population.">Population</a> class from a file. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">filepath</td><td>The file path. </td></tr>
+    <tr><td class="paramname">logger</td><td>A pointer to the logger for logging. </td></tr>
+    <tr><td class="paramname">stats_filepath</td><td>The filepath for statistics. (default is an empty string, which doesn't create any file) </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <h2 class="groupheader">Member Function Documentation</h2>
 <a id="a82911e4075c134221ccf305750ae205a"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a82911e4075c134221ccf305750ae205a">&#9670;&nbsp;</a></span>crossover()</h2>
@@ -349,6 +410,34 @@ template&lt;typename... Args&gt; </div>
   <table class="params">
     <tr><td class="paramname">elitism</td><td>Set to true to keep the fitter genome in the new generation. (default is false) </td></tr>
     <tr><td class="paramname">crossover_rate</td><td>The probability of performing crossover for each new genome. (default is 0.9) </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ac228c108dd87402819b0216ccc47103f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac228c108dd87402819b0216ccc47103f">&#9670;&nbsp;</a></span>deserialize()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename... Args&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void Population::deserialize </td>
+          <td>(</td>
+          <td class="paramtype">std::ifstream &amp;&#160;</td>
+          <td class="paramname"><em>inFile</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Deserialize a <a class="el" href="classpneatm_1_1Population.html" title="A template class representing a population.">Population</a> instance from an input file stream. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">inFile</td><td>The input file stream from which the <a class="el" href="classpneatm_1_1Population.html" title="A template class representing a population.">Population</a> instance will be read. </td></tr>
   </table>
   </dd>
 </dl>
@@ -616,6 +705,34 @@ template&lt;typename T_out &gt; </div>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>A vector containing the outputs of the specified genome. </dd></dl>
+
+</div>
+</div>
+<a id="a17160308b621d2bed85b9b0d5dd2ec39"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a17160308b621d2bed85b9b0d5dd2ec39">&#9670;&nbsp;</a></span>load()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename... Args&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void Population::load </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>filepath</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Load a <a class="el" href="classpneatm_1_1Population.html" title="A template class representing a population.">Population</a> instance from a file. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">filepath</td><td>ThePopulation file path. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -937,6 +1054,62 @@ template&lt;typename... Args&gt; </div>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">genome_id</td><td>The ID of the genome for which to run the newtork. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a410fb1e8b548abbf1c50e32671b9423b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a410fb1e8b548abbf1c50e32671b9423b">&#9670;&nbsp;</a></span>save()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename... Args&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void Population::save </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>filepath</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Save the <a class="el" href="classpneatm_1_1Population.html" title="A template class representing a population.">Population</a> instance to a file. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">filepath</td><td>The file path. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a5dd848337fef8512f1e89dcf844a9027"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5dd848337fef8512f1e89dcf844a9027">&#9670;&nbsp;</a></span>serialize()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename... Args&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void Population::serialize </td>
+          <td>(</td>
+          <td class="paramtype">std::ofstream &amp;&#160;</td>
+          <td class="paramname"><em>outFile</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Serialize the <a class="el" href="classpneatm_1_1Population.html" title="A template class representing a population.">Population</a> instance to an output file stream. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">outFile</td><td>The output file stream to which the <a class="el" href="classpneatm_1_1Population.html" title="A template class representing a population.">Population</a> instance will be written. </td></tr>
   </table>
   </dd>
 </dl>

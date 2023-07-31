@@ -86,7 +86,17 @@ class ActivationFn : public ActivationFnBase {
 		 */
 		void print (const std::string& prefix = "");
 
-        void serialize (std::ofstream& outFile) override;
+        /**
+		 * @brief Serialize the AcivationFn instance to an output file stream.
+		 * @param outFile The output file stream to which the AcivationFn instance will be written.
+		 */
+		void serialize (std::ofstream& outFile) override;
+
+		/**
+		 * @brief Deserialize a AcivationFn instance from an input file stream.
+		 * @param inFile The input file stream from which the AcivationFn instance will be read.
+		 */
+		void deserialize (std::ifstream& inFile) override;
 
     private:
 		std::function<T_out (T_in, activationFnParams_t*)> processFn;
@@ -163,11 +173,21 @@ void ActivationFn<T_in, T_out>::print (const std::string& prefix) {
 
 template <typename T_in, typename T_out>
 void ActivationFn<T_in, T_out>::serialize (std::ofstream& outFile) {
-	Serialize (*(params.get ()), outFile);
+	Serialize (*params, outFile);
 	Serialize (mutationFn, outFile);
 	Serialize (printingFn, outFile);
 	Serialize (processFn, outFile);
 }
 
+template <typename T_in, typename T_out>
+void ActivationFn<T_in, T_out>::deserialize (std::ifstream& inFile) {
+	activationFnParams_t params_tmp;
+	Deserialize (params_tmp, inFile);
+	*params = params_tmp; 
+
+	Deserialize (mutationFn, inFile);
+	Deserialize (printingFn, inFile);
+	Deserialize (processFn, inFile);
+}
 
 #endif	// ACTIVATION_FUNCTION_HPP

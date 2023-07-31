@@ -60,9 +60,22 @@ typedef struct innovationConn {
         std::cout << prefix << "Number of attributed innovation: " << N_connectionId - 1 << std::endl;
     }
 
+    /**
+     * @brief Serialize the innovationConn instance to an output file stream.
+     * @param outFile The output file stream to which the innovationConn instance will be written.
+     */
     void serialize (std::ofstream& outFile) {
         Serialize (connectionIds, outFile);
         Serialize (N_connectionId, outFile);
+    }
+
+    /**
+     * @brief Deserialize a innovationConn instance from an input file stream.
+     * @param inFile The input file stream from which the innovationConn instance will be read.
+     */
+    void deserialize (std::ifstream& inFile) {
+        Deserialize (connectionIds, inFile);
+        Deserialize (N_connectionId, inFile);
     }
 } innovationConn_t;
 

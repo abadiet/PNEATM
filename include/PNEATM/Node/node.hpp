@@ -97,7 +97,17 @@ class Node : public NodeBase {
 		 */
 		void print (const std::string& prefix = "") override;
 
+		/**
+		 * @brief Serialize the Node instance to an output file stream.
+		 * @param outFile The output file stream to which the Node instance will be written.
+		 */
 		void serialize (std::ofstream& outFile) override;
+
+		/**
+		 * @brief Deserialize a Node instance from an input file stream.
+		 * @param inFile The input file stream from which the Node instance will be read.
+		 */
+		void deserialize (std::ifstream& inFile) override;
 
 	private:
 		T_in input;
@@ -203,5 +213,18 @@ void Node<T_in, T_out>::serialize (std::ofstream& outFile) {
 	Serialize (resetValue, outFile);
 }
 
+template <typename T_in, typename T_out>
+void Node<T_in, T_out>::deserialize (std::ifstream& inFile) {
+	Deserialize (id, inFile);
+	Deserialize (innovId, inFile);
+	Deserialize (layer, inFile);
+	Deserialize (index_T_in, inFile);
+	Deserialize (index_T_out, inFile);
+	Deserialize (index_activation_fn, inFile);
+	Deserialize (input, inFile);
+	Deserialize (output, inFile);
+	activation_fn->deserialize (inFile);
+	Deserialize (resetValue, inFile);
+}
 
 #endif	// NODE_HPP

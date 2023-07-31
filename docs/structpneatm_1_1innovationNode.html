@@ -84,9 +84,15 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a773265ec86dd93500d27fab946277043"><td class="memItemLeft" align="right" valign="top">unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpneatm_1_1innovationNode.html#a773265ec86dd93500d27fab946277043">getInnovId</a> (unsigned int index_T_in, unsigned int index_T_out, unsigned int index_activation_fn, unsigned int repetition)</td></tr>
 <tr class="memdesc:a773265ec86dd93500d27fab946277043"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the innovation ID for a node.  <a href="structpneatm_1_1innovationNode.html#a773265ec86dd93500d27fab946277043">More...</a><br /></td></tr>
 <tr class="separator:a773265ec86dd93500d27fab946277043"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a690004571698d505a3a289eee6dadd60"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpneatm_1_1innovationNode.html#a690004571698d505a3a289eee6dadd60">print</a> (std::string prefix=&quot;&quot;)</td></tr>
-<tr class="memdesc:a690004571698d505a3a289eee6dadd60"><td class="mdescLeft">&#160;</td><td class="mdescRight">Print information about the innovation tracker.  <a href="structpneatm_1_1innovationNode.html#a690004571698d505a3a289eee6dadd60">More...</a><br /></td></tr>
-<tr class="separator:a690004571698d505a3a289eee6dadd60"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae37d4790618b0c642178f8e00e978d7e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpneatm_1_1innovationNode.html#ae37d4790618b0c642178f8e00e978d7e">print</a> (const std::string &amp;prefix=&quot;&quot;)</td></tr>
+<tr class="memdesc:ae37d4790618b0c642178f8e00e978d7e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Print information about the innovation tracker.  <a href="structpneatm_1_1innovationNode.html#ae37d4790618b0c642178f8e00e978d7e">More...</a><br /></td></tr>
+<tr class="separator:ae37d4790618b0c642178f8e00e978d7e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac769fff03cc77f797eff6c3c2d994e7d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpneatm_1_1innovationNode.html#ac769fff03cc77f797eff6c3c2d994e7d">serialize</a> (std::ofstream &amp;outFile)</td></tr>
+<tr class="memdesc:ac769fff03cc77f797eff6c3c2d994e7d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Serialize the <a class="el" href="structpneatm_1_1innovationNode.html" title="Structure representing the innovation tracker for nodes.">innovationNode</a> instance to an output file stream.  <a href="structpneatm_1_1innovationNode.html#ac769fff03cc77f797eff6c3c2d994e7d">More...</a><br /></td></tr>
+<tr class="separator:ac769fff03cc77f797eff6c3c2d994e7d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5de3a47096e0937bb939dc80d39b786c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpneatm_1_1innovationNode.html#a5de3a47096e0937bb939dc80d39b786c">deserialize</a> (std::ifstream &amp;inFile)</td></tr>
+<tr class="memdesc:a5de3a47096e0937bb939dc80d39b786c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deserialize a <a class="el" href="structpneatm_1_1innovationNode.html" title="Structure representing the innovation tracker for nodes.">innovationNode</a> instance from an input file stream.  <a href="structpneatm_1_1innovationNode.html#a5de3a47096e0937bb939dc80d39b786c">More...</a><br /></td></tr>
+<tr class="separator:a5de3a47096e0937bb939dc80d39b786c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -103,6 +109,40 @@ unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hr
 <div class="textblock"><p>Structure representing the innovation tracker for nodes. </p>
 <p>The <code><a class="el" href="structpneatm_1_1innovationConn.html" title="Structure representing the innovation tracker for connections.">innovationConn</a></code> struct serves as an innovation tracker for nodes in a neural network. It keeps track of the innovation IDs assigned to different nodes based on input and output types, activation functions index and the node's repetition. It also provides a method to retrieve a unique innovation ID. </p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="a5de3a47096e0937bb939dc80d39b786c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5de3a47096e0937bb939dc80d39b786c">&#9670;&nbsp;</a></span>deserialize()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void pneatm::innovationNode::deserialize </td>
+          <td>(</td>
+          <td class="paramtype">std::ifstream &amp;&#160;</td>
+          <td class="paramname"><em>inFile</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Deserialize a <a class="el" href="structpneatm_1_1innovationNode.html" title="Structure representing the innovation tracker for nodes.">innovationNode</a> instance from an input file stream. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">inFile</td><td>The input file stream from which the <a class="el" href="structpneatm_1_1innovationNode.html" title="Structure representing the innovation tracker for nodes.">innovationNode</a> instance will be read. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a id="a773265ec86dd93500d27fab946277043"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a773265ec86dd93500d27fab946277043">&#9670;&nbsp;</a></span>getInnovId()</h2>
 
@@ -163,8 +203,8 @@ unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hr
 
 </div>
 </div>
-<a id="a690004571698d505a3a289eee6dadd60"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a690004571698d505a3a289eee6dadd60">&#9670;&nbsp;</a></span>print()</h2>
+<a id="ae37d4790618b0c642178f8e00e978d7e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae37d4790618b0c642178f8e00e978d7e">&#9670;&nbsp;</a></span>print()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -175,7 +215,7 @@ unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hr
         <tr>
           <td class="memname">void pneatm::innovationNode::print </td>
           <td>(</td>
-          <td class="paramtype">std::string&#160;</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
           <td class="paramname"><em>prefix</em> = <code>&quot;&quot;</code></td><td>)</td>
           <td></td>
         </tr>
@@ -191,6 +231,40 @@ unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hr
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">prefix</td><td>A prefix to print before each line. (default is an empty string) </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ac769fff03cc77f797eff6c3c2d994e7d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac769fff03cc77f797eff6c3c2d994e7d">&#9670;&nbsp;</a></span>serialize()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void pneatm::innovationNode::serialize </td>
+          <td>(</td>
+          <td class="paramtype">std::ofstream &amp;&#160;</td>
+          <td class="paramname"><em>outFile</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Serialize the <a class="el" href="structpneatm_1_1innovationNode.html" title="Structure representing the innovation tracker for nodes.">innovationNode</a> instance to an output file stream. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">outFile</td><td>The output file stream to which the <a class="el" href="structpneatm_1_1innovationNode.html" title="Structure representing the innovation tracker for nodes.">innovationNode</a> instance will be written. </td></tr>
   </table>
   </dd>
 </dl>

@@ -29,6 +29,12 @@ class Connection {
 		Connection (const unsigned int innovId, const unsigned int inNodeId, const unsigned int outNodeId, const unsigned int inNodeRecu, double weight, bool enabled);
 
 		/**
+		 * @brief Constructor for the Connection class from an input file stream.
+		 * @param inFile The input file stream.
+		 */
+		Connection (std::ifstream& inFile);
+
+		/**
 		 * @brief Assignment operator for the Connection class.
 		 * @param other The Connection object to assign from.
 		 * @return A reference to the assigned Connection object.
@@ -41,13 +47,23 @@ class Connection {
 		 */
 		void print (const std::string& prefix = "");
 
+		/**
+		 * @brief Serialize the Connection instance to an output file stream.
+		 * @param outFile The output file stream to which the Connection instance will be written.
+		 */
 		void serialize (std::ofstream& outFile);
 
+		/**
+		 * @brief Deserialize a Connection instance from an input file stream.
+		 * @param inFile The input file stream from which the Connection instance will be read.
+		 */
+		void deserialize (std::ifstream& inFile);
+
 	private:
-		const unsigned int innovId;
-		const unsigned int inNodeId;
-		const unsigned int outNodeId;
-		const unsigned int inNodeRecu;
+		unsigned int innovId;
+		unsigned int inNodeId;
+		unsigned int outNodeId;
+		unsigned int inNodeRecu;
 		double weight;
 		bool enabled;
 

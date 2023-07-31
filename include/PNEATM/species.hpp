@@ -30,9 +30,15 @@ class Species {
 		 * @brief Constructor for the Species class.
 		 * @param id the species ID.
 		 * @param connections A vector of connection that define the species traits. Will be used to process the distance between the species and genomes.
-		 * @param dstType The distance algorithm to use:\n	- CONVENTIONAL: algorithm used in the original NEAT\n	- EUCLIDIAN: euclidian distance in the connections's space
+		 * @param dstType The distance algorithm to use:\n	- `CONVENTIONAL`: algorithm used in the original NEAT\n	- `EUCLIDIAN`: euclidian distance in the connections's space
 		 */
 		Species (unsigned int id, std::vector<Connection> connections, distanceFn dstType);
+
+		/**
+		 * @brief Constructor for the Species class from an input file stream.
+		 * @param inFile The input file stream.
+		 */
+		Species (std::ifstream& inFile);
 
 		/**
 		 * @brief Destructor for the Species class.
@@ -55,7 +61,17 @@ class Species {
 		 */
 		void print (const std::string& prefix = "");
 
+		/**
+		 * @brief Serialize the Species instance to an output file stream.
+		 * @param outFile The output file stream to which the Species instance will be written.
+		 */
 		void serialize (std::ofstream& outFile);
+
+		/**
+		 * @brief Deserialize a Species instance from an input file stream.
+		 * @param inFile The input file stream from which the Species instance will be read.
+		 */
+		void deserialize (std::ifstream& inFile);
 
 	private:
 		unsigned int id;
@@ -96,6 +112,12 @@ Species<Args...>::Species(unsigned int id, std::vector<Connection> connections, 
 	gensSinceImproved (0),
 	isDead (false) {
 }
+
+template <typename... Args>
+Species<Args...>::Species (std::ifstream& inFile) {
+	deserialize (inFile);
+}
+
 
 template <typename... Args>
 double Species<Args...>::distanceWith (const std::unique_ptr<Genome<Args...>>& genome, double a, double b, double c) {
@@ -270,5 +292,29 @@ void Species<Args...>::serialize (std::ofstream& outFile) {
 	Serialize (isDead, outFile);
 	Serialize (members, outFile);
 }
+
+template <typename... Args>
+void Species<Args...>::deserialize (std::ifstream& inFile) {
+	Deserialize (id, inFile);
+	Deserialize (dstType, inFile);
+
+	size_t sz;
+
+	Deserialize (sz, inFile);
+	connections.clear ();
+	connections.reserve (sz);
+	for (size_t k = 0; k < sz; k++) {
+		connections.push_back (Connection (inFile));
+	}
+
+	Deserialize (avgFitness, inFile);
+	Deserialize (avgFitnessAdjusted, inFile);
+	Deserialize (allowedOffspring, inFile);
+	Deserialize (sumFitness, inFile);
+	Deserialize (gensSinceImproved, inFile);
+	Deserialize (isDead, inFile);
+	Deserialize (members, inFile);
+}
+
 
 #endif	// SPECIES_HPP

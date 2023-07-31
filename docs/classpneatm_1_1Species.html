@@ -84,6 +84,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:aa9d721d32ad512654d7ae41352a5366e"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Species.html#aa9d721d32ad512654d7ae41352a5366e">Species</a> (unsigned int id, std::vector&lt; <a class="el" href="classpneatm_1_1Connection.html">Connection</a> &gt; connections, distanceFn dstType)</td></tr>
 <tr class="memdesc:aa9d721d32ad512654d7ae41352a5366e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor for the <a class="el" href="classpneatm_1_1Species.html" title="A template class representing a species.">Species</a> class.  <a href="classpneatm_1_1Species.html#aa9d721d32ad512654d7ae41352a5366e">More...</a><br /></td></tr>
 <tr class="separator:aa9d721d32ad512654d7ae41352a5366e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab48be3aeca5f36eeff086ad1c7d8348b"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Species.html#ab48be3aeca5f36eeff086ad1c7d8348b">Species</a> (std::ifstream &amp;inFile)</td></tr>
+<tr class="memdesc:ab48be3aeca5f36eeff086ad1c7d8348b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor for the <a class="el" href="classpneatm_1_1Species.html" title="A template class representing a species.">Species</a> class from an input file stream.  <a href="classpneatm_1_1Species.html#ab48be3aeca5f36eeff086ad1c7d8348b">More...</a><br /></td></tr>
+<tr class="separator:ab48be3aeca5f36eeff086ad1c7d8348b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af9f023703b76ebb93451d805f2eac647"><td class="memItemLeft" align="right" valign="top"><a id="af9f023703b76ebb93451d805f2eac647"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Species.html#af9f023703b76ebb93451d805f2eac647">~Species</a> ()</td></tr>
 <tr class="memdesc:af9f023703b76ebb93451d805f2eac647"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destructor for the <a class="el" href="classpneatm_1_1Species.html" title="A template class representing a species.">Species</a> class. <br /></td></tr>
@@ -91,9 +94,15 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:af4892d44c4078ce1e832bbcd7d623af4"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Species.html#af4892d44c4078ce1e832bbcd7d623af4">distanceWith</a> (const std::unique_ptr&lt; <a class="el" href="classpneatm_1_1Genome.html">Genome</a>&lt; Args... &gt;&gt; &amp;genome, double a=1.0, double b=1.0, double c=0.4)</td></tr>
 <tr class="memdesc:af4892d44c4078ce1e832bbcd7d623af4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the distance between a given genome and the species.  <a href="classpneatm_1_1Species.html#af4892d44c4078ce1e832bbcd7d623af4">More...</a><br /></td></tr>
 <tr class="separator:af4892d44c4078ce1e832bbcd7d623af4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad15820cb44044982780a6d175e6e1d88"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Species.html#ad15820cb44044982780a6d175e6e1d88">print</a> (std::string prefix=&quot;&quot;)</td></tr>
-<tr class="memdesc:ad15820cb44044982780a6d175e6e1d88"><td class="mdescLeft">&#160;</td><td class="mdescRight">Print information on the species.  <a href="classpneatm_1_1Species.html#ad15820cb44044982780a6d175e6e1d88">More...</a><br /></td></tr>
-<tr class="separator:ad15820cb44044982780a6d175e6e1d88"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa334d08803c528dad4af77de96298c78"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Species.html#aa334d08803c528dad4af77de96298c78">print</a> (const std::string &amp;prefix=&quot;&quot;)</td></tr>
+<tr class="memdesc:aa334d08803c528dad4af77de96298c78"><td class="mdescLeft">&#160;</td><td class="mdescRight">Print information on the species.  <a href="classpneatm_1_1Species.html#aa334d08803c528dad4af77de96298c78">More...</a><br /></td></tr>
+<tr class="separator:aa334d08803c528dad4af77de96298c78"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a81a7647e73adceef280efc5b42712b81"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Species.html#a81a7647e73adceef280efc5b42712b81">serialize</a> (std::ofstream &amp;outFile)</td></tr>
+<tr class="memdesc:a81a7647e73adceef280efc5b42712b81"><td class="mdescLeft">&#160;</td><td class="mdescRight">Serialize the <a class="el" href="classpneatm_1_1Species.html" title="A template class representing a species.">Species</a> instance to an output file stream.  <a href="classpneatm_1_1Species.html#a81a7647e73adceef280efc5b42712b81">More...</a><br /></td></tr>
+<tr class="separator:a81a7647e73adceef280efc5b42712b81"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a88c30717c478b50218887278f9e6b6a9"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Species.html#a88c30717c478b50218887278f9e6b6a9">deserialize</a> (std::ifstream &amp;inFile)</td></tr>
+<tr class="memdesc:a88c30717c478b50218887278f9e6b6a9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deserialize a <a class="el" href="classpneatm_1_1Species.html" title="A template class representing a species.">Species</a> instance from an input file stream.  <a href="classpneatm_1_1Species.html#a88c30717c478b50218887278f9e6b6a9">More...</a><br /></td></tr>
+<tr class="separator:a88c30717c478b50218887278f9e6b6a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
 Friends</h2></td></tr>
@@ -115,7 +124,7 @@ class pneatm::Species&lt; Args &gt;</h3>
 </dl>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="aa9d721d32ad512654d7ae41352a5366e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa9d721d32ad512654d7ae41352a5366e">&#9670;&nbsp;</a></span>Species()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#aa9d721d32ad512654d7ae41352a5366e">&#9670;&nbsp;</a></span>Species() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -154,8 +163,36 @@ template&lt;typename... Args&gt; </div>
     <tr><td class="paramname">id</td><td>the species ID. </td></tr>
     <tr><td class="paramname">connections</td><td>A vector of connection that define the species traits. Will be used to process the distance between the species and genomes. </td></tr>
     <tr><td class="paramname">dstType</td><td>The distance algorithm to use:<br  />
- - CONVENTIONAL: algorithm used in the original NEAT<br  />
- - EUCLIDIAN: euclidian distance in the connections's space </td></tr>
+ - <code>CONVENTIONAL</code>: algorithm used in the original NEAT<br  />
+ - <code>EUCLIDIAN</code>: euclidian distance in the connections's space </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ab48be3aeca5f36eeff086ad1c7d8348b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab48be3aeca5f36eeff086ad1c7d8348b">&#9670;&nbsp;</a></span>Species() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename... Args&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">Species::Species </td>
+          <td>(</td>
+          <td class="paramtype">std::ifstream &amp;&#160;</td>
+          <td class="paramname"><em>inFile</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Constructor for the <a class="el" href="classpneatm_1_1Species.html" title="A template class representing a species.">Species</a> class from an input file stream. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">inFile</td><td>The input file stream. </td></tr>
   </table>
   </dd>
 </dl>
@@ -163,6 +200,34 @@ template&lt;typename... Args&gt; </div>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a id="a88c30717c478b50218887278f9e6b6a9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a88c30717c478b50218887278f9e6b6a9">&#9670;&nbsp;</a></span>deserialize()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename... Args&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void Species::deserialize </td>
+          <td>(</td>
+          <td class="paramtype">std::ifstream &amp;&#160;</td>
+          <td class="paramname"><em>inFile</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Deserialize a <a class="el" href="classpneatm_1_1Species.html" title="A template class representing a species.">Species</a> instance from an input file stream. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">inFile</td><td>The input file stream from which the <a class="el" href="classpneatm_1_1Species.html" title="A template class representing a species.">Species</a> instance will be read. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a id="af4892d44c4078ce1e832bbcd7d623af4"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#af4892d44c4078ce1e832bbcd7d623af4">&#9670;&nbsp;</a></span>distanceWith()</h2>
 
@@ -217,8 +282,8 @@ template&lt;typename... Args&gt; </div>
 
 </div>
 </div>
-<a id="ad15820cb44044982780a6d175e6e1d88"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad15820cb44044982780a6d175e6e1d88">&#9670;&nbsp;</a></span>print()</h2>
+<a id="aa334d08803c528dad4af77de96298c78"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa334d08803c528dad4af77de96298c78">&#9670;&nbsp;</a></span>print()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -228,7 +293,7 @@ template&lt;typename... Args&gt; </div>
         <tr>
           <td class="memname">void Species::print </td>
           <td>(</td>
-          <td class="paramtype">std::string&#160;</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
           <td class="paramname"><em>prefix</em> = <code>&quot;&quot;</code></td><td>)</td>
           <td></td>
         </tr>
@@ -239,6 +304,34 @@ template&lt;typename... Args&gt; </div>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">prefix</td><td>A prefix to print before each line. (default is an empty string) </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a81a7647e73adceef280efc5b42712b81"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a81a7647e73adceef280efc5b42712b81">&#9670;&nbsp;</a></span>serialize()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename... Args&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void Species::serialize </td>
+          <td>(</td>
+          <td class="paramtype">std::ofstream &amp;&#160;</td>
+          <td class="paramname"><em>outFile</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Serialize the <a class="el" href="classpneatm_1_1Species.html" title="A template class representing a species.">Species</a> instance to an output file stream. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">outFile</td><td>The output file stream to which the <a class="el" href="classpneatm_1_1Species.html" title="A template class representing a species.">Species</a> instance will be written. </td></tr>
   </table>
   </dd>
 </dl>

@@ -110,9 +110,15 @@ virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
 <tr class="memitem:a877b654091a90ecce4a7bbe4ff3bf70a"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1ActivationFnBase.html#a877b654091a90ecce4a7bbe4ff3bf70a">mutate</a> (double fitness)=0</td></tr>
 <tr class="memdesc:a877b654091a90ecce4a7bbe4ff3bf70a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mutates the activation function based on the provided fitness value.  <a href="classpneatm_1_1ActivationFnBase.html#a877b654091a90ecce4a7bbe4ff3bf70a">More...</a><br /></td></tr>
 <tr class="separator:a877b654091a90ecce4a7bbe4ff3bf70a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afb4592efa91b29091c82ce4eac322bad"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1ActivationFnBase.html#afb4592efa91b29091c82ce4eac322bad">print</a> (std::string prefix=&quot;&quot;)=0</td></tr>
-<tr class="memdesc:afb4592efa91b29091c82ce4eac322bad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prints information about the activation function.  <a href="classpneatm_1_1ActivationFnBase.html#afb4592efa91b29091c82ce4eac322bad">More...</a><br /></td></tr>
-<tr class="separator:afb4592efa91b29091c82ce4eac322bad"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4d3ccc22150ada97c0ca594eb5868d60"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1ActivationFnBase.html#a4d3ccc22150ada97c0ca594eb5868d60">print</a> (const std::string &amp;prefix=&quot;&quot;)=0</td></tr>
+<tr class="memdesc:a4d3ccc22150ada97c0ca594eb5868d60"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prints information about the activation function.  <a href="classpneatm_1_1ActivationFnBase.html#a4d3ccc22150ada97c0ca594eb5868d60">More...</a><br /></td></tr>
+<tr class="separator:a4d3ccc22150ada97c0ca594eb5868d60"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a31e1010cc0ea9450c3ebfbb8b5c3487c"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1ActivationFnBase.html#a31e1010cc0ea9450c3ebfbb8b5c3487c">serialize</a> (std::ofstream &amp;outFile)=0</td></tr>
+<tr class="memdesc:a31e1010cc0ea9450c3ebfbb8b5c3487c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Serialize the <a class="el" href="classpneatm_1_1ActivationFnBase.html" title="Abstract base class representing a generic node&#39;s activation function in a neural network.">ActivationFnBase</a> instance to an output file stream.  <a href="classpneatm_1_1ActivationFnBase.html#a31e1010cc0ea9450c3ebfbb8b5c3487c">More...</a><br /></td></tr>
+<tr class="separator:a31e1010cc0ea9450c3ebfbb8b5c3487c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a734e29fe9bf3c055a5279bc893435631"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1ActivationFnBase.html#a734e29fe9bf3c055a5279bc893435631">deserialize</a> (std::ifstream &amp;inFile)=0</td></tr>
+<tr class="memdesc:a734e29fe9bf3c055a5279bc893435631"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deserialize a <a class="el" href="classpneatm_1_1ActivationFnBase.html" title="Abstract base class representing a generic node&#39;s activation function in a neural network.">ActivationFnBase</a> instance from an input file stream.  <a href="classpneatm_1_1ActivationFnBase.html#a734e29fe9bf3c055a5279bc893435631">More...</a><br /></td></tr>
+<tr class="separator:a734e29fe9bf3c055a5279bc893435631"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
@@ -177,6 +183,42 @@ template&lt;typename T_in , typename T_out &gt; </td></tr>
 
 </div>
 </div>
+<a id="a734e29fe9bf3c055a5279bc893435631"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a734e29fe9bf3c055a5279bc893435631">&#9670;&nbsp;</a></span>deserialize()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void pneatm::ActivationFnBase::deserialize </td>
+          <td>(</td>
+          <td class="paramtype">std::ifstream &amp;&#160;</td>
+          <td class="paramname"><em>inFile</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Deserialize a <a class="el" href="classpneatm_1_1ActivationFnBase.html" title="Abstract base class representing a generic node&#39;s activation function in a neural network.">ActivationFnBase</a> instance from an input file stream. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">inFile</td><td>The input file stream from which the <a class="el" href="classpneatm_1_1ActivationFnBase.html" title="Abstract base class representing a generic node&#39;s activation function in a neural network.">ActivationFnBase</a> instance will be read. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p>Implemented in <a class="el" href="classpneatm_1_1ActivationFn.html#a98bad396be6a15057713ce6ac9afb007">pneatm::ActivationFn&lt; T_in, T_out &gt;</a>.</p>
+
+</div>
+</div>
 <a id="a877b654091a90ecce4a7bbe4ff3bf70a"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a877b654091a90ecce4a7bbe4ff3bf70a">&#9670;&nbsp;</a></span>mutate()</h2>
 
@@ -213,8 +255,8 @@ template&lt;typename T_in , typename T_out &gt; </td></tr>
 
 </div>
 </div>
-<a id="afb4592efa91b29091c82ce4eac322bad"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afb4592efa91b29091c82ce4eac322bad">&#9670;&nbsp;</a></span>print()</h2>
+<a id="a4d3ccc22150ada97c0ca594eb5868d60"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4d3ccc22150ada97c0ca594eb5868d60">&#9670;&nbsp;</a></span>print()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -225,7 +267,7 @@ template&lt;typename T_in , typename T_out &gt; </td></tr>
         <tr>
           <td class="memname">virtual void pneatm::ActivationFnBase::print </td>
           <td>(</td>
-          <td class="paramtype">std::string&#160;</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
           <td class="paramname"><em>prefix</em> = <code>&quot;&quot;</code></td><td>)</td>
           <td></td>
         </tr>
@@ -245,7 +287,43 @@ template&lt;typename T_in , typename T_out &gt; </td></tr>
   </dd>
 </dl>
 
-<p>Implemented in <a class="el" href="classpneatm_1_1ActivationFn.html#a7cfa9c1e12fc0e2183cccb5c1b25c0eb">pneatm::ActivationFn&lt; T_in, T_out &gt;</a>.</p>
+<p>Implemented in <a class="el" href="classpneatm_1_1ActivationFn.html#a9b1109d042ad5f56147aabd8e0f261b5">pneatm::ActivationFn&lt; T_in, T_out &gt;</a>.</p>
+
+</div>
+</div>
+<a id="a31e1010cc0ea9450c3ebfbb8b5c3487c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a31e1010cc0ea9450c3ebfbb8b5c3487c">&#9670;&nbsp;</a></span>serialize()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void pneatm::ActivationFnBase::serialize </td>
+          <td>(</td>
+          <td class="paramtype">std::ofstream &amp;&#160;</td>
+          <td class="paramname"><em>outFile</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Serialize the <a class="el" href="classpneatm_1_1ActivationFnBase.html" title="Abstract base class representing a generic node&#39;s activation function in a neural network.">ActivationFnBase</a> instance to an output file stream. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">outFile</td><td>The output file stream to which the <a class="el" href="classpneatm_1_1ActivationFnBase.html" title="Abstract base class representing a generic node&#39;s activation function in a neural network.">ActivationFnBase</a> instance will be written. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p>Implemented in <a class="el" href="classpneatm_1_1ActivationFn.html#aa2d692dde5a5b905ad3fb7ddb9c9db8b">pneatm::ActivationFn&lt; T_in, T_out &gt;</a>.</p>
 
 </div>
 </div>

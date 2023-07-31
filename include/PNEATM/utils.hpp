@@ -62,35 +62,60 @@ inline unsigned int Random_UInt (unsigned int a, unsigned int b) {
     return rand () % (b - a + 1) + a;
 }
 
+/**
+ * @brief Serialize a single object of type T to an output file stream.
+ * @tparam T The type of the object to be serialized.
+ * @param var The object to be serialized.
+ * @param outFile The output file stream to which the object will be written.
+ */
 template <typename T>
 void Serialize (const T& var, std::ofstream& outFile) {
-	outFile.write(reinterpret_cast<const char*>(&var), sizeof(var));
+    outFile.write (reinterpret_cast<const char*> (&var), sizeof (var));
 }
 
+/**
+ * @brief Serialize a vector of type T to an output file stream.
+ * @tparam T The type of the vector elements to be serialized.
+ * @param var The vector to be serialized.
+ * @param outFile The output file stream to which the vector will be written.
+ */
 template <typename T>
 void Serialize (const std::vector<T>& var, std::ofstream& outFile) {
     size_t size = var.size ();
-    outFile.write(reinterpret_cast<const char*>(&size), sizeof(size));
+    outFile.write (reinterpret_cast<const char*> (&size), sizeof (size));
     for (const auto& elem : var) {
         Serialize (elem, outFile);
     }
 }
 
+/**
+ * @brief Deserialize a single object of type T from an input file stream.
+ * @tparam T The type of the object to be deserialized.
+ * @param var The object to hold the deserialized data.
+ * @param inFile The input file stream from which the object will be read.
+ */
 template <typename T>
 void Deserialize (T& var, std::ifstream& inFile) {
-	inFile.read (reinterpret_cast<char*>(&var), sizeof(var));
+    inFile.read(reinterpret_cast<char*> (&var), sizeof (var));
 }
 
+/**
+ * @brief Deserialize a vector of type T from an input file stream.
+ * @tparam T The type of the vector elements to be deserialized.
+ * @param var The vector to hold the deserialized data.
+ * @param inFile The input file stream from which the vector will be read.
+ */
 template <typename T>
 void Deserialize (std::vector<T>& var, std::ifstream& inFile) {
     size_t size;
-    inFile.read(reinterpret_cast<char*>(&size), sizeof(size));
+    inFile.read (reinterpret_cast<char*> (&size), sizeof (size));
     var.clear ();
     var.resize (size);
     for (size_t i = 0; i < size; i++) {
-        Deserialize (var [i], inFile);
+        Deserialize (var[i], inFile);
     }
 }
+
 
 }
 

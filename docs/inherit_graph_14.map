@@ -1,3 +1,4 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="node1" href="$classpneatm_1_1Population.html" title="A template class representing a population." alt="" coords="5,5,155,47"/>
+<area shape="rect" id="node1" href="$classpneatm_1_1NodeBase.html" title="Abstract base class representing a generic node in a neural network." alt="" coords="5,13,152,39"/>
+<area shape="rect" id="node2" href="$classpneatm_1_1Node.html" title="A template class representing a node in a neural network." alt="" coords="200,5,360,47"/>
 </map>

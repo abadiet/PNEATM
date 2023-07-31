@@ -11,14 +11,8 @@ int main () {
     // init population
     unsigned int popSize = 100;
     pneatm::Population<myInt, myFloat> pop = SetupPopulation (popSize, logger.get ());
-    //pop.print ();
 
-    pop.save ("testsave");
-
-    pneatm::Population<myInt, myFloat> pop2 ("testsave", logger.get ());
-    pop2.print ();
-
-    /*// init snake
+    // init snake
     Snake snake (8);
 
     // init mutation parameters
@@ -128,6 +122,6 @@ int main () {
 
     // play a game by the fitter genome
     playGameFitter (pop.getGenome (-1), maxIterationThresh, false, {800, 600}, 0.12f, 8);
-*/
+
     return 0;
 }

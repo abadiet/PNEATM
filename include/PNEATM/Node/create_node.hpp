@@ -16,7 +16,7 @@ namespace pneatm {
  */
 struct CreateNode {
     /**
-     * @brief Create a node with specified input and output types..
+     * @brief Create a node with specified input and output types.
      * @tparam T1 The first type.
      * @tparam T2 The second type.
      * @tparam Args Variadic template arguments that represent the remaining types.

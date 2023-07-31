@@ -61,7 +61,17 @@ class ActivationFnBase {
          */
 		virtual void print (const std::string& prefix = "") = 0;
 
-        virtual void serialize (std::ofstream& outFile) = 0;
+        /**
+		 * @brief Serialize the ActivationFnBase instance to an output file stream.
+		 * @param outFile The output file stream to which the ActivationFnBase instance will be written.
+		 */
+		virtual void serialize (std::ofstream& outFile) = 0;
+
+		/**
+		 * @brief Deserialize a ActivationFnBase instance from an input file stream.
+		 * @param inFile The input file stream from which the ActivationFnBase instance will be read.
+		 */
+		virtual void deserialize (std::ifstream& inFile) = 0;
 
     protected:
         /**

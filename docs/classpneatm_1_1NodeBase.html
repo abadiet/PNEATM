@@ -120,9 +120,15 @@ virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hr
 <tr class="memitem:a0440c12a7a00ae7edb67ef639f1c3a4f"><td class="memItemLeft" align="right" valign="top">virtual std::unique_ptr&lt; <a class="el" href="classpneatm_1_1NodeBase.html">NodeBase</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1NodeBase.html#a0440c12a7a00ae7edb67ef639f1c3a4f">clone</a> ()=0</td></tr>
 <tr class="memdesc:a0440c12a7a00ae7edb67ef639f1c3a4f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a clone of the node.  <a href="classpneatm_1_1NodeBase.html#a0440c12a7a00ae7edb67ef639f1c3a4f">More...</a><br /></td></tr>
 <tr class="separator:a0440c12a7a00ae7edb67ef639f1c3a4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3368a1e2d5af8f9c374db2e1240136e3"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1NodeBase.html#a3368a1e2d5af8f9c374db2e1240136e3">print</a> (std::string prefix=&quot;&quot;)=0</td></tr>
-<tr class="memdesc:a3368a1e2d5af8f9c374db2e1240136e3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Print information about the node.  <a href="classpneatm_1_1NodeBase.html#a3368a1e2d5af8f9c374db2e1240136e3">More...</a><br /></td></tr>
-<tr class="separator:a3368a1e2d5af8f9c374db2e1240136e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab22d299a92c47b9f861e0d139fb2c45f"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1NodeBase.html#ab22d299a92c47b9f861e0d139fb2c45f">print</a> (const std::string &amp;prefix=&quot;&quot;)=0</td></tr>
+<tr class="memdesc:ab22d299a92c47b9f861e0d139fb2c45f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Print information about the node.  <a href="classpneatm_1_1NodeBase.html#ab22d299a92c47b9f861e0d139fb2c45f">More...</a><br /></td></tr>
+<tr class="separator:ab22d299a92c47b9f861e0d139fb2c45f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:accbb4f8ab493fb9085a35737f8cd52bb"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1NodeBase.html#accbb4f8ab493fb9085a35737f8cd52bb">serialize</a> (std::ofstream &amp;outFile)=0</td></tr>
+<tr class="memdesc:accbb4f8ab493fb9085a35737f8cd52bb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Serialize the <a class="el" href="classpneatm_1_1NodeBase.html" title="Abstract base class representing a generic node in a neural network.">NodeBase</a> instance to an output file stream.  <a href="classpneatm_1_1NodeBase.html#accbb4f8ab493fb9085a35737f8cd52bb">More...</a><br /></td></tr>
+<tr class="separator:accbb4f8ab493fb9085a35737f8cd52bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af6291c48d19fef2233f57b63aaeed8c6"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1NodeBase.html#af6291c48d19fef2233f57b63aaeed8c6">deserialize</a> (std::ifstream &amp;inFile)=0</td></tr>
+<tr class="memdesc:af6291c48d19fef2233f57b63aaeed8c6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deserialize a <a class="el" href="classpneatm_1_1NodeBase.html" title="Abstract base class representing a generic node in a neural network.">NodeBase</a> instance from an input file stream.  <a href="classpneatm_1_1NodeBase.html#af6291c48d19fef2233f57b63aaeed8c6">More...</a><br /></td></tr>
+<tr class="separator:af6291c48d19fef2233f57b63aaeed8c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
@@ -243,6 +249,42 @@ template&lt;typename T_in , typename T_out &gt; </td></tr>
 
 </div>
 </div>
+<a id="af6291c48d19fef2233f57b63aaeed8c6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af6291c48d19fef2233f57b63aaeed8c6">&#9670;&nbsp;</a></span>deserialize()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void pneatm::NodeBase::deserialize </td>
+          <td>(</td>
+          <td class="paramtype">std::ifstream &amp;&#160;</td>
+          <td class="paramname"><em>inFile</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Deserialize a <a class="el" href="classpneatm_1_1NodeBase.html" title="Abstract base class representing a generic node in a neural network.">NodeBase</a> instance from an input file stream. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">inFile</td><td>The input file stream from which the <a class="el" href="classpneatm_1_1NodeBase.html" title="Abstract base class representing a generic node in a neural network.">NodeBase</a> instance will be read. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p>Implemented in <a class="el" href="classpneatm_1_1Node.html#a317954be0493a0ed989a973555c29fd4">pneatm::Node&lt; T_in, T_out &gt;</a>.</p>
+
+</div>
+</div>
 <a id="aadf4e55332d413ee53fd70b88625f94d"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aadf4e55332d413ee53fd70b88625f94d">&#9670;&nbsp;</a></span>getOutput()</h2>
 
@@ -345,8 +387,8 @@ template&lt;typename T_in , typename T_out &gt; </td></tr>
 
 </div>
 </div>
-<a id="a3368a1e2d5af8f9c374db2e1240136e3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3368a1e2d5af8f9c374db2e1240136e3">&#9670;&nbsp;</a></span>print()</h2>
+<a id="ab22d299a92c47b9f861e0d139fb2c45f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab22d299a92c47b9f861e0d139fb2c45f">&#9670;&nbsp;</a></span>print()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -357,7 +399,7 @@ template&lt;typename T_in , typename T_out &gt; </td></tr>
         <tr>
           <td class="memname">virtual void pneatm::NodeBase::print </td>
           <td>(</td>
-          <td class="paramtype">std::string&#160;</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
           <td class="paramname"><em>prefix</em> = <code>&quot;&quot;</code></td><td>)</td>
           <td></td>
         </tr>
@@ -377,7 +419,43 @@ template&lt;typename T_in , typename T_out &gt; </td></tr>
   </dd>
 </dl>
 
-<p>Implemented in <a class="el" href="classpneatm_1_1Node.html#a000028b92748c96861163a2d4c9bd9b4">pneatm::Node&lt; T_in, T_out &gt;</a>.</p>
+<p>Implemented in <a class="el" href="classpneatm_1_1Node.html#aa677a073c367f74d527d4b78b5c50495">pneatm::Node&lt; T_in, T_out &gt;</a>.</p>
+
+</div>
+</div>
+<a id="accbb4f8ab493fb9085a35737f8cd52bb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#accbb4f8ab493fb9085a35737f8cd52bb">&#9670;&nbsp;</a></span>serialize()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void pneatm::NodeBase::serialize </td>
+          <td>(</td>
+          <td class="paramtype">std::ofstream &amp;&#160;</td>
+          <td class="paramname"><em>outFile</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Serialize the <a class="el" href="classpneatm_1_1NodeBase.html" title="Abstract base class representing a generic node in a neural network.">NodeBase</a> instance to an output file stream. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">outFile</td><td>The output file stream to which the <a class="el" href="classpneatm_1_1NodeBase.html" title="Abstract base class representing a generic node in a neural network.">NodeBase</a> instance will be written. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p>Implemented in <a class="el" href="classpneatm_1_1Node.html#a746dd934190c367ca59f1180f465d7c0">pneatm::Node&lt; T_in, T_out &gt;</a>.</p>
 
 </div>
 </div>
