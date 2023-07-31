@@ -6,6 +6,7 @@
 #include <PNEATM/Connection/connection.hpp>
 #include <PNEATM/Connection/innovation_connection.hpp>
 #include <PNEATM/Node/Activation_Function/activation_function_base.hpp>
+#include <PNEATM/Node/create_node.hpp>
 #include <PNEATM/utils.hpp>
 #include <vector>
 #include <SFML/Graphics.hpp>
@@ -14,6 +15,7 @@
 #include <cstring>
 #include <spdlog/spdlog.h>
 #include <memory>
+#include <fstream>
 
 
 /* HEADER */
@@ -303,7 +305,7 @@ class Genome {
 		 * @brief Print information on the genome.
 		 * @param prefix A prefix to print before each line. (default is an empty string)
 		 */
-		void print (std::string prefix = "");
+		void print (const std::string& prefix = "");
 
 		/**
 		 * @brief Draw a graphical representation of the network.
@@ -312,7 +314,9 @@ class Genome {
 		 * @param windowHeight The height of the drawing window. (default is 800)
 		 * @param dotsRadius The radius of the dots representing nodes. (default is 6.5f)
 		 */
-		void draw (std::string font_path, unsigned int windowWidth = 1300, unsigned int windowHeight = 800, float dotsRadius = 6.5f);
+		void draw (const std::string& font_path, unsigned int windowWidth = 1300, unsigned int windowHeight = 800, float dotsRadius = 6.5f);
+
+		void serialize (std::ofstream& outFile);
 
 	private:
 		unsigned int nbBias;
@@ -1076,7 +1080,7 @@ std::unique_ptr<Genome<Args...>> Genome<Args...>::clone () {
 
 
 template <typename... Args>
-void Genome<Args...>::print (std::string prefix) {
+void Genome<Args...>::print (const std::string& prefix) {
 	std::cout << prefix << "Number of Bias Node: " << nbBias << std::endl;
 	std::cout << prefix << "Number of Input Node: " << nbInput << std::endl;
 	std::cout << prefix << "Number of Output Node: " << nbOutput << std::endl;
@@ -1104,9 +1108,8 @@ void Genome<Args...>::print (std::string prefix) {
 	}
 }
 
-
 template <typename... Args>
-void Genome<Args...>::draw (std::string font_path, unsigned int windowWidth, unsigned int windowHeight, float dotsRadius) {
+void Genome<Args...>::draw (const std::string& font_path, unsigned int windowWidth, unsigned int windowHeight, float dotsRadius) {
 	sf::RenderWindow window (sf::VideoMode (windowWidth, windowHeight), "PNEATM - https://github.com/titofra");
 
     std::vector<sf::CircleShape> dots;
@@ -1263,5 +1266,42 @@ void Genome<Args...>::draw (std::string font_path, unsigned int windowWidth, uns
         window.display ();
     }
 }
+
+template <typename... Args>
+void Genome<Args...>::serialize (std::ofstream& outFile) {
+	Serialize (nbBias, outFile);
+	Serialize (nbInput, outFile);
+	Serialize (nbOutput, outFile);
+	Serialize (weightExtremumInit, outFile);
+	Serialize (N_types, outFile);
+	Serialize (nbBias, outFile);
+
+    Serialize (activationFns.size (), outFile);
+	for (size_t i = 0; i < activationFns.size (); i++) {
+
+    	Serialize (activationFns [i].size (), outFile);
+		for (size_t j = 0; j < activationFns [i].size (); j++) {
+	
+    		Serialize (activationFns [i][j].size (), outFile);
+			for (size_t k = 0; k < activationFns [i][j].size (); k++) {
+				activationFns [i][j][k]->serialize (outFile);
+			}
+		}
+	}
+
+	Serialize (nodes.size (), outFile);
+	for (size_t k = 0; k < nodes.size (); k++) {
+		nodes [k]->serialize (outFile);
+	}
+
+	Serialize (connections.size (), outFile);
+	for (Connection& conn : connections) {
+		conn.serialize (outFile);
+	}
+
+	Serialize (fitness, outFile);
+	Serialize (speciesId, outFile);
+}
+
 
 #endif	// GENOME_HPP

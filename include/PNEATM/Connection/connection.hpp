@@ -1,8 +1,10 @@
 #ifndef CONNECTION_HPP
 #define CONNECTION_HPP
 
+#include <PNEATM/utils.hpp>
 #include <iostream>
 #include <cstring>
+#include <fstream>
 
 namespace pneatm {
 
@@ -37,7 +39,9 @@ class Connection {
 		 * @brief Print information about the Connection.
 		 * @param prefix A prefix to print before each line. (default is an empty string)
 		 */
-		void print (std::string prefix = "");
+		void print (const std::string& prefix = "");
+
+		void serialize (std::ofstream& outFile);
 
 	private:
 		const unsigned int innovId;

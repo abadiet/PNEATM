@@ -3,10 +3,12 @@
 
 #include <PNEATM/Connection/connection.hpp>
 #include <PNEATM/genome.hpp>
+#include <PNEATM/utils.hpp>
 #include <vector>
 #include <iostream>
 #include <memory>
 #include <cstring>
+#include <fstream>
 
 /* HEADER */
 
@@ -51,7 +53,9 @@ class Species {
 		 * @brief Print information on the species.
 		 * @param prefix A prefix to print before each line. (default is an empty string)
 		 */
-		void print (std::string prefix = "");
+		void print (const std::string& prefix = "");
+
+		void serialize (std::ofstream& outFile);
 
 	private:
 		unsigned int id;
@@ -233,7 +237,7 @@ double Species<Args...>::Euclidian (const std::unique_ptr<Genome<Args...>>& geno
 }
 
 template <typename... Args>
-void Species<Args...>::print (std::string prefix) {
+void Species<Args...>::print (const std::string& prefix) {
 	std::cout << prefix << "ID: " << id << std::endl;
 	std::cout << prefix << "Current Average Fitness: " << avgFitness << std::endl;
 	std::cout << prefix << "Current Average Fitness Adjusted: " << avgFitnessAdjusted << std::endl;
@@ -246,6 +250,25 @@ void Species<Args...>::print (std::string prefix) {
 		std::cout << id << ", ";
 	}
 	std::cout << std::endl;
+}
+
+template <typename... Args>
+void Species<Args...>::serialize (std::ofstream& outFile) {
+	Serialize (id, outFile);
+	Serialize (dstType, outFile);
+
+	Serialize (connections.size (), outFile);
+	for (Connection& conn : connections) {
+		conn.serialize (outFile);
+	}
+
+	Serialize (avgFitness, outFile);
+	Serialize (avgFitnessAdjusted, outFile);
+	Serialize (allowedOffspring, outFile);
+	Serialize (sumFitness, outFile);
+	Serialize (gensSinceImproved, outFile);
+	Serialize (isDead, outFile);
+	Serialize (members, outFile);
 }
 
 #endif	// SPECIES_HPP

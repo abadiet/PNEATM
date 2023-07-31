@@ -4,10 +4,12 @@
 #include <PNEATM/Node/node_base.hpp>
 #include <PNEATM/Node/Activation_Function/activation_function_base.hpp>
 #include <PNEATM/Node/Activation_Function/activation_function.hpp>
+#include <PNEATM/utils.hpp>
 #include <functional>
 #include <iostream>
 #include <cstring>
 #include <memory>
+#include <fstream>
 
 /* HEADER */
 
@@ -93,7 +95,9 @@ class Node : public NodeBase {
 		 * @brief Print information about the node.
 		 * @param prefix A prefix to print before each line. (default is an empty string)
 		 */
-		void print (std::string prefix = "") override;
+		void print (const std::string& prefix = "") override;
+
+		void serialize (std::ofstream& outFile) override;
 
 	private:
 		T_in input;
@@ -171,7 +175,7 @@ std::unique_ptr<NodeBase> Node<T_in, T_out>::clone () {
 }
 
 template <typename T_in, typename T_out>
-void Node<T_in, T_out>::print (std::string prefix) {
+void Node<T_in, T_out>::print (const std::string& prefix) {
 	std::cout << prefix << "ID: " << id << std::endl;
 	std::cout << prefix << "Innovation ID: " << innovId << std::endl;
 	std::cout << prefix << "Layer: " << layer << std::endl;
@@ -184,5 +188,20 @@ void Node<T_in, T_out>::print (std::string prefix) {
 	std::cout << prefix << "Activation Function Parameters: ";
 	activation_fn->print (prefix);
 }
+
+template <typename T_in, typename T_out>
+void Node<T_in, T_out>::serialize (std::ofstream& outFile) {
+	Serialize (id, outFile);
+	Serialize (innovId, outFile);
+	Serialize (layer, outFile);
+	Serialize (index_T_in, outFile);
+	Serialize (index_T_out, outFile);
+	Serialize (index_activation_fn, outFile);
+	Serialize (input, outFile);
+	Serialize (output, outFile);
+	activation_fn->serialize (outFile);
+	Serialize (resetValue, outFile);
+}
+
 
 #endif	// NODE_HPP

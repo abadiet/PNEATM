@@ -4,6 +4,7 @@
 #include <iostream>
 #include <cstring>
 #include <memory>
+#include <functional>
 
 // Forward declarations
 typedef struct activationFnParams activationFnParams_t;
@@ -58,7 +59,9 @@ class ActivationFnBase {
          * @brief Prints information about the activation function.
          * @param prefix A prefix to print before each line. (default is an empty string)
          */
-		virtual void print (std::string prefix = "") = 0;
+		virtual void print (const std::string& prefix = "") = 0;
+
+        virtual void serialize (std::ofstream& outFile) = 0;
 
     protected:
         /**

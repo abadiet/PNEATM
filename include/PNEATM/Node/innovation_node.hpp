@@ -1,9 +1,11 @@
 #ifndef INNOVATION_NODE_HPP
 #define INNOVATION_NODE_HPP
 
+#include <PNEATM/utils.hpp>
 #include <vector>
 #include <iostream>
 #include <cstring>
+#include <fstream>
 
 namespace pneatm {
 
@@ -58,9 +60,15 @@ typedef struct innovationNode {
      * @brief Print information about the innovation tracker.
      * @param prefix A prefix to print before each line. (default is an empty string)
      */
-    void print (std::string prefix = "") {
+    void print (const std::string& prefix = "") {
         std::cout << prefix << "Number of attributed innovation: " << N_nodeId - 1 << std::endl;
     }
+
+    void serialize (std::ofstream& outFile) {
+        Serialize (nodeIds, outFile);
+        Serialize (N_nodeId, outFile);
+    }
+
 } innovationNode_t;
 
 }

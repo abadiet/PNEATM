@@ -2,9 +2,11 @@
 #define ACTIVATION_FUNCTION_HPP
 
 #include <PNEATM/Node/Activation_Function/activation_function_base.hpp>
+#include <PNEATM/utils.hpp>
 #include <iostream>
 #include <cstring>
 #include <memory>
+#include <fstream>
 
 #define UNUSED(expr) do { (void) (expr); } while (0)
 
@@ -82,7 +84,9 @@ class ActivationFn : public ActivationFnBase {
 		 * @brief Print information about the activation function's parameters.
 		 * @param prefix A prefix to print before each line. (default is an empty string)
 		 */
-		void print (std::string prefix = "");
+		void print (const std::string& prefix = "");
+
+        void serialize (std::ofstream& outFile) override;
 
     private:
 		std::function<T_out (T_in, activationFnParams_t*)> processFn;
@@ -153,8 +157,17 @@ void ActivationFn<T_in, T_out>::mutate (double fitness) {
 }
 
 template <typename T_in, typename T_out>
-void ActivationFn<T_in, T_out>::print (std::string prefix) {
+void ActivationFn<T_in, T_out>::print (const std::string& prefix) {
 	printingFn (params.get (), prefix);
 }
+
+template <typename T_in, typename T_out>
+void ActivationFn<T_in, T_out>::serialize (std::ofstream& outFile) {
+	Serialize (*(params.get ()), outFile);
+	Serialize (mutationFn, outFile);
+	Serialize (printingFn, outFile);
+	Serialize (processFn, outFile);
+}
+
 
 #endif	// ACTIVATION_FUNCTION_HPP

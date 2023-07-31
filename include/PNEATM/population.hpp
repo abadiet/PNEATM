@@ -50,6 +50,8 @@ class Population {
 		 */
 		Population (unsigned int popSize, std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_values, std::vector<void*> resetValues, std::vector<std::vector<std::vector<ActivationFnBase*>>> activationFns, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger, distanceFn dstType = CONVENTIONAL, double speciationThreshInit = 20.0, unsigned int threshGensSinceImproved = 15, std::string stats_filepath = "");
 
+		Population (const std::string& filepath, spdlog::logger* logger, std::string stats_filepath = "");
+
 		/**
 		 * @brief Destructor for the Population class.
 		 */
@@ -213,8 +215,13 @@ class Population {
 		 */
 		void drawGenome (unsigned int genome_id, std::string font_path, unsigned int windowWidth = 1300, unsigned int windowHeight = 800, float dotsRadius = 6.5f);
 
-		/*void save (const std::string filepath = "./neat_backup.txt");
-		void load (const std::string filepath = "./neat_backup.txt");*/
+		void save (const std::string& filepath);
+
+		void load (const std::string& filepath);
+
+		void serialize (std::ofstream& outFile);
+
+		void deserialize (std::ifstream& inFile);
 
 	private:
 		unsigned int generation;
@@ -251,6 +258,7 @@ class Population {
 		std::vector<Connection> GetWeightedCentroid (unsigned int speciesId);
 		void UpdateFitnesses (double speciesSizeEvolutionLimit);
 		int SelectParent (unsigned int iSpe);
+
 };
 
 }
@@ -287,11 +295,26 @@ Population<Args...>::Population(unsigned int popSize, std::vector<size_t> bias_s
 
 	generation = 0;
 	fittergenome_id = -1;
+	avgFitness = 0.0;
+	avgFitnessAdjusted = 0.0;
 
 	genomes.reserve (popSize);
 	for (unsigned int i = 0; i < popSize; i++) {
 		genomes.push_back (std::make_unique<Genome<Args...>> (bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_values, resetValues, activationFns, &conn_innov, &node_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger));
 	}
+}
+
+template <typename... Args>
+Population<Args...>::Population (const std::string& filepath, spdlog::logger* logger, std::string stats_filepath) :
+	logger (logger)
+{
+	logger->info ("Population loading");
+	if (stats_filepath != "") {
+		statsFile.open (stats_filepath);
+		statsFile << "Generation,Best Fitness,Average Fitness,Average Fitness (Adjusted),Species0,Species1\n";
+	}
+
+	load (filepath);
 }
 
 template <typename... Args>
@@ -811,289 +834,94 @@ void Population<Args...>::drawGenome (unsigned int genome_id, std::string font_p
 	logger->info ("Drawing genome{}'s network", genome_id);
 	genomes [genome_id]->draw (font_path, windowWidth, windowHeight, dotsRadius);
 }
-/*
+
+
 template <typename... Args>
-void Population<Args...>::save(const std::string filepath){
-	std::ofstream fileobj(filepath);
-
-	if (fileobj.is_open()){
-		for (int k = 0; k < (int) innovIds.size(); k++){
-			for (int j = 0; j < (int) innovIds[k].size(); j++){
-				fileobj << innovIds[k][j] << ",";
-			}
-			fileobj << ";";
-		}
-		fileobj << "\n";
-
-		fileobj << lastInnovId << "\n";
-		fileobj << popSize << "\n";
-		fileobj << speciationThresh << "\n";
-		fileobj << threshGensSinceImproved << "\n";
-		fileobj << nbInput << "\n";
-		fileobj << nbOutput << "\n";
-		fileobj << nbHiddenInit << "\n";
-		fileobj << probConnInit << "\n";
-		fileobj << areRecurrentConnectionsAllowed << "\n";
-		fileobj << weightExtremumInit << "\n";
-		fileobj << generation << "\n";
-		fileobj << avgFitness << "\n";
-		fileobj << avgFitnessAdjusted << "\n";
-		fileobj << fittergenome_id << "\n";
-
-		for (int k = 0; k < (int) genomes.size(); k++){
-			fileobj << genomes[k].fitness << "\n";
-			fileobj << genomes[k].speciesId << "\n";
-
-
-			for (int j = 0; j < (int) genomes[k].nodes.size(); j++){
-				fileobj << genomes[k].nodes[j].id << ",";
-				fileobj << genomes[k].nodes[j].layer << ",";
-				fileobj << genomes[k].nodes[j].sumInput << ",";
-				fileobj << genomes[k].nodes[j].sumOutput << ",";
-			}
-			fileobj << "\n";
-
-			for (int j = 0; j < (int) genomes[k].connections.size(); j++){
-				fileobj << genomes[k].connections[j].innovId << ",";
-				fileobj << genomes[k].connections[j].inNodeId << ",";
-				fileobj << genomes[k].connections[j].outNodeId << ",";
-				fileobj << genomes[k].connections[j].weight << ",";
-				fileobj << genomes[k].connections[j].enabled << ",";
-				fileobj << genomes[k].connections[j].isRecurrent << ",";
-			}
-			fileobj << "\n";
-		}
-
-		fileobj.close();
+void Population<Args...>::serialize (std::ofstream& outFile) {
+	Serialize (generation, outFile);
+    Serialize (avgFitness, outFile);
+    Serialize (avgFitnessAdjusted, outFile);
+    Serialize (popSize, outFile);
+    Serialize (speciationThresh, outFile);
+    Serialize (threshGensSinceImproved, outFile);
+    Serialize (bias_sch, outFile);
+	Serialize (inputs_sch, outFile);
+	Serialize (outputs_sch, outFile);
+	Serialize (hiddens_sch_init, outFile);
+	Serialize (N_ConnInit, outFile);
+    Serialize (probRecuInit, outFile);
+    Serialize (weightExtremumInit, outFile);
+    Serialize (maxRecuInit, outFile);
+    Serialize (dstType, outFile);
+    Serialize (fittergenome_id, outFile);
+    Serialize (genomes.size (), outFile);
+	for (size_t i = 0; i < genomes.size (); i++) {
+		genomes [i]->serialize (outFile);
 	}
+    Serialize (species.size (), outFile);
+	for (size_t i = 0; i < species.size (); i++) {
+		species [i].serialize (outFile);
+	}
+    Serialize (activationFns.size (), outFile);
+	for (size_t i = 0; i < activationFns.size (); i++) {
+
+    	Serialize (activationFns [i].size (), outFile);
+		for (size_t j = 0; j < activationFns [i].size (); j++) {
+	
+    		Serialize (activationFns [i][j].size (), outFile);
+			for (size_t k = 0; k < activationFns [i][j].size (); k++) {
+				activationFns [i][j][k]->serialize (outFile);
+			}
+		}
+	}
+	conn_innov.serialize (outFile);
+	node_innov.serialize (outFile);
 }
 
 template <typename... Args>
-void Population<Args...>::load(const std::string filepath){
-	std::ifstream fileobj(filepath);
-
-	if (fileobj.is_open()){
-
-		std::string line;
-		size_t pos = 0;
-
-		if (getline(fileobj, line)){
-			innovIds.clear();
-			size_t pos_sep = line.find(';');
-			while (pos_sep != std::string::npos) {
-				innovIds.push_back({});
-				std::string sub_line = line.substr(0, pos_sep - 1);
-				pos = sub_line.find(',');
-				while (pos != std::string::npos) {
-					innovIds.back().push_back(stoi(sub_line.substr(0, pos)));
-					sub_line = sub_line.substr(pos + 1);
-					pos = sub_line.find(',');
-				}
-				line = line.substr(pos_sep + 1);
-				pos_sep = line.find(';');
-			}
-		} else {
-			std::cout << "Error while loading model" << std::endl;
-			throw 0;
-		}
-
-		if (getline(fileobj, line)){
-			lastInnovId = stoi(line);
-		} else {
-			std::cout << "Error while loading model" << std::endl;
-			throw 0;
-		}
-		if (getline(fileobj, line)){
-			popSize = stoi(line);
-		} else {
-			std::cout << "Error while loading model" << std::endl;
-			throw 0;
-		}
-		if (getline(fileobj, line)){
-			speciationThresh = stof(line);
-		} else {
-			std::cout << "Error while loading model" << std::endl;
-			throw 0;
-		}
-		if (getline(fileobj, line)){
-			threshGensSinceImproved = stoi(line);
-		} else {
-			std::cout << "Error while loading model" << std::endl;
-			throw 0;
-		}
-		if (getline(fileobj, line)){
-			nbInput = stoi(line);
-		} else {
-			std::cout << "Error while loading model" << std::endl;
-			throw 0;
-		}
-		if (getline(fileobj, line)){
-			nbOutput = stoi(line);
-		} else {
-			std::cout << "Error while loading model" << std::endl;
-			throw 0;
-		}
-		if (getline(fileobj, line)){
-			nbHiddenInit = stoi(line);
-		} else {
-			std::cout << "Error while loading model" << std::endl;
-			throw 0;
-		}
-		if (getline(fileobj, line)){
-			probConnInit = stof(line);
-		} else {
-			std::cout << "Error while loading model" << std::endl;
-			throw 0;
-		}
-		if (getline(fileobj, line)){
-			areRecurrentConnectionsAllowed = (line == "1");
-		} else {
-			std::cout << "Error while loading model" << std::endl;
-			throw 0;
-		}
-		if (getline(fileobj, line)){
-			weightExtremumInit = stof(line);
-		} else {
-			std::cout << "Error while loading model" << std::endl;
-			throw 0;
-		}
-		if (getline(fileobj, line)){
-			generation = stoi(line);
-		} else {
-			std::cout << "Error while loading model" << std::endl;
-			throw 0;
-		}
-		if (getline(fileobj, line)){
-			avgFitness = stof(line);
-		} else {
-			std::cout << "Error while loading model" << std::endl;
-			throw 0;
-		}
-		if (getline(fileobj, line)){
-			avgFitnessAdjusted = stof(line);
-		} else {
-			std::cout << "Error while loading model" << std::endl;
-			throw 0;
-		}
-		if (getline(fileobj, line)){
-			fittergenome_id = stoi(line);
-		} else {
-			std::cout << "Error while loading model" << std::endl;
-			throw 0;
-		}
-		genomes.clear();
-		while (getline(fileobj, line)){
-			genomes.push_back(Genome(nbInput, nbOutput, nbHiddenInit, probConnInit, &innovIds, &lastInnovId, weightExtremumInit));
-
-			genomes.back().fitness = stof(line);
-			if (getline(fileobj, line)){
-				genomes.back().speciesId = stoi(line);
-			} else {
-				std::cout << "Error while loading model" << std::endl;
-				throw 0;
-			}
-			if (getline(fileobj, line)){
-				genomes.back().nodes.clear();
-				pos = line.find(',');
-				while (pos != std::string::npos) {
-					genomes.back().nodes.push_back(Node());
-
-					genomes.back().nodes.back().id = stoi(line.substr(0, pos));
-
-					line = line.substr(pos + 1);
-					pos = line.find(',');
-					if (pos == std::string::npos) {
-						std::cout << "Error while loading model" << std::endl;
-						throw 0;
-					}
-					genomes.back().nodes.back().layer = stoi(line.substr(0, pos));
-
-					line = line.substr(pos + 1);
-					pos = line.find(',');
-					if (pos == std::string::npos) {
-						std::cout << "Error while loading model" << std::endl;
-						throw 0;
-					}
-					genomes.back().nodes.back().sumInput = (double) stod(line.substr(0, pos));	// stdof's range is not the double's one... weird, anyway it works with stod of course
-
-					line = line.substr(pos + 1);
-					pos = line.find(',');
-					if (pos == std::string::npos) {
-						std::cout << "Error while loading model" << std::endl;
-						throw 0;
-					}
-					genomes.back().nodes.back().sumOutput = (double) stod(line.substr(0, pos));	// stdof's range is not the double's one... weird, anyway it works with stod of course
-
-					line = line.substr(pos + 1);
-					pos = line.find(',');
-				}
-			} else {
-				std::cout << "Error while loading model" << std::endl;
-				throw 0;
-			}
-			if (getline(fileobj, line)){
-				genomes.back().connections.clear();
-				pos = line.find(',');
-				while (pos != std::string::npos) {
-					genomes.back().connections.push_back(Connection());
-
-					genomes.back().connections.back().innovId = stoi(line.substr(0, pos));
-
-					line = line.substr(pos + 1);
-					pos = line.find(',');
-					if (pos == std::string::npos) {
-						std::cout << "Error while loading model" << std::endl;
-						throw 0;
-					}
-					genomes.back().connections.back().inNodeId = stoi(line.substr(0, pos));
-
-					line = line.substr(pos + 1);
-					pos = line.find(',');
-					if (pos == std::string::npos) {
-						std::cout << "Error while loading model" << std::endl;
-						throw 0;
-					}
-					genomes.back().connections.back().outNodeId = stoi(line.substr(0, pos));
-
-					line = line.substr(pos + 1);
-					pos = line.find(',');
-					if (pos == std::string::npos) {
-						std::cout << "Error while loading model" << std::endl;
-						throw 0;
-					}
-					genomes.back().connections.back().weight = stof(line.substr(0, pos));
-
-					line = line.substr(pos + 1);
-					pos = line.find(',');
-					if (pos == std::string::npos) {
-						std::cout << "Error while loading model" << std::endl;
-						throw 0;
-					}
-					genomes.back().connections.back().enabled = (line.substr(0, pos) == "1");
-
-					line = line.substr(pos + 1);
-					pos = line.find(',');
-					if (pos == std::string::npos) {
-						std::cout << "Error while loading model" << std::endl;
-						throw 0;
-					}
-					genomes.back().connections.back().isRecurrent = (line.substr(0, pos) == "1");
-
-					line = line.substr(pos + 1);
-					pos = line.find(',');
-				}
-			} else {
-				std::cout << "Error while loading model" << std::endl;
-				throw 0;
-			}
-		}
-
-		fileobj.close();
-	} else {
-		std::cout << "Error while loading model" << std::endl;
-		throw 0;
-	}
+void Population<Args...>::deserialize (std::ifstream& inFile) {
+	Deserialize (generation, inFile);
+    Deserialize (avgFitness, inFile);
+    Deserialize (avgFitnessAdjusted, inFile);
+    Deserialize (popSize, inFile);
+    Deserialize (speciationThresh, inFile);
+    Deserialize (threshGensSinceImproved, inFile);
+    Deserialize (bias_sch, inFile);
+	Deserialize (inputs_sch, inFile);
+	Deserialize (outputs_sch, inFile);
+	Deserialize (hiddens_sch_init, inFile);
+	Deserialize (N_ConnInit, inFile);
+    Deserialize (probRecuInit, inFile);
+    Deserialize (weightExtremumInit, inFile);
+    Deserialize (maxRecuInit, inFile);
+    Deserialize (dstType, inFile);
+    Deserialize (fittergenome_id, inFile);
 }
-*/
+
+template <typename... Args>
+void Population<Args...>::save (const std::string& filepath) {
+	std::ofstream outFile(filepath, std::ios::binary);
+	if (!outFile) {
+		logger->error ("Cannot open file {} for writing.", filepath);
+		return;
+	}
+
+	serialize (outFile);
+
+	outFile.close ();
+}
+
+template <typename... Args>
+void Population<Args...>::load (const std::string& filepath) {
+	std::ifstream inFile(filepath, std::ios::binary);
+	if (!inFile) {
+		logger->error ("Cannot open file {} for reading.", filepath);
+		return;
+	}
+
+	deserialize (inFile);
+
+	inFile.close ();
+}
 
 #endif	// POPULATION_HPP

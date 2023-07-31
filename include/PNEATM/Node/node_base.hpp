@@ -6,7 +6,7 @@
 #include <iostream>
 #include <cstring>
 #include <memory>
-
+#include <fstream>
 
 namespace pneatm {
 
@@ -77,7 +77,9 @@ class NodeBase{
 		 * @brief Print information about the node.
 		 * @param prefix A prefix to print before each line. (default is an empty string)
 		 */
-		virtual void print (std::string prefix = "") = 0;
+		virtual void print (const std::string& prefix = "") = 0;
+
+		virtual void serialize (std::ofstream& outFile) = 0;
 
 	protected:
 		/**

@@ -22,11 +22,20 @@ Connection& Connection::operator=(const Connection& other) {
     return *this;
 }
 
-void Connection::print (std::string prefix) {
+void Connection::print (const std::string& prefix) {
 	std::cout << prefix << "Innovation ID: " << innovId << std::endl;
 	std::cout << prefix << "Input Node ID: " << inNodeId << std::endl;
 	std::cout << prefix << "Output Node ID: " << outNodeId << std::endl;
 	std::cout << prefix << "Input Node Recurrency: " << inNodeRecu << std::endl;
 	std::cout << prefix << "Weight: " << weight << std::endl;
 	std::cout << prefix << "Is enabled? " << enabled << std::endl;
-	}
+}
+
+void Connection::serialize (std::ofstream& outFile) {
+    Serialize (innovId, outFile);
+    Serialize (inNodeId, outFile);
+    Serialize (outNodeId, outFile);
+    Serialize (inNodeRecu, outFile);
+    Serialize (weight, outFile);
+    Serialize (enabled, outFile);
+}
