@@ -76,6 +76,8 @@ int main () {
         pop.mutate (paramsMap);
     }
 
+    pop.save ("snakePneatm_save");
+
     // we have to run once again the network to do a speciation to get the last fitter genome
     for (unsigned int genomeId = 0; genomeId < popSize; genomeId ++) {
         float score = 0.0f;

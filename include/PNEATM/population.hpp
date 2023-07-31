@@ -54,10 +54,12 @@ class Population {
 		/**
 		 * @brief Constructor for the Population class from a file.
 		 * @param filepath The file path.
+		 * @param bias_values The initial biases values (e.g., k-th bias will have value bias_values[k]).
+		 * @param resetValues The biases reset values (e.g., k-th bias can be resetted to resetValues[k]).
 		 * @param logger A pointer to the logger for logging.
 		 * @param stats_filepath The filepath for statistics. (default is an empty string, which doesn't create any file)
 		 */
-		Population (const std::string& filepath, spdlog::logger* logger, std::string stats_filepath = "");
+		Population (const std::string& filepath, std::vector<void*> bias_values, std::vector<void*> resetValues, spdlog::logger* logger, std::string stats_filepath = "");
 
 		/**
 		 * @brief Destructor for the Population class.
@@ -328,7 +330,9 @@ Population<Args...>::Population(unsigned int popSize, std::vector<size_t> bias_s
 }
 
 template <typename... Args>
-Population<Args...>::Population (const std::string& filepath, spdlog::logger* logger, std::string stats_filepath) :
+Population<Args...>::Population (const std::string& filepath, std::vector<void*> bias_values, std::vector<void*> resetValues, spdlog::logger* logger, std::string stats_filepath) :
+	bias_values (bias_values),
+	resetValues (resetValues),
 	logger (logger)
 {
 	logger->info ("Population loading");
