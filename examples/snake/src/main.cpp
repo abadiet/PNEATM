@@ -19,9 +19,9 @@ int main () {
     std::function<pneatm::mutationParams_t (double)> paramsMap = SetupMutationParametersMaps ();
 
     unsigned int maxIterationThresh = 500;
-    int nbGame = 5;
+    int nbGame = 7;
     double bestFitness = 0.0;
-    while (bestFitness < 2500.0 && pop.getGeneration () < 150) { // while goal is not reach
+    while (bestFitness < 2500.0 && pop.getGeneration () < 80) { // while goal is not reach
         std::cout << "generation " << pop.getGeneration () << std::endl;
 
         for (unsigned int genomeId = 0; genomeId < popSize; genomeId ++) {
@@ -70,7 +70,7 @@ int main () {
         std::cout << "  - best fitness: " << bestFitness << std::endl;
 
         // crossover step
-        pop.crossover (true, 0.9);
+        pop.crossover (true, 0.7);
 
         // mutation step
         pop.mutate (paramsMap);
