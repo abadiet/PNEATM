@@ -465,7 +465,7 @@ void Population<Args...>::speciate (unsigned int target, unsigned int maxIterati
 			if (genomes [genome_id]->speciesId == -1) {	// if the genome not already belong to a species
 
 				size_t itmpspeciesBest;
-				double dstBest;
+				double dstBest = std::numeric_limits<double>::max ();
 				if (tmpspecies.size () > 0) {	// if there is at least one species
 
 					// we search for the closest species

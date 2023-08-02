@@ -26,7 +26,17 @@ typedef struct innovationConn {
     /**
      * @brief The next innovation id to give.
      */
-    unsigned int N_connectionId = 1;
+    unsigned int N_connectionId;
+
+    /**
+     * @brief Constructor of innovationConn
+     * 
+     */
+    innovationConn () :
+        connectionIds (1),
+        N_connectionId (1)
+    {};
+
 
     /**
      * @brief Get the innovation ID for a connection.

@@ -26,7 +26,16 @@ typedef struct innovationNode {
     /**
      * @brief The next innovation id to give
      */
-    unsigned int N_nodeId = 1; 
+    unsigned int N_nodeId; 
+
+    /**
+     * @brief Constructor of innovationNode
+     * 
+     */
+    innovationNode () :
+        nodeIds (1),
+        N_nodeId (1)
+    {};
 
     /**
      * @brief Get the innovation ID for a node.

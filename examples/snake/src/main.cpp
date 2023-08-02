@@ -6,7 +6,8 @@ int main () {
     // init pneatm logger
 	spdlog::set_pattern ("[%Y-%m-%d %H:%M:%S.%e] [%t] [%^%l%$] %v");
     spdlog::set_level(spdlog::level::err);
-    auto logger = spdlog::rotating_logger_mt("pneatm_logger", "logs/log.txt", 1048576 * 100, 500);
+    auto logger = spdlog::stdout_color_mt("console");
+    //auto logger = spdlog::rotating_logger_mt("pneatm_logger", "logs/log.txt", 1048576 * 100, 500);
 
     // init population
     unsigned int popSize = 100;

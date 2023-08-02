@@ -389,6 +389,7 @@ Genome<Args...>::Genome (std::vector<size_t> bias_sch, std::vector<size_t> input
 
 	N_types = (unsigned int) activationFns.size ();
 	speciesId = -1;
+	fitness = 0.0;
 
 	// NODES
 	// bias
@@ -555,6 +556,7 @@ Genome<Args...>::Genome (unsigned int nbBias, unsigned int nbInput, unsigned int
 {
 	logger->trace ("Genome initialization");
 	speciesId = -1;
+	fitness = 0.0;
 }
 
 template <typename... Args>
@@ -759,7 +761,7 @@ bool Genome<Args...>::CheckNewConnectionCircle (unsigned int inNodeId, unsigned 
 
 template <typename... Args>
 void Genome<Args...>::MutateWeights (double mutateWeightThresh, double mutateWeightFullChangeThresh, double mutateWeightFactor) {
-	logger->trace ("mutating of weights");
+	logger->trace ("mutation of weights");
 	for (size_t i = 0; i < connections.size (); i++) {
 		if (connections [i].enabled && Random_Double (0.0f, 1.0f, true, false) < mutateWeightThresh) {
 			if (Random_Double (0.0f, 1.0f, true, false) < mutateWeightFullChangeThresh) {
@@ -775,7 +777,7 @@ void Genome<Args...>::MutateWeights (double mutateWeightThresh, double mutateWei
 
 template <typename... Args>
 void Genome<Args...>::MutateActivationFn (double rate) {
-	logger->trace ("mutating of actviation functions");
+	logger->trace ("mutation of activation functions");
 	for (size_t i = 0; i < nodes.size (); i++) {
 		if (Random_Double (0.0f, 1.0f, true, false) < rate) {
 			nodes [i]->mutate (fitness);
@@ -804,7 +806,7 @@ bool Genome<Args...>::AddConnection (innovationConn_t* conn_innov, unsigned int 
 	}
 	
 	if (iterationNb < maxIterationsFindConnectionThresh) {	// a valid connection has been found
-		// mutating
+		// mutation
 		if (disabled_conn_id >= 0) {	// it is a former connection
 			if (Random_Double (0.0f, 1.0f, true, false) < reactivateConnectionThresh) {
 				connections [disabled_conn_id].enabled = true;	// former connection is reactivated

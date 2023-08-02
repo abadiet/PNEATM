@@ -176,6 +176,7 @@ std::unique_ptr<NodeBase> Node<T_in, T_out>::clone () {
 	node->layer = layer;
 	node->index_T_in = index_T_in;
 	node->index_T_out = index_T_out;
+	node->index_activation_fn = index_activation_fn;
 	node->setResetValue (static_cast<void*> (&resetValue));
 	node->setActivationFn (activation_fn->clone (true));	// note that we keep parameters as they are here
 	node->loadInput (static_cast<void*> (&input));

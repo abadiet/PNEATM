@@ -10,6 +10,7 @@
 #include <PNEATM/Node/Activation_Function/activation_function.hpp>
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/rotating_file_sink.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
 #include <myTypes.hpp>
 
 #define UNUSED(expr) do { (void) (expr); } while (0)
@@ -223,7 +224,7 @@ std::function<pneatm::mutationParams_t (double)> SetupMutationParametersMaps () 
     refinementSet.weights.rate = 0.05;
     refinementSet.weights.fullChangeRate = 0.3;
     refinementSet.weights.perturbationFactor = 0.2;
-    return [=] (double fitness) {
+    return [=] (double fitness) -> pneatm::mutationParams_t {
         // Here, the mutation map is very basic: if the genome is pretty good, we just refine his network, else we explore new networks
         if (fitness > 400.0) {
             return refinementSet;
