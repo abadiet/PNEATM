@@ -22,7 +22,7 @@ int main () {
     unsigned int maxIterationThresh = 500;
     int nbGame = 7;
     double bestFitness = 0.0;
-    while (bestFitness < 2500.0 && pop.getGeneration () < 3) { // while goal is not reach
+    while (bestFitness < 2500.0 && pop.getGeneration () < 500) { // while goal is not reach
         std::cout << "generation " << pop.getGeneration () << std::endl;
 
         for (unsigned int genomeId = 0; genomeId < popSize; genomeId ++) {
@@ -41,7 +41,8 @@ int main () {
                     for (unsigned int i = 0; i < 14; i++) {
                         pop.template loadInput<myInt> (AI_Inputs [i], i, genomeId);
                     }
-                    pop.template loadInput<myFloat> (snake.getScore (), 14, genomeId);
+                    myFloat score = snake.getScore ();
+                    pop.template loadInput<myFloat> (score, 14, genomeId);
 
                     // run the network
                     pop.runNetwork (genomeId);
@@ -95,7 +96,8 @@ int main () {
                 for (unsigned int i = 0; i < 14; i++) {
                     pop.template loadInput<myInt> (AI_Inputs [i], i, genomeId);
                 }
-                pop.template loadInput<myFloat> (snake.getScore (), 14, genomeId);
+                myFloat score = snake.getScore ();
+                pop.template loadInput<myFloat> (score, 14, genomeId);
 
                 // run the network
                 pop.runNetwork (genomeId);

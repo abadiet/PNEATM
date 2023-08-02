@@ -34,13 +34,13 @@ class ActivationFnBase {
          * @brief Sets the mutation function for the activation function's parameters.
          * @param func The mutation function that modifies the activation function's parameters based on the fitness value.
          */
-        virtual void setMutationFunction (std::function<void (activationFnParams_t*, double)> func) = 0;
+        virtual void setMutationFunction (const std::function<void (activationFnParams_t*, double)>& func) = 0;
 
         /**
          * @brief Sets the printing function for the activation function's parameters.
          * @param func The printing function that displays information about the activation function's parameters.
          */
-        virtual void setPrintingFunction (std::function<void (activationFnParams_t*, std::string)> func) = 0;
+        virtual void setPrintingFunction (const std::function<void (activationFnParams_t*, std::string)>& func) = 0;
 
         /**
          * @brief Creates a clone of the activation function object.

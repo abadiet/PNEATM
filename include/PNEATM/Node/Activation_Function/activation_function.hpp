@@ -54,13 +54,13 @@ class ActivationFn : public ActivationFnBase {
 		 * @brief Set the mutation function aka the function used to mutate the activation function's parameters.
 		 * @param func A pointer to the mutation function to be set.
 		 */
-        void setMutationFunction (std::function<void (activationFnParams_t*, double)> func) override;
+        void setMutationFunction (const std::function<void (activationFnParams_t*, double)>& func) override;
 
 		/**
 		 * @brief Set the printing function aka the function used to print the activation function's parameters.
 		 * @param func A pointer to the printing function to be set.
 		 */
-        void setPrintingFunction (std::function<void (activationFnParams_t*, std::string)> func) override;
+        void setPrintingFunction (const std::function<void (activationFnParams_t*, std::string)>& func) override;
 
 		/**
 		 * @brief Create a clone of the class: clone the activation function, the mutation function, the printing function and the parameters (optionally).
@@ -72,7 +72,7 @@ class ActivationFn : public ActivationFnBase {
 		/**
 		 * @brief Process the activation function to compute its output value.
 		 */
-		T_out process (T_in value);
+		T_out process (const T_in& value);
 
 		/**
 		 * @brief Mutate the activatoin function's parameters.
@@ -133,12 +133,12 @@ void ActivationFn<T_in, T_out>::setFunction (void* func) {
 }
 
 template <typename T_in, typename T_out>
-void ActivationFn<T_in, T_out>::setMutationFunction (std::function<void (activationFnParams_t*, double)> func) {
+void ActivationFn<T_in, T_out>::setMutationFunction (const std::function<void (activationFnParams_t*, double)>& func) {
 	mutationFn = func;
 }
 
 template <typename T_in, typename T_out>
-void ActivationFn<T_in, T_out>::setPrintingFunction (std::function<void (activationFnParams_t*, std::string)> func) {
+void ActivationFn<T_in, T_out>::setPrintingFunction (const std::function<void (activationFnParams_t*, std::string)>& func) {
 	printingFn = func;
 }
 
@@ -157,7 +157,7 @@ std::unique_ptr<ActivationFnBase> ActivationFn<T_in, T_out>::clone (bool preserv
 }
 
 template <typename T_in, typename T_out>
-T_out ActivationFn<T_in, T_out>::process (T_in value) {
+T_out ActivationFn<T_in, T_out>::process (const T_in& value) {
 	return processFn (value, params.get ());
 }
 

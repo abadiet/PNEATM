@@ -32,7 +32,7 @@ class Species {
 		 * @param connections A vector of connection that define the species traits. Will be used to process the distance between the species and genomes.
 		 * @param dstType The distance algorithm to use:\n	- `CONVENTIONAL`: algorithm used in the original NEAT\n	- `EUCLIDIAN`: euclidian distance in the connections's space
 		 */
-		Species (unsigned int id, std::vector<Connection> connections, distanceFn dstType);
+		Species (unsigned int id, const std::vector<Connection>& connections, distanceFn dstType);
 
 		/**
 		 * @brief Constructor for the Species class from an input file stream.
@@ -101,7 +101,7 @@ class Species {
 using namespace pneatm;
 
 template <typename... Args>
-Species<Args...>::Species(unsigned int id, std::vector<Connection> connections, distanceFn dstType): 
+Species<Args...>::Species(unsigned int id, const std::vector<Connection>& connections, distanceFn dstType): 
 	id (id),
 	dstType (dstType),
 	connections (connections),

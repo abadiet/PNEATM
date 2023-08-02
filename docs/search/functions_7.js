@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['operator_3d_134',['operator=',['../classpneatm_1_1Connection.html#aab6979049ac916d28b2bdccd37c5ed35',1,'pneatm::Connection']]]
+  ['node_135',['Node',['../classpneatm_1_1Node.html#ad7a34779cad45d997bfd6d3d8043c75f',1,'pneatm::Node']]]
 ];

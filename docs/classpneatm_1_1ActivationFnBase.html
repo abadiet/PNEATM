@@ -98,12 +98,12 @@ virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
 <tr class="memitem:a47329d01d37d7032e6a7c8646394b204"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1ActivationFnBase.html#a47329d01d37d7032e6a7c8646394b204">setFunction</a> (void *func)=0</td></tr>
 <tr class="memdesc:a47329d01d37d7032e6a7c8646394b204"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the activation function implementation.  <a href="classpneatm_1_1ActivationFnBase.html#a47329d01d37d7032e6a7c8646394b204">More...</a><br /></td></tr>
 <tr class="separator:a47329d01d37d7032e6a7c8646394b204"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0fabdb88e948b049dbc62ce590d98f58"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1ActivationFnBase.html#a0fabdb88e948b049dbc62ce590d98f58">setMutationFunction</a> (std::function&lt; void(activationFnParams_t *, double)&gt; func)=0</td></tr>
-<tr class="memdesc:a0fabdb88e948b049dbc62ce590d98f58"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the mutation function for the activation function's parameters.  <a href="classpneatm_1_1ActivationFnBase.html#a0fabdb88e948b049dbc62ce590d98f58">More...</a><br /></td></tr>
-<tr class="separator:a0fabdb88e948b049dbc62ce590d98f58"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aaa9cb327ac03088f1733b2073c0f4995"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1ActivationFnBase.html#aaa9cb327ac03088f1733b2073c0f4995">setPrintingFunction</a> (std::function&lt; void(activationFnParams_t *, std::string)&gt; func)=0</td></tr>
-<tr class="memdesc:aaa9cb327ac03088f1733b2073c0f4995"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the printing function for the activation function's parameters.  <a href="classpneatm_1_1ActivationFnBase.html#aaa9cb327ac03088f1733b2073c0f4995">More...</a><br /></td></tr>
-<tr class="separator:aaa9cb327ac03088f1733b2073c0f4995"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a99ac0fa5c802fec349fe91333465374f"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1ActivationFnBase.html#a99ac0fa5c802fec349fe91333465374f">setMutationFunction</a> (const std::function&lt; void(activationFnParams_t *, double)&gt; &amp;func)=0</td></tr>
+<tr class="memdesc:a99ac0fa5c802fec349fe91333465374f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the mutation function for the activation function's parameters.  <a href="classpneatm_1_1ActivationFnBase.html#a99ac0fa5c802fec349fe91333465374f">More...</a><br /></td></tr>
+<tr class="separator:a99ac0fa5c802fec349fe91333465374f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3bf5b9ac9b7fdc7ef7904c3be875d876"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1ActivationFnBase.html#a3bf5b9ac9b7fdc7ef7904c3be875d876">setPrintingFunction</a> (const std::function&lt; void(activationFnParams_t *, std::string)&gt; &amp;func)=0</td></tr>
+<tr class="memdesc:a3bf5b9ac9b7fdc7ef7904c3be875d876"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the printing function for the activation function's parameters.  <a href="classpneatm_1_1ActivationFnBase.html#a3bf5b9ac9b7fdc7ef7904c3be875d876">More...</a><br /></td></tr>
+<tr class="separator:a3bf5b9ac9b7fdc7ef7904c3be875d876"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab1ad249771a0f50afa864cb09542e6c9"><td class="memItemLeft" align="right" valign="top">virtual std::unique_ptr&lt; <a class="el" href="classpneatm_1_1ActivationFnBase.html">ActivationFnBase</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1ActivationFnBase.html#ab1ad249771a0f50afa864cb09542e6c9">clone</a> (bool preserveParameters=true)=0</td></tr>
 <tr class="memdesc:ab1ad249771a0f50afa864cb09542e6c9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a clone of the activation function object.  <a href="classpneatm_1_1ActivationFnBase.html#ab1ad249771a0f50afa864cb09542e6c9">More...</a><br /></td></tr>
 <tr class="separator:ab1ad249771a0f50afa864cb09542e6c9"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -363,8 +363,8 @@ template&lt;typename T_in , typename T_out &gt; </td></tr>
 
 </div>
 </div>
-<a id="a0fabdb88e948b049dbc62ce590d98f58"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0fabdb88e948b049dbc62ce590d98f58">&#9670;&nbsp;</a></span>setMutationFunction()</h2>
+<a id="a99ac0fa5c802fec349fe91333465374f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a99ac0fa5c802fec349fe91333465374f">&#9670;&nbsp;</a></span>setMutationFunction()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -375,7 +375,7 @@ template&lt;typename T_in , typename T_out &gt; </td></tr>
         <tr>
           <td class="memname">virtual void pneatm::ActivationFnBase::setMutationFunction </td>
           <td>(</td>
-          <td class="paramtype">std::function&lt; void(activationFnParams_t *, double)&gt;&#160;</td>
+          <td class="paramtype">const std::function&lt; void(activationFnParams_t *, double)&gt; &amp;&#160;</td>
           <td class="paramname"><em>func</em></td><td>)</td>
           <td></td>
         </tr>
@@ -395,12 +395,12 @@ template&lt;typename T_in , typename T_out &gt; </td></tr>
   </dd>
 </dl>
 
-<p>Implemented in <a class="el" href="classpneatm_1_1ActivationFn.html#a14cf342f8bc7b32d9d5d450fb7c0e047">pneatm::ActivationFn&lt; T_in, T_out &gt;</a>.</p>
+<p>Implemented in <a class="el" href="classpneatm_1_1ActivationFn.html#a3c3300531a14f7d603dc56dc4a5017b0">pneatm::ActivationFn&lt; T_in, T_out &gt;</a>.</p>
 
 </div>
 </div>
-<a id="aaa9cb327ac03088f1733b2073c0f4995"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aaa9cb327ac03088f1733b2073c0f4995">&#9670;&nbsp;</a></span>setPrintingFunction()</h2>
+<a id="a3bf5b9ac9b7fdc7ef7904c3be875d876"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3bf5b9ac9b7fdc7ef7904c3be875d876">&#9670;&nbsp;</a></span>setPrintingFunction()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -411,7 +411,7 @@ template&lt;typename T_in , typename T_out &gt; </td></tr>
         <tr>
           <td class="memname">virtual void pneatm::ActivationFnBase::setPrintingFunction </td>
           <td>(</td>
-          <td class="paramtype">std::function&lt; void(activationFnParams_t *, std::string)&gt;&#160;</td>
+          <td class="paramtype">const std::function&lt; void(activationFnParams_t *, std::string)&gt; &amp;&#160;</td>
           <td class="paramname"><em>func</em></td><td>)</td>
           <td></td>
         </tr>
@@ -431,7 +431,7 @@ template&lt;typename T_in , typename T_out &gt; </td></tr>
   </dd>
 </dl>
 
-<p>Implemented in <a class="el" href="classpneatm_1_1ActivationFn.html#a75b0e67f1e6906d6d0a16585c647383d">pneatm::ActivationFn&lt; T_in, T_out &gt;</a>.</p>
+<p>Implemented in <a class="el" href="classpneatm_1_1ActivationFn.html#acbd1a89bc608a02f504a794a780b2f13">pneatm::ActivationFn&lt; T_in, T_out &gt;</a>.</p>
 
 </div>
 </div>

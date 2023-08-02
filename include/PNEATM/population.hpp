@@ -48,26 +48,26 @@ class Population {
 		 * @param dstType The distance function.
 		 * @param speciationThreshInit The initial speciation threshold. (default is 20.0)
 		 * @param threshGensSinceImproved The maximum number of generations without any improvement. (default is 15)
-		 * @param stats_filepath The filepath for statistics. (default is an empty string, which doesn't create any file)
+		 * @param stats_filename The filename for statistics. (default is an empty string, which doesn't create any file)
 		 */
-		Population (unsigned int popSize, std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_values, std::vector<void*> resetValues, std::vector<std::vector<std::vector<ActivationFnBase*>>> activationFns, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger, distanceFn dstType = CONVENTIONAL, double speciationThreshInit = 20.0, unsigned int threshGensSinceImproved = 15, std::string stats_filepath = "");
+		Population (unsigned int popSize, const std::vector<size_t>& bias_sch, const std::vector<size_t>& inputs_sch, const std::vector<size_t>& outputs_sch, const std::vector<std::vector<size_t>>& hiddens_sch_init, const std::vector<void*>& bias_values, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger, distanceFn dstType = CONVENTIONAL, double speciationThreshInit = 20.0, unsigned int threshGensSinceImproved = 15, const std::string& stats_filename = "");
 
 		/**
 		 * @brief Constructor for the Population class from a file.
-		 * @param filepath The file path.
+		 * @param filename The file path.
 		 * @param bias_values The initial biases values (e.g., k-th bias will have value bias_values[k]).
 		 * @param resetValues The biases reset values (e.g., k-th bias can be resetted to resetValues[k]).
 		 * @param logger A pointer to the logger for logging.
-		 * @param stats_filepath The filepath for statistics. (default is an empty string, which doesn't create any file)
+		 * @param stats_filename The filename for statistics. (default is an empty string, which doesn't create any file)
 		 */
-		Population (const std::string& filepath, std::vector<void*> bias_values, std::vector<void*> resetValues, spdlog::logger* logger, std::string stats_filepath = "");
+		Population (const std::string& filename, const std::vector<void*>& bias_values, const std::vector<void*>& resetValues, spdlog::logger* logger, const std::string& stats_filename = "");
 
 		/**
 		 * @brief Destructor for the Population class.
 		 */
 		~Population ();
 
-		//Population (const std::string filepath) {load(filepath);};
+		//Population (const std::string filename) {load(filename);};
 
 		/**
 		 * @brief Get the current generation number.
@@ -100,7 +100,7 @@ class Population {
 		 * @param inputs A vector containing inputs to be loaded.
 		 */
 		template <typename T_in>
-		void loadInputs(std::vector<T_in> inputs);
+		void loadInputs(const std::vector<T_in>& inputs);
 
 		/**
 		 * @brief Load a single input for the entire population.
@@ -109,7 +109,7 @@ class Population {
 		 * @param input_id The ID of the input to load.
 		 */
 		template <typename T_in>
-		void loadInput(T_in input, unsigned int input_id);
+		void loadInput(T_in& input, unsigned int input_id);
 
 		/**
 		 * @brief Load the inputs for a specific genome.
@@ -118,7 +118,7 @@ class Population {
 		 * @param genome_id The ID of the genome for which to load the inputs.
 		 */
 		template <typename T_in>
-		void loadInputs(std::vector<T_in> inputs, unsigned int genome_id);
+		void loadInputs(const std::vector<T_in>& inputs, unsigned int genome_id);
 
 		/**
 		 * @brief Load a single input data for a specific genome.
@@ -128,7 +128,7 @@ class Population {
 		 * @param genome_id The ID of the genome for which to load the input.
 		 */
 		template <typename T_in>
-		void loadInput(T_in input, unsigned int input_id, unsigned int genome_id);
+		void loadInput(T_in& input, unsigned int input_id, unsigned int genome_id);
 
 		/**
 		 * @brief Reset the memory of the entire population.
@@ -145,7 +145,7 @@ class Population {
 		 * @brief Run the network of the entire population.
 		 *
 		 * Run the network of every genomes of the population. This means computing each node's input and output of each population's genome.
-		 * This function use multithreading and should be preffered relatively to `Population<Args...>::runNetwork (unsigned int genome_id)`.
+		 * This function use multithreading and should be preffered relatively to `runNetwork (unsigned int genome_id)`.
 		 */
 		void runNetwork ();
 
@@ -154,7 +154,7 @@ class Population {
 		 * @param genome_id The ID of the genome for which to run the newtork.
 		 *
 		 * Run the network of a specific genome. This means computing each node's input and output.
-		 * This function does not use multithreading and should be avoid. The use of `Population<Args...>::runNetwork ()` should be preferred
+		 * This function does not use multithreading and should be avoid. The use of `runNetwork ()` should be preferred
 		 */
 		void runNetwork (unsigned int genome_id);
 
@@ -207,41 +207,41 @@ class Population {
 		 * @brief Perform mutation operations over the entire population.
 		 * @param params Mutation parameters.
 		 */
-		void mutate (mutationParams_t params);
+		void mutate (const mutationParams_t& params);
 
 		/**
 		 * @brief Perform mutation operations for the entire population.
 		 * @param paramsMap A function that returns mutation parameters relative to the genome's fitness.
 		 */
-		void mutate (std::function<mutationParams_t (double)> paramsMap);
+		void mutate (const std::function<mutationParams_t (double)>& paramsMap);
 
 		/**
 		 * @brief Print information on the population.
 		 * @param prefix A prefix to print before each line. (default is an empty string)
 		 */
-		void print (std::string prefix = "");
+		void print (const std::string& prefix = "");
 
 		/**
 		 * @brief Draw a graphical representation of the specified genome's network.
 		 * @param genome_id The ID of the genome to draw.
-		 * @param font_path The filepath of the font to be used for labels.
+		 * @param font_path The filename of the font to be used for labels.
 		 * @param windowWidth The width of the drawing window. (default is 1300)
 		 * @param windowHeight The height of the drawing window. (default is 800)
 		 * @param dotsRadius The radius of the dots representing nodes. (default is 6.5f)
 		 */
-		void drawGenome (unsigned int genome_id, std::string font_path, unsigned int windowWidth = 1300, unsigned int windowHeight = 800, float dotsRadius = 6.5f);
+		void drawGenome (unsigned int genome_id, const std::string& font_path, unsigned int windowWidth = 1300, unsigned int windowHeight = 800, float dotsRadius = 6.5f);
 
 		/**
 		 * @brief Save the Population instance to a file.
-		 * @param filepath The file path.
+		 * @param filename The file path.
 		 */
-		void save (const std::string& filepath);
+		void save (const std::string& filename);
 
 		/**
 		 * @brief Load a Population instance from a file.
-		 * @param filepath ThePopulation file path.
+		 * @param filename ThePopulation file path.
 		 */
-		void load (const std::string& filepath);
+		void load (const std::string& filename);
 
 		/**
 		 * @brief Serialize the Population instance to an output file stream.
@@ -301,7 +301,7 @@ class Population {
 using namespace pneatm;
 
 template <typename... Args>
-Population<Args...>::Population(unsigned int popSize, std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_values, std::vector<void*> resetValues, std::vector<std::vector<std::vector<ActivationFnBase*>>> activationFns, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger, distanceFn dstType, double speciationThreshInit, unsigned int threshGensSinceImproved, std::string stats_filepath) :
+Population<Args...>::Population(unsigned int popSize, const std::vector<size_t>& bias_sch, const std::vector<size_t>& inputs_sch, const std::vector<size_t>& outputs_sch, const std::vector<std::vector<size_t>>& hiddens_sch_init, const std::vector<void*>& bias_values, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger, distanceFn dstType, double speciationThreshInit, unsigned int threshGensSinceImproved, const std::string& stats_filename) :
 	popSize (popSize),
 	speciationThresh (speciationThreshInit),
 	threshGensSinceImproved (threshGensSinceImproved),
@@ -320,8 +320,8 @@ Population<Args...>::Population(unsigned int popSize, std::vector<size_t> bias_s
 	logger (logger)
 {
 	logger->info ("Population initialization");
-	if (stats_filepath != "") {
-		statsFile.open (stats_filepath);
+	if (stats_filename != "") {
+		statsFile.open (stats_filename);
 		statsFile << "Generation,Best Fitness,Average Fitness,Average Fitness (Adjusted),Species0,Species1\n";
 	} 
 
@@ -337,18 +337,18 @@ Population<Args...>::Population(unsigned int popSize, std::vector<size_t> bias_s
 }
 
 template <typename... Args>
-Population<Args...>::Population (const std::string& filepath, std::vector<void*> bias_values, std::vector<void*> resetValues, spdlog::logger* logger, std::string stats_filepath) :
+Population<Args...>::Population (const std::string& filename, const std::vector<void*>& bias_values, const std::vector<void*>& resetValues, spdlog::logger* logger, const std::string& stats_filename) :
 	bias_values (bias_values),
 	resetValues (resetValues),
 	logger (logger)
 {
 	logger->info ("Population loading");
-	if (stats_filepath != "") {
-		statsFile.open (stats_filepath);
+	if (stats_filename != "") {
+		statsFile.open (stats_filename);
 		statsFile << "Generation,Best Fitness,Average Fitness,Average Fitness (Adjusted),Species0,Species1\n";
 	}
 
-	load (filepath);
+	load (filename);
 }
 
 template <typename... Args>
@@ -372,7 +372,7 @@ Genome<Args...>& Population<Args...>::getGenome (int id) {
 
 template <typename... Args>
 template <typename T_in>
-void Population<Args...>::loadInputs(std::vector<T_in> inputs) {
+void Population<Args...>::loadInputs(const std::vector<T_in>& inputs) {
 	for (int i = 0; i < popSize; i++) {
 		genomes [i]->template loadInputs<T_in> (inputs);
 	}
@@ -380,13 +380,13 @@ void Population<Args...>::loadInputs(std::vector<T_in> inputs) {
 
 template <typename... Args>
 template <typename T_in>
-void Population<Args...>::loadInputs(std::vector<T_in> inputs, unsigned int genome_id) {
+void Population<Args...>::loadInputs(const std::vector<T_in>& inputs, unsigned int genome_id) {
 	genomes [genome_id]->template loadInputs<T_in> (inputs);
 }
 
 template <typename... Args>
 template <typename T_in>
-void Population<Args...>::loadInput(T_in input, unsigned int input_id) {
+void Population<Args...>::loadInput(T_in& input, unsigned int input_id) {
 	for (unsigned int i = 0; i < popSize; i++) {
 		genomes [i]->template loadInput<T_in> (input, input_id);
 	}
@@ -394,7 +394,7 @@ void Population<Args...>::loadInput(T_in input, unsigned int input_id) {
 
 template <typename... Args>
 template <typename T_in>
-void Population<Args...>::loadInput(T_in input, unsigned int input_id, unsigned int genome_id) {
+void Population<Args...>::loadInput(T_in& input, unsigned int input_id, unsigned int genome_id) {
 	genomes [genome_id]->template loadInput<T_in> (input, input_id);
 }
 
@@ -786,7 +786,7 @@ int Population<Args...>::SelectParent (unsigned int iSpe) {
 }
 
 template <typename... Args>
-void Population<Args...>::mutate (mutationParams_t params) {
+void Population<Args...>::mutate (const mutationParams_t& params) {
 	logger->info ("Mutations");
 	for (unsigned int i = 0; i < popSize; i++) {
 		genomes [i]->mutate (&conn_innov, &node_innov, params);
@@ -794,7 +794,7 @@ void Population<Args...>::mutate (mutationParams_t params) {
 }
 
 template <typename... Args>
-void Population<Args...>::mutate (std::function<mutationParams_t (double)> paramsMap) {
+void Population<Args...>::mutate (const std::function<mutationParams_t (double)>& paramsMap) {
 	logger->info ("Mutations");
 	for (unsigned int i = 0; i < popSize; i++) {
 		genomes [i]->mutate (&conn_innov, &node_innov, paramsMap (genomes [i]->getFitness ()));
@@ -802,7 +802,7 @@ void Population<Args...>::mutate (std::function<mutationParams_t (double)> param
 }
 
 template <typename... Args>
-void Population<Args...>::print (std::string prefix) {
+void Population<Args...>::print (const std::string& prefix) {
 	std::cout << prefix << "Generation Number: " << generation << std::endl;
 	std::cout << prefix << "Population Size: " << popSize << std::endl;
 	std::cout << prefix << "Current Average Fitness: " << avgFitness << std::endl;
@@ -860,7 +860,7 @@ void Population<Args...>::print (std::string prefix) {
 }
 
 template <typename... Args>
-void Population<Args...>::drawGenome (unsigned int genome_id, std::string font_path, unsigned int windowWidth, unsigned int windowHeight, float dotsRadius) {
+void Population<Args...>::drawGenome (unsigned int genome_id, const std::string& font_path, unsigned int windowWidth, unsigned int windowHeight, float dotsRadius) {
 	logger->info ("Drawing genome{}'s network", genome_id);
 	genomes [genome_id]->draw (font_path, windowWidth, windowHeight, dotsRadius);
 }
@@ -976,10 +976,10 @@ void Population<Args...>::deserialize (std::ifstream& inFile) {
 }
 
 template <typename... Args>
-void Population<Args...>::save (const std::string& filepath) {
-	std::ofstream outFile(filepath, std::ios::binary);
+void Population<Args...>::save (const std::string& filename) {
+	std::ofstream outFile(filename, std::ios::binary);
 	if (!outFile) {
-		logger->error ("Cannot open file {} for writing.", filepath);
+		logger->error ("Cannot open file {} for writing.", filename);
 		return;
 	}
 
@@ -989,10 +989,10 @@ void Population<Args...>::save (const std::string& filepath) {
 }
 
 template <typename... Args>
-void Population<Args...>::load (const std::string& filepath) {
-	std::ifstream inFile(filepath, std::ios::binary);
+void Population<Args...>::load (const std::string& filename) {
+	std::ifstream inFile(filename, std::ios::binary);
 	if (!inFile) {
-		logger->error ("Cannot open file {} for reading.", filepath);
+		logger->error ("Cannot open file {} for reading.", filename);
 		return;
 	}
 

@@ -211,7 +211,7 @@ class Genome {
 		 * @param maxRecuInit The maximum recurrence value.
 		 * @param logger A pointer to the logger for logging.
 		 */
-		Genome (std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_values, std::vector<void*> resetValues, std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, innovationConn_t* conn_innov, innovationNode_t* node_innov, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger);
+		Genome (const std::vector<size_t>& bias_sch, const std::vector<size_t>& inputs_sch, const std::vector<size_t>& outputs_sch, const std::vector<std::vector<size_t>>& hiddens_sch_init, const std::vector<void*>& bias_values, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, innovationConn_t* conn_innov, innovationNode_t* node_innov, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger);
 
 		/**
 		 * @brief Constructor for the Genome class. This constructor will not initialized any network.
@@ -224,7 +224,7 @@ class Genome {
 		 * @param weightExtremumInit The initial weight extremum.
 		 * @param logger A pointer to the logger for logging.
 		 */
-		Genome (unsigned int nbBias, unsigned int nbInput, unsigned int nbOutput, unsigned int N_types, std::vector<void*> resetValues, std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, double weightExtremumInit, spdlog::logger* logger);
+		Genome (unsigned int nbBias, unsigned int nbInput, unsigned int nbOutput, unsigned int N_types, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, double weightExtremumInit, spdlog::logger* logger);
 
 		/**
 		 * @brief Constructor for the Genome class from an input file stream.
@@ -232,7 +232,7 @@ class Genome {
 		 * @param activationFns The activation functions (e.g., activationFns[i][j] is a pointer to an activation function that takes an input of type of index i and return a type of index j output).
 		 * @param logger A pointer to the logger for logging.
 		 */
-		Genome (std::ifstream& inFile, std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, spdlog::logger* logger);
+		Genome (std::ifstream& inFile, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, spdlog::logger* logger);
 
 		/**
 		 * @brief Destructor for the Genome class.
@@ -257,7 +257,7 @@ class Genome {
 		 * @param inputs A vector containing inputs to be loaded.
 		 */
 		template <typename T_in>
-		void loadInputs (std::vector<T_in> inputs);
+		void loadInputs (const std::vector<T_in>& inputs);
 
 		/**
 		 * @brief Load an input.
@@ -266,7 +266,7 @@ class Genome {
 		 * @param input_id The ID of the input to load.
 		 */
 		template <typename T_in>
-		void loadInput (T_in input, int input_id);
+		void loadInput (T_in& input, int input_id);
 
 		/**
 		 * @brief Reset the memory.
@@ -301,7 +301,7 @@ class Genome {
 		 * @param node_innov A pointer to the nodes innovation tracker.
 		 * @param params Mutation parameters.
 		 */
-		void mutate (innovationConn_t* conn_innov, innovationNode_t* node_innov, mutationParams_t params);
+		void mutate (innovationConn_t* conn_innov, innovationNode_t* node_innov, const mutationParams_t& params);
 
 		/**
 		 * @brief Get a clone of the genome.
@@ -379,7 +379,7 @@ class Genome {
 using namespace pneatm;
 
 template <typename... Args>
-Genome<Args...>::Genome (std::vector<size_t> bias_sch, std::vector<size_t> inputs_sch, std::vector<size_t> outputs_sch, std::vector<std::vector<size_t>> hiddens_sch_init, std::vector<void*> bias_values, std::vector<void*> resetValues, std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, innovationConn_t* conn_innov, innovationNode_t* node_innov, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger) :
+Genome<Args...>::Genome (const std::vector<size_t>& bias_sch, const std::vector<size_t>& inputs_sch, const std::vector<size_t>& outputs_sch, const std::vector<std::vector<size_t>>& hiddens_sch_init, const std::vector<void*>& bias_values, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, innovationConn_t* conn_innov, innovationNode_t* node_innov, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger) :
 	weightExtremumInit (weightExtremumInit),
 	activationFns (activationFns),
 	resetValues (resetValues),
@@ -544,7 +544,7 @@ Genome<Args...>::Genome (std::vector<size_t> bias_sch, std::vector<size_t> input
 }
 
 template <typename... Args>
-Genome<Args...>::Genome (unsigned int nbBias, unsigned int nbInput, unsigned int nbOutput, unsigned int N_types, std::vector<void*> resetValues, std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, double weightExtremumInit, spdlog::logger* logger) :
+Genome<Args...>::Genome (unsigned int nbBias, unsigned int nbInput, unsigned int nbOutput, unsigned int N_types, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, double weightExtremumInit, spdlog::logger* logger) :
 	nbBias (nbBias),
 	nbInput (nbInput),
 	nbOutput (nbOutput),
@@ -560,7 +560,7 @@ Genome<Args...>::Genome (unsigned int nbBias, unsigned int nbInput, unsigned int
 }
 
 template <typename... Args>
-Genome<Args...>::Genome (std::ifstream& inFile, std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, spdlog::logger* logger) :
+Genome<Args...>::Genome (std::ifstream& inFile, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, spdlog::logger* logger) :
 	activationFns (activationFns),
 	logger (logger)
 {
@@ -577,7 +577,7 @@ Genome<Args...>::~Genome () {
 
 template <typename... Args>
 template <typename T_in>
-void Genome<Args...>::loadInputs (std::vector<T_in> inputs) {
+void Genome<Args...>::loadInputs (const std::vector<T_in>& inputs) {
 	for (unsigned int i = 0; i < nbInput; i++) {
 		nodes [i + nbBias]->loadInput (static_cast<void*> (&inputs [i]));
 	}
@@ -585,7 +585,7 @@ void Genome<Args...>::loadInputs (std::vector<T_in> inputs) {
 
 template <typename... Args>
 template <typename T_in>
-void Genome<Args...>::loadInput (T_in input, int input_id) {
+void Genome<Args...>::loadInput (T_in& input, int input_id) {
 	nodes [input_id + nbBias]->loadInput (static_cast<void*> (&input));
 }
 
@@ -667,7 +667,7 @@ T_out Genome<Args...>::getOutput (int output_id) {
 }
 
 template <typename... Args>
-void Genome<Args...>::mutate(innovationConn_t* conn_innov, innovationNode_t* node_innov, mutationParams_t params) {
+void Genome<Args...>::mutate(innovationConn_t* conn_innov, innovationNode_t* node_innov, const mutationParams_t& params) {
 	// WEIGHTS
 	MutateWeights (params.weights.rate, params.weights.fullChangeRate, params.weights.perturbationFactor);
 
@@ -786,7 +786,7 @@ void Genome<Args...>::MutateActivationFn (double rate) {
 }
 
 template <typename... Args>
-bool Genome<Args...>::AddConnection (innovationConn_t* conn_innov, unsigned int maxRecurrency, unsigned int maxIterationsFindConnectionThresh, double reactivateConnectionThresh) {	// return true if the process ended well, false in the other case
+bool Genome<Args...>::AddConnection (innovationConn_t* conn_innov, unsigned int maxRecurrency, unsigned int maxIterationsFindConnectionThresh, double reactivateConnectionThresh) {
 	logger->trace ("adding a new connection");
 
 	// find valid node pair
@@ -843,7 +843,7 @@ bool Genome<Args...>::AddConnection (innovationConn_t* conn_innov, unsigned int 
 }
 
 template <typename... Args>
-bool Genome<Args...>::AddMonotypedNode (innovationConn_t* conn_innov, innovationNode_t* node_innov, unsigned int maxIterationsFindConnectionThresh) {	// return true = node created, false = nothing created
+bool Genome<Args...>::AddMonotypedNode (innovationConn_t* conn_innov, innovationNode_t* node_innov, unsigned int maxIterationsFindConnectionThresh) {
 	logger->trace ("adding a node");
 	// choose at random an enabled connection
 	if (connections.size() > 0) {	// if there is no connection, we cannot add a node!
