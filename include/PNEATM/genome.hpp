@@ -613,20 +613,17 @@ void Genome<Args...>::runNetwork() {
 		for (size_t i = 0; i < connections.size (); i++) {
 			if (connections [i].enabled && nodes [connections [i].outNodeId]->layer == ilayer) {	// if the connections still exist and is pointing on the current layer
 				if (connections [i].inNodeRecu == 0) {
-					logger->trace ("processing of connection {3}: adding to node{0}'s input value from dot product between node{1}'s output and {2}", connections [i].outNodeId, connections [i].inNodeId, connections [i].weight, i);
 					nodes [connections [i].outNodeId]->AddToInput (
 						nodes [connections [i].inNodeId]->getOutput (),
 						connections [i].weight
 					);
 				} else {	// is recurent
 					if (connections[i].inNodeRecu < (unsigned int) prevNodes.size () + 1) {
-						logger->trace ("processing of connection {3}: adding to node{0}'s input value from dot product between node{1}'s output ({4} generation from now) and {2}", connections [i].outNodeId, connections [i].inNodeId, connections [i].weight, i, connections [i].inNodeRecu);
 						nodes [connections[i].outNodeId]->AddToInput (
 							prevNodes [(unsigned int) prevNodes.size () - connections [i].inNodeRecu][connections [i].inNodeId],
 							connections [i].weight
 						);
 					} else {
-						logger->trace ("processing of connection {3}: cannot add to node{0}'s input value from dot product between node{1}'s output ({4} generation from now) and {2} as this value isn't existing yet!", connections [i].outNodeId, connections [i].inNodeId, connections [i].weight, i, connections [i].inNodeRecu);
 						// the input of the connection isn't existing yet!
 						// we consider that the connection isn't existing
 					}
@@ -643,7 +640,6 @@ void Genome<Args...>::runNetwork() {
 	}
 
 	// we have to store previous values
-	logger->trace ("saving previous nodes' outputs");
 	prevNodes.push_back ({});
 	prevNodes.back ().reserve (nodes.size ());
 	for (const std::unique_ptr<NodeBase>& node : nodes) {
@@ -768,11 +764,9 @@ void Genome<Args...>::MutateWeights (double mutateWeightThresh, double mutateWei
 		if (connections [i].enabled && Random_Double (0.0f, 1.0f, true, false) < mutateWeightThresh) {
 			if (Random_Double (0.0f, 1.0f, true, false) < mutateWeightFullChangeThresh) {
 				// reset weight
-				logger->trace ("resetting connection{}'s weight", i);
 				connections [i].weight = Random_Double (- weightExtremumInit, weightExtremumInit);
 			} else {
 				// pertub weight
-				logger->trace ("pertubating connection{}'s weight", i);
 				connections [i].weight += connections [i].weight * Random_Double (- mutateWeightFactor, mutateWeightFactor);
 			}
 		}
@@ -784,7 +778,6 @@ void Genome<Args...>::MutateActivationFn (double rate) {
 	logger->trace ("mutating of actviation functions");
 	for (size_t i = 0; i < nodes.size (); i++) {
 		if (Random_Double (0.0f, 1.0f, true, false) < rate) {
-			logger->trace ("mutating node{}'s activation function", i);
 			nodes [i]->mutate (fitness);
 		}
 	}
@@ -814,7 +807,6 @@ bool Genome<Args...>::AddConnection (innovationConn_t* conn_innov, unsigned int 
 		// mutating
 		if (disabled_conn_id >= 0) {	// it is a former connection
 			if (Random_Double (0.0f, 1.0f, true, false) < reactivateConnectionThresh) {
-				logger->trace ("connection{} is re-enabled", disabled_conn_id);
 				connections [disabled_conn_id].enabled = true;	// former connection is reactivated
 				return true;
 			} else {
@@ -840,11 +832,10 @@ bool Genome<Args...>::AddConnection (innovationConn_t* conn_innov, unsigned int 
 				}
 			}
 
-			logger->trace ("connection{0} added between node{1} (with a recurrency of {3}) and node{2}", connections.size () - 1, inNodeId, outNodeId, inNodeRecu);
 			return true;
 		}
 	} else {
-		logger->warn ("maximum iteration threshold to find a valid connectino has been reached in Genome<Args...>::AddConnection: no connection is added");
+		logger->warn ("maximum iteration threshold to find a valid connection has been reached in Genome<Args...>::AddConnection: no connection is added");
 		return false;	// cannot find a valid connection
 	}
 }
@@ -868,8 +859,6 @@ bool Genome<Args...>::AddMonotypedNode (innovationConn_t* conn_innov, innovation
 			const unsigned int newNodeId = (unsigned int) nodes.size ();
 			const unsigned int iT_in = nodes [connections [iConn].inNodeId]->index_T_in;
 			const unsigned int iT_out = nodes [connections [iConn].outNodeId]->index_T_out;
-
-			logger->trace ("adding node{2}, linking type{0} to type{1}", iT_in, iT_out, newNodeId);
 
 			// get Node<T_in, T_out>
 			nodes.push_back(CreateNode::get<Args...> (iT_in, iT_out));
@@ -898,8 +887,6 @@ bool Genome<Args...>::AddMonotypedNode (innovationConn_t* conn_innov, innovation
 			unsigned int innovId = conn_innov->getInnovId (nodes [inNodeId]->innovId, nodes [outNodeId]->innovId, inNodeRecu);
 			double weight = connections [iConn].weight;
 
-			logger->trace ("adding connection{0} between node{1} and node{2}", connections.size (), inNodeId, outNodeId);
-
 			connections.push_back (Connection (innovId, inNodeId, outNodeId, inNodeRecu, weight, true));
 			
 			// build second connection
@@ -908,8 +895,6 @@ bool Genome<Args...>::AddMonotypedNode (innovationConn_t* conn_innov, innovation
 			inNodeRecu = 0;
 			innovId = conn_innov->getInnovId (nodes [inNodeId]->innovId, nodes [outNodeId]->innovId, inNodeRecu);
 			weight = Random_Double (- weightExtremumInit, weightExtremumInit);
-
-			logger->trace ("adding connection{0} between node{1} and node{2}", connections.size (), inNodeId, outNodeId);
 
 			connections.push_back (Connection (innovId, inNodeId, outNodeId, inNodeRecu, weight, true));
 
@@ -952,8 +937,6 @@ bool Genome<Args...>::AddBitypedNode (innovationConn_t* conn_innov, innovationNo
 		while (iT_out == iT_in) {
 			iT_out = Random_UInt (0, N_types - 1);
 		}
-
-		logger->trace ("adding node{2}, linking type{0} to type{1}", iT_in, iT_out, newNodeId);
 
 		// get Node<T_in, T_out>
 		nodes.push_back(CreateNode::get<Args...> (iT_in, iT_out));
@@ -1001,8 +984,6 @@ bool Genome<Args...>::AddBitypedNode (innovationConn_t* conn_innov, innovationNo
 		unsigned int innov_id = conn_innov->getInnovId (nodes [inNodeId]->innovId, nodes [newNodeId]->innovId, inNodeRecu);
 		double weight = Random_Double (- weightExtremumInit, weightExtremumInit);
 
-		logger->trace ("adding connection{0} between node{1} and node{2}", connections.size (), inNodeId, newNodeId);
-
 		connections.push_back(Connection (innov_id, inNodeId, newNodeId, inNodeRecu, weight, true));
 
 		// update newNode's layer
@@ -1030,8 +1011,6 @@ bool Genome<Args...>::AddBitypedNode (innovationConn_t* conn_innov, innovationNo
 
 		innov_id = conn_innov->getInnovId (nodes [newNodeId]->innovId, nodes [outNodeId]->innovId, inNodeRecu);
 		weight = Random_Double (- weightExtremumInit, weightExtremumInit);
-
-		logger->trace ("adding connection{0} between node{1} and node{2}", connections.size (), newNodeId, outNodeId);
 
 		connections.push_back(Connection (innov_id, newNodeId, outNodeId, inNodeRecu, weight, true));
 

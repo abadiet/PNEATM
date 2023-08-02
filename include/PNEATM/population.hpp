@@ -367,7 +367,6 @@ template <typename... Args>
 template <typename T_in>
 void Population<Args...>::loadInputs(std::vector<T_in> inputs) {
 	for (int i = 0; i < popSize; i++) {
-		logger->trace ("Load genome{}'s inputs", i);
 		genomes [i]->template loadInputs<T_in> (inputs);
 	}
 }
@@ -375,7 +374,6 @@ void Population<Args...>::loadInputs(std::vector<T_in> inputs) {
 template <typename... Args>
 template <typename T_in>
 void Population<Args...>::loadInputs(std::vector<T_in> inputs, unsigned int genome_id) {
-	logger->trace ("Load genome{}'s inputs", genome_id);
 	genomes [genome_id]->template loadInputs<T_in> (inputs);
 }
 
@@ -383,7 +381,6 @@ template <typename... Args>
 template <typename T_in>
 void Population<Args...>::loadInput(T_in input, unsigned int input_id) {
 	for (unsigned int i = 0; i < popSize; i++) {
-		logger->trace ("Load genome{0}'s input{1}", i, input_id);
 		genomes [i]->template loadInput<T_in> (input, input_id);
 	}
 }
@@ -391,21 +388,18 @@ void Population<Args...>::loadInput(T_in input, unsigned int input_id) {
 template <typename... Args>
 template <typename T_in>
 void Population<Args...>::loadInput(T_in input, unsigned int input_id, unsigned int genome_id) {
-	logger->trace ("Load genome{0}'s input{1}", genome_id, input_id);
 	genomes [genome_id]->template loadInput<T_in> (input, input_id);
 }
 
 template <typename... Args>
 void Population<Args...>::resetMemory () {
 	for (size_t i = 0; i < genomes.size (); i++) {
-		logger->trace ("Reset genome{}'s memory", i);
 		genomes [i]->resetMemory ();
 	}
 }
 
 template <typename... Args>
 void Population<Args...>::resetMemory (unsigned int genome_id) {
-	logger->trace ("Reset genome{}'s memory", genome_id);
 	genomes [genome_id]->resetMemory ();
 }
 
@@ -413,34 +407,29 @@ void Population<Args...>::resetMemory (unsigned int genome_id) {
 template <typename... Args>
 void Population<Args...>::runNetwork () {
 	for (unsigned int i = 0; i < popSize; i++) {
-		logger->trace ("Run genome{0}'s network", i);
 		genomes [i]->runNetwork ();
 	}
 }
 
 template <typename... Args>
 void Population<Args...>::runNetwork(unsigned int genome_id) {
-	logger->trace ("Run genome{0}'s network", genome_id);
 	genomes [genome_id]->runNetwork ();
 }
 
 template <typename... Args>
 template <typename T_out>
 std::vector<T_out> Population<Args...>::getOutputs (unsigned int genome_id) {
-	logger->trace ("Get genome{}'s outputs", genome_id);
 	return genomes [genome_id]->template getOutputs<T_out> ();
 }
 
 template <typename... Args>
 template <typename T_out>
 T_out Population<Args...>::getOutput (unsigned int output_id, unsigned int genome_id) {
-	logger->trace ("Get genome{0}'s output{1}", genome_id, output_id);
 	return genomes [genome_id]->template getOutput<T_out> (output_id);
 }
 
 template <typename... Args>
 void Population<Args...>::setFitness (double fitness, unsigned int genome_id) {
-	logger->trace ("Setting genome{}'s fitness", genome_id);
 	genomes [genome_id]->fitness = fitness;
 }
 
@@ -652,7 +641,6 @@ void Population<Args...>::UpdateFitnesses (double speciesSizeEvolutionLimit) {
 			} else {
 				// the species cannot have offsprings it has not improved for a long time
 				species[i].allowedOffspring = 0;
-				logger->trace ("species{} has not improved for a long time: it is removed", i);
 			}
 		}
 	}
@@ -674,7 +662,6 @@ void Population<Args...>::crossover (bool elitism, double crossover_rate) {
 	newGenomes.reserve (popSize);
 
 	if (elitism) {	// elitism mode on = we conserve during generations the more fit genome
-		logger->trace ("elitism is on: adding the more fit genome to the new generation");
 		newGenomes.push_back (genomes [fittergenome_id]->clone ());
 	}
 
@@ -700,8 +687,6 @@ void Population<Args...>::crossover (bool elitism, double crossover_rate) {
 						iSecondParent = iParent1;
 					}
 
-					logger->trace ("adding child from the parents genome{0} and genome{1} to the new generation", iMainParent, iSecondParent);
-
 					newGenomes.push_back (genomes [iMainParent]->clone ());
 
 					// connections shared by both of the parents must be randomly wheighted
@@ -716,7 +701,6 @@ void Population<Args...>::crossover (bool elitism, double crossover_rate) {
 					}
 				} else {
 					// the genome is kept for the new generation (there is no crossover which emphasize mutation's effect eg exploration)
-					logger->trace ("adding genome{} to the new generation", iParent1);
 					newGenomes.push_back (genomes [iParent1]->clone ());
 				}
 			}
@@ -734,7 +718,6 @@ void Population<Args...>::crossover (bool elitism, double crossover_rate) {
 	}
 
 	// replace the current genomes by the new ones
-	logger->trace ("replacing the genomes");
 	genomes.clear ();
 	genomes = std::move (newGenomes);
 
@@ -784,7 +767,6 @@ template <typename... Args>
 void Population<Args...>::mutate (mutationParams_t params) {
 	logger->info ("Mutations");
 	for (unsigned int i = 0; i < popSize; i++) {
-		logger->trace ("Mutation of genome{}", i);
 		genomes [i]->mutate (&conn_innov, &node_innov, params);
 	}
 }
@@ -793,7 +775,6 @@ template <typename... Args>
 void Population<Args...>::mutate (std::function<mutationParams_t (double)> paramsMap) {
 	logger->info ("Mutations");
 	for (unsigned int i = 0; i < popSize; i++) {
-		logger->trace ("Mutation of genome{}", i);
 		genomes [i]->mutate (&conn_innov, &node_innov, paramsMap (genomes [i]->getFitness ()));
 	}
 }

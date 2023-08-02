@@ -32,3 +32,11 @@ Documentation is available at [https://titofra.github.io/PNEATM/](https://titofr
 <p align="center">
 	<img src="https://github.com/titofra/PNEATM/blob/main/examples/snake/resources/snakeGameplay.gif">
 </p>
+
+## TODO
+- [ ] MultiThreading
+- [ ] GPU acceleration
+- [ ] Vectorization, SIMD?
+- [ ] Memory Management optimization
+- [ ] Algo optimization
+- [ ] Compiler optimizations (PGO, LTO ...)
