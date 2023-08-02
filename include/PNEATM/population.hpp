@@ -17,6 +17,7 @@
 #include <spdlog/spdlog.h>
 #include <memory>
 #include <functional>
+#include <thread>
 
 /* HEADER */
 
@@ -142,12 +143,18 @@ class Population {
 
 		/**
 		 * @brief Run the network of the entire population.
+		 *
+		 * Run the network of every genomes of the population. This means computing each node's input and output of each population's genome.
+		 * This function use multithreading and should be preffered relatively to `Population<Args...>::runNetwork (unsigned int genome_id)`.
 		 */
 		void runNetwork ();
 
 		/**
 		 * @brief Run the network of a specific genome.
 		 * @param genome_id The ID of the genome for which to run the newtork.
+		 *
+		 * Run the network of a specific genome. This means computing each node's input and output.
+		 * This function does not use multithreading and should be avoid. The use of `Population<Args...>::runNetwork ()` should be preferred
 		 */
 		void runNetwork (unsigned int genome_id);
 
@@ -406,8 +413,16 @@ void Population<Args...>::resetMemory (unsigned int genome_id) {
 
 template <typename... Args>
 void Population<Args...>::runNetwork () {
+	std::thread threads [popSize];
+
 	for (unsigned int i = 0; i < popSize; i++) {
-		genomes [i]->runNetwork ();
+		// add the task to a specific thread
+		threads [i] = std::thread (genomes [i]->runNetwork ());
+	}
+
+	for (unsigned int i = 0; i < popSize; i++) {
+		// wait for its end
+		threads [i].join ();
 	}
 }
 
