@@ -417,7 +417,7 @@ void Population<Args...>::runNetwork () {
 
 	for (unsigned int i = 0; i < popSize; i++) {
 		// add the task to a specific thread
-		threads.push_back (std::thread (genomes [i]->runNetwork ()));
+		threads.push_back (std::thread (genomes [i]->runNetwork));
 	}
 
 	for (unsigned int i = 0; i < popSize; i++) {
