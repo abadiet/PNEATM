@@ -34,7 +34,7 @@ Documentation is available at [https://titofra.github.io/PNEATM/](https://titofr
 </p>
 
 ## TODO
-- [ ] MultiThreading
+- [x] MultiThreading
 - [ ] GPU acceleration
 - [ ] Vectorization, SIMD?
 - [ ] Memory Management optimization
