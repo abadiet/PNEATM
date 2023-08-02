@@ -413,17 +413,19 @@ void Population<Args...>::resetMemory (unsigned int genome_id) {
 
 template <typename... Args>
 void Population<Args...>::runNetwork () {
-	std::thread threads [popSize];
+	std::vector<std::thread> threads;
 
 	for (unsigned int i = 0; i < popSize; i++) {
 		// add the task to a specific thread
-		threads [i] = std::thread (genomes [i]->runNetwork ());
+		threads.push_back (std::thread (genomes [i]->runNetwork ()));
 	}
 
 	for (unsigned int i = 0; i < popSize; i++) {
 		// wait for its end
 		threads [i].join ();
 	}
+
+	thread.clear ();
 }
 
 template <typename... Args>
