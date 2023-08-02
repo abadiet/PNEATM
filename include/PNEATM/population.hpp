@@ -424,8 +424,6 @@ void Population<Args...>::runNetwork () {
 		// wait for its end
 		threads [i].join ();
 	}
-
-	thread.clear ();
 }
 
 template <typename... Args>
