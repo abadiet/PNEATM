@@ -64,10 +64,11 @@ class Node : public NodeBase {
 		void AddToInput (void* value, double scalar) override;	// TODO: too dirty
 
 		/**
-		 * @brief Get the output value of the node.
-		 * @return A pointer to the output value of the node.
+		 * @brief Get the output value of the node at a specific time.
+		 * @param depth The output's depth (e.g 0 stands for the current output and 3 means 3 calls ro runNetwork later). (default is 0)
+		 * @return A pointer to the output value of the node at the given time..
 		 */
-		void* getOutput () override;
+		void* getOutput (unsigned int depth = 0) override;
 
 		/**
 		 * @brief Process the node to compute its output value.
@@ -82,8 +83,9 @@ class Node : public NodeBase {
 
 		/**
 		 * @brief Reset the node to its initial state.
+		 * @param resetMemory `true` to reset memory too, `false` else. (default is `true`)
 		 */
-		void reset () override;
+		void reset (bool resetMemory = true) override;
 
 		/**
 		 * @brief Create a clone of the node.
@@ -111,7 +113,7 @@ class Node : public NodeBase {
 
 	private:
 		T_in input;
-		T_out output;
+		std::vector<T_out> outputs;
 		std::unique_ptr<ActivationFn<T_in, T_out>> activation_fn;
 
 		T_in resetValue;
@@ -148,13 +150,13 @@ void Node<T_in, T_out>::AddToInput (void* value, double scalar) {
 }
 
 template <typename T_in, typename T_out>
-void* Node<T_in, T_out>::getOutput () {
-	return static_cast<void*> (&output); 
+void* Node<T_in, T_out>::getOutput (unsigned int depth) {
+	return static_cast<void*> (&outputs [(unsigned int) outputs.size () - 1 - depth]);
 }
 
 template <typename T_in, typename T_out>
 void Node<T_in, T_out>::process () {
-	output = activation_fn->process (input);
+	outputs.push_back (activation_fn->process (input));
 }
 
 template <typename T_in, typename T_out>
@@ -163,8 +165,11 @@ void Node<T_in, T_out>::mutate (double fitness) {
 }
 
 template <typename T_in, typename T_out>
-void Node<T_in, T_out>::reset () {
+void Node<T_in, T_out>::reset (bool resetMemory) {
 	input = resetValue;
+	if (resetMemory) {
+		outputs.clear ();
+	}
 }
 
 template <typename T_in, typename T_out>
@@ -194,7 +199,16 @@ void Node<T_in, T_out>::print (const std::string& prefix) {
 	std::cout << prefix << "Output Type ID: " << index_T_out << std::endl;
 	std::cout << prefix << "Activation Function ID: " << index_activation_fn << std::endl;
 	std::cout << prefix << "Current Input Value: " << input << std::endl;
-	std::cout << prefix << "Current Output Value: " << output << std::endl;
+	std::cout << prefix << "Outputs Values (younger first): ";
+	for (size_t i = 0; i < outputs.size(); i++) {
+		std::cout << outputs[i];
+		if (i < outputs.size () - 1) {
+			std::cout << " ~ ";
+		} else {
+			std::cout << std::endl;
+		}
+	}
+	std::cout << std::endl;
 	std::cout << prefix << "Reset Value: " << resetValue << std::endl;
 	std::cout << prefix << "Activation Function Parameters: ";
 	activation_fn->print (prefix);
@@ -209,7 +223,7 @@ void Node<T_in, T_out>::serialize (std::ofstream& outFile) {
 	Serialize (index_T_out, outFile);
 	Serialize (index_activation_fn, outFile);
 	Serialize (input, outFile);
-	Serialize (output, outFile);
+	Serialize (outputs, outFile);
 	activation_fn->serialize (outFile);
 	Serialize (resetValue, outFile);
 }
@@ -223,7 +237,7 @@ void Node<T_in, T_out>::deserialize (std::ifstream& inFile) {
 	Deserialize (index_T_out, inFile);
 	Deserialize (index_activation_fn, inFile);
 	Deserialize (input, inFile);
-	Deserialize (output, inFile);
+	Deserialize (outputs, inFile);
 	activation_fn->deserialize (inFile);
 	Deserialize (resetValue, inFile);
 }

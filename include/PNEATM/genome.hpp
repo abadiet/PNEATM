@@ -346,11 +346,11 @@ class Genome {
 		std::vector<void*> resetValues;
 
 		std::vector <std::unique_ptr<NodeBase>> nodes;
-		std::vector <std::vector <void*>> prevNodes;	//TODO: void* -> const void*
 		std::vector <Connection> connections;
 
 		double fitness;
 		int speciesId;
+		unsigned int N_runNetwork;
 
 		spdlog::logger* logger;
 
@@ -390,6 +390,7 @@ Genome<Args...>::Genome (const std::vector<size_t>& bias_sch, const std::vector<
 	N_types = (unsigned int) activationFns.size ();
 	speciesId = -1;
 	fitness = 0.0;
+	N_runNetwork = 0;
 
 	// NODES
 	// bias
@@ -531,8 +532,9 @@ Genome<Args...>::Genome (const std::vector<size_t>& bias_sch, const std::vector<
 			// weight
 			const double weight = Random_Double (- weightExtremumInit, weightExtremumInit);
 
-			connections.push_back(Connection (innov_id, inNodeId, outNodeId, inNodeRecu, weight, true));
+			connections.push_back (Connection (innov_id, inNodeId, outNodeId, inNodeRecu, weight, true));
 
+			// update layers if needed
 			if (inNodeRecu == 0 && nodes [outNodeId]->layer <= nodes [inNodeId]->layer) {
 				nodes [outNodeId]->layer = nodes [inNodeId]->layer + 1;
 				UpdateLayers (outNodeId);
@@ -557,6 +559,7 @@ Genome<Args...>::Genome (unsigned int nbBias, unsigned int nbInput, unsigned int
 	logger->trace ("Genome initialization");
 	speciesId = -1;
 	fitness = 0.0;
+	N_runNetwork = 0;
 }
 
 template <typename... Args>
@@ -591,16 +594,21 @@ void Genome<Args...>::loadInput (T_in& input, int input_id) {
 
 template <typename... Args>
 void Genome<Args...>::resetMemory () {
-	prevNodes.clear ();
+	N_runNetwork = 0;
+	for (const std::unique_ptr<NodeBase>& node : nodes) {
+		node->reset (true);
+	}
 }
 
 template <typename... Args>
 void Genome<Args...>::runNetwork() {
 	/* Process all input and output. For that, it "scans" each layer from the inputs to the last hidden's layer to calculate input with already known value. */ 
 
+	N_runNetwork++;
+
 	// reset input
 	for (size_t i = nbBias + nbInput; i < nodes.size(); i++) {
-		nodes [i]->reset ();
+		nodes [i]->reset (false);
 	}
 
 	// process nodes[*]->output for input/bias nodes
@@ -608,46 +616,36 @@ void Genome<Args...>::runNetwork() {
 		nodes [i]->process ();
 	}
 
-	int lastLayer = nodes[nbBias + nbInput]->layer;
+	int lastLayer = nodes [nbBias + nbInput]->layer;
 
 	for (int ilayer = 1; ilayer <= lastLayer; ilayer++) {
 		// process nodes[*]->input
 		for (size_t i = 0; i < connections.size (); i++) {
-			if (connections [i].enabled && nodes [connections [i].outNodeId]->layer == ilayer) {	// if the connections still exist and is pointing on the current layer
-				if (connections [i].inNodeRecu == 0) {
+			if (connections [i].enabled && nodes [connections [i].outNodeId]->layer == ilayer) {	// if the connections still exist and is pointing to the current layer
+				if (connections [i].inNodeRecu < N_runNetwork) {
+
+					unsigned int depth = connections [i].inNodeRecu;
+					// if the connection's input node is further in the network it has not been processed and so its previous output is the current one for it!
+					if (nodes [connections [i].inNodeId]->layer >= nodes [connections [i].outNodeId]->layer) depth--;
+
 					nodes [connections [i].outNodeId]->AddToInput (
-						nodes [connections [i].inNodeId]->getOutput (),
+						nodes [connections [i].inNodeId]->getOutput (depth),
 						connections [i].weight
 					);
-				} else {	// is recurent
-					if (connections[i].inNodeRecu < (unsigned int) prevNodes.size () + 1) {
-						nodes [connections[i].outNodeId]->AddToInput (
-							prevNodes [(unsigned int) prevNodes.size () - connections [i].inNodeRecu][connections [i].inNodeId],
-							connections [i].weight
-						);
-					} else {
-						// the input of the connection isn't existing yet!
-						// we consider that the connection isn't existing
-					}
+				} else {
+					// the input of the connection isn't existing yet!
+					// we consider that the connection isn't existing
 				}
 			}
 		}
 
-		// process nodes[*]->output
+		// process nodes[*]->output & store outputs
 		for (size_t i = 0; i < nodes.size (); i++) {
 			if (nodes [i]->layer == ilayer) {
 				nodes [i]->process ();
 			}
 		}
 	}
-
-	// we have to store previous values
-	prevNodes.push_back ({});
-	prevNodes.back ().reserve (nodes.size ());
-	for (const std::unique_ptr<NodeBase>& node : nodes) {
-		prevNodes.back ().push_back (node->getOutput ());
-	}
-
 }
 
 template <typename... Args>
@@ -1110,7 +1108,6 @@ void Genome<Args...>::print (const std::string& prefix) {
 		node->print (prefix + "   ");
 		std::cout << std::endl;
 	}
-	std::cout << prefix << "Previous Nodes: " << prevNodes.size () << " calls to the network are stored" << std::endl;
 	std::cout << prefix << "Connections: " << std::endl;
 	for (size_t i = 0; i < connections.size (); i++) {
 		connections [i].print (prefix + "   ");
@@ -1300,6 +1297,7 @@ void Genome<Args...>::serialize (std::ofstream& outFile) {
 
 	Serialize (fitness, outFile);
 	Serialize (speciesId, outFile);
+	Serialize (N_runNetwork, outFile);
 }
 
 template <typename... Args>
@@ -1333,6 +1331,7 @@ void Genome<Args...>:: deserialize (std::ifstream& inFile) {
 
 	Deserialize (fitness, inFile);
 	Deserialize (speciesId, inFile);
+	Deserialize (N_runNetwork, inFile);
 }
 
 

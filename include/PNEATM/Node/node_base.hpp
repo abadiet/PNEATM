@@ -46,10 +46,11 @@ class NodeBase{
 		virtual void AddToInput (void* value, double scalar) = 0;	// TODO: too dirty
 
 		/**
-		 * @brief Get the output value of the node.
-		 * @return A pointer to the output value of the node.
+		 * @brief Get the output value of the node at a specific time.
+		 * @param depth The output's depth (e.g 0 stands for the current output and 3 means 3 calls ro runNetwork later). (default is 0)
+		 * @return A pointer to the output value of the node at the given time.
 		 */
-		virtual void* getOutput () = 0;
+		virtual void* getOutput (unsigned int depth = 0) = 0;
 
 		/**
 		 * @brief Process the node to compute its output value.
@@ -64,8 +65,9 @@ class NodeBase{
 
 		/**
 		 * @brief Reset the node to its initial state.
+		 * @param resetMemory `true` to reset memory too, `false` else. (default is `true`)
 		 */
-		virtual void reset () = 0;
+		virtual void reset (bool resetMemory = true) = 0;
 
 		/**
 		 * @brief Create a clone of the node.
