@@ -33,6 +33,16 @@ Documentation is available at [https://titofra.github.io/PNEATM/](https://titofr
 	<img src="https://github.com/titofra/PNEATM/blob/main/examples/snake/resources/snakeGameplay.gif">
 </p>
 
+## Warning
+
+This project is currently under development and is provided as-is, without any guarantees. There are several issues that still persist, such as slow convergence, too few optimizations, and the potential for an over-representation problem of a species.
+<p align="center">
+	<img src="https://github.com/titofra/PNEATM/blob/main/examples/snake/resources/over-representation_problem.png" alt="over-representation problem of the red species">
+</p>
+<p align="center">
+	<em> over-representation problem of the red species </em>
+</p>
+
 ## TODO
 - [x] MultiThreading
 - [ ] GPU acceleration
