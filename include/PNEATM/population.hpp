@@ -472,11 +472,6 @@ void Population<Args...>::speciate (unsigned int target, unsigned int maxIterati
 		tmpspecies = species;
 		nbSpeciesAlive = 0;
 
-		// reset species
-		for (unsigned int i = 0; i < popSize; i++) {
-			genomes [i]->speciesId = -1;
-		}
-
 		// reset tmpspecies
 		for (size_t iSpe = 0; iSpe < tmpspecies.size (); iSpe++) {
 			if (!tmpspecies [iSpe].isDead) {	// if the species is still alive
@@ -484,36 +479,33 @@ void Population<Args...>::speciate (unsigned int target, unsigned int maxIterati
 			}
 		}
 
-		// process the other genomes
+		// speciation
 		for (unsigned int genome_id = 0; genome_id < popSize; genome_id++) {
-			if (genomes [genome_id]->speciesId == -1) {	// if the genome not already belong to a species
+			size_t itmpspeciesBest;
+			double dstBest = std::numeric_limits<double>::max ();
+			if (tmpspecies.size () > 0) {	// if there is at least one species
 
-				size_t itmpspeciesBest;
-				double dstBest = std::numeric_limits<double>::max ();
-				if (tmpspecies.size () > 0) {	// if there is at least one species
-
-					// we search for the closest species
-					itmpspeciesBest = 0;
-					dstBest = tmpspecies [itmpspeciesBest].distanceWith (genomes [genome_id], a, b, c);
-					double dst;
-					for (size_t itmpspecies = 0; itmpspecies < tmpspecies.size (); itmpspecies++) {
-						if (!tmpspecies [itmpspecies].isDead && (dst = tmpspecies [itmpspecies].distanceWith (genomes [genome_id], a, b, c)) <= dstBest) {
-							// we found a closer one
-							itmpspeciesBest = itmpspecies;
-							dstBest = dst;
-						}
+				// we search for the closest species
+				itmpspeciesBest = 0;
+				dstBest = tmpspecies [itmpspeciesBest].distanceWith (genomes [genome_id], a, b, c);
+				double dst;
+				for (size_t itmpspecies = 0; itmpspecies < tmpspecies.size (); itmpspecies++) {
+					if (!tmpspecies [itmpspecies].isDead && (dst = tmpspecies [itmpspecies].distanceWith (genomes [genome_id], a, b, c)) <= dstBest) {
+						// we found a closer one
+						itmpspeciesBest = itmpspecies;
+						dstBest = dst;
 					}
-
-				}
-				if (dstBest >= speciationThresh || tmpspecies.size () == 0) {
-					// the closest species is too far or there is no species: we create one new
-					itmpspeciesBest = tmpspecies.size ();
-					tmpspecies.push_back (Species<Args...> ((unsigned int) itmpspeciesBest, genomes [genome_id]->connections, dstType));
 				}
 
-				tmpspecies [itmpspeciesBest].members.push_back (genome_id);
-				genomes [genome_id]->speciesId = tmpspecies [itmpspeciesBest].id;
 			}
+			if (dstBest >= speciationThresh) {
+				// the closest species is too far or there is no species: we create a new one
+				itmpspeciesBest = tmpspecies.size ();
+				tmpspecies.push_back (Species<Args...> ((unsigned int) itmpspeciesBest, genomes [genome_id]->connections, dstType));
+			}
+
+			tmpspecies [itmpspeciesBest].members.push_back (genome_id);
+			genomes [genome_id]->speciesId = tmpspecies [itmpspeciesBest].id;
 		}
 
 		// check how many species are still alive
@@ -659,7 +651,7 @@ void Population<Args...>::UpdateFitnesses (double speciesSizeEvolutionLimit) {
 				// the species can have offsprings
 
 				double evolutionFactor = species [i].avgFitnessAdjusted / (avgFitnessAdjusted + std::numeric_limits<double>::min ());
-				if (evolutionFactor > speciesSizeEvolutionLimit) evolutionFactor = speciesSizeEvolutionLimit;	// we limit the speceis evolution factor: a species's size cannot skyrocket from few genomes
+				if (evolutionFactor > speciesSizeEvolutionLimit) evolutionFactor = speciesSizeEvolutionLimit;	// we limit the species evolution factor: a species's size cannot skyrocket from few genomes
 
 				species [i].allowedOffspring = (int) ((double) species [i].members.size () * evolutionFactor);	// note that (int) 0.9 == 0.0
 			} else {
@@ -746,7 +738,7 @@ void Population<Args...>::crossover (bool elitism, double crossover_rate) {
 	genomes = std::move (newGenomes);
 
 	// reset species members
-	for (size_t i = 0; i < species.size(); i++) {
+	for (size_t i = 0; i < species.size (); i++) {
 		species [i].members.clear ();
 		species [i].isDead = true;
 	}
