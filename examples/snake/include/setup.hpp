@@ -37,7 +37,8 @@ void playGameFitter (pneatm::Genome<Args...>& genome, const unsigned int maxIter
         for (unsigned int i = 0; i < 14; i++) {
             genome.template loadInput<myInt> (AI_Inputs [i], i);
         }
-        genome.template loadInput<float> (snake.getScore (), 14);
+        float score = snake.getScore ();
+        genome.template loadInput<float> (score, 14);
 
         genome.runNetwork ();
 
@@ -191,6 +192,57 @@ pneatm::Population<myInt, myFloat> SetupPopulation (unsigned int popSize, spdlog
     distanceFn dstType = CONVENTIONAL;
     unsigned int threshGensSinceImproved = 15;
     return pneatm::Population<myInt, myFloat> (popSize, bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger, dstType, speciationThreshInit, threshGensSinceImproved, "stats.csv");
+}
+
+pneatm::Population<myInt, myFloat> LoadPopulation (const std::string& filename, spdlog::logger* logger, const std::string& stats_filename) {
+    // bias values
+    std::vector<void*> bias_init;
+    myFloat* unitValueFLOAT = new myFloat (1.0f);
+    myInt* unitValueINT = new myInt (1);
+    bias_init.push_back ((void*) unitValueINT);
+    bias_init.push_back ((void*) unitValueFLOAT);
+
+    // reset values
+    std::vector<void*> resetValues;
+    myFloat* nullValueFLOAT = new myFloat (0.0f);
+    myInt* nullValueINT = new myInt (0);
+    resetValues.push_back ((void*) nullValueINT);
+    resetValues.push_back ((void*) nullValueFLOAT);
+
+    // activation functions setup
+    std::vector<std::vector<std::vector<ActivationFnBase*>>> activationFns;
+    activationFns.push_back ({});
+    activationFns.push_back ({});
+    activationFns [0].push_back ({});
+    activationFns [0].push_back ({});
+    activationFns [1].push_back ({});
+    activationFns [1].push_back ({});
+    activationFns [0][0].push_back (new ActivationFn<myInt, myInt> ());
+    activationFns [0][0].push_back (new ActivationFn<myInt, myInt> ());
+    activationFns [1][1].push_back (new ActivationFn<myFloat, myFloat> ());
+    activationFns [1][1].push_back (new ActivationFn<myFloat, myFloat> ());
+    activationFns [0][1].push_back (new ActivationFn<myInt, myFloat> ());
+    activationFns [1][0].push_back (new ActivationFn<myFloat, myInt> ());
+    activationFns [0][0][0]->setFunction ((void*) &identity_int2int);   // identity function MUST BE the first
+    activationFns [0][0][1]->setFunction ((void*) &sigmoid_int2int);
+    activationFns [1][1][0]->setFunction ((void*) &identity_float2float);   // identity function MUST BE the first
+    activationFns [1][1][1]->setFunction ((void*) &sigmoid_float2float);
+    activationFns [0][1][0]->setFunction ((void*) &sigmoid_int2float);
+    activationFns [1][0][0]->setFunction ((void*) &sigmoid_float2int);
+    activationFns [0][0][0]->setPrintingFunction (printingFn);  // for all the activation functions, the printing and mutation functions are the sames
+    activationFns [0][0][1]->setPrintingFunction (printingFn);
+    activationFns [1][1][0]->setPrintingFunction (printingFn);
+    activationFns [1][1][1]->setPrintingFunction (printingFn);
+    activationFns [0][1][0]->setPrintingFunction (printingFn);
+    activationFns [1][0][0]->setPrintingFunction (printingFn);
+    activationFns [0][0][0]->setMutationFunction (mutationFn);
+    activationFns [0][0][1]->setMutationFunction (mutationFn);
+    activationFns [1][1][0]->setMutationFunction (mutationFn);
+    activationFns [1][1][1]->setMutationFunction (mutationFn);
+    activationFns [0][1][0]->setMutationFunction (mutationFn);
+    activationFns [1][0][0]->setMutationFunction (mutationFn);
+
+    return pneatm::Population<myInt, myFloat> (filename, bias_init, resetValues, activationFns, logger, stats_filename);
 }
 
 std::function<pneatm::mutationParams_t (double)> SetupMutationParametersMaps () {

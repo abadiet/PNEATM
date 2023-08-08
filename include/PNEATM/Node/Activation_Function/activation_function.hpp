@@ -174,20 +174,13 @@ void ActivationFn<T_in, T_out>::print (const std::string& prefix) {
 template <typename T_in, typename T_out>
 void ActivationFn<T_in, T_out>::serialize (std::ofstream& outFile) {
 	Serialize (*params, outFile);
-	Serialize (mutationFn, outFile);
-	Serialize (printingFn, outFile);
-	Serialize (processFn, outFile);
 }
 
 template <typename T_in, typename T_out>
 void ActivationFn<T_in, T_out>::deserialize (std::ifstream& inFile) {
 	activationFnParams_t params_tmp;
 	Deserialize (params_tmp, inFile);
-	*params = params_tmp; 
-
-	Deserialize (mutationFn, inFile);
-	Deserialize (printingFn, inFile);
-	Deserialize (processFn, inFile);
+	*params = params_tmp;
 }
 
 #endif	// ACTIVATION_FUNCTION_HPP

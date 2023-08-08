@@ -1319,7 +1319,7 @@ void Genome<Args...>:: deserialize (std::ifstream& inFile) {
 		Deserialize (iT_in, inFile);
 		Deserialize (iT_out, inFile);
 		nodes.push_back (CreateNode::get<Args...> (iT_in, iT_out));
-		nodes [k]->deserialize (inFile);
+		nodes [k]->deserialize (inFile, activationFns);
 	}
 
 	Deserialize (sz, inFile);

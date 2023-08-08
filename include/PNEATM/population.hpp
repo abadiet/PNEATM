@@ -57,10 +57,11 @@ class Population {
 		 * @param filename The file path.
 		 * @param bias_values The initial biases values (e.g., k-th bias will have value bias_values[k]).
 		 * @param resetValues The biases reset values (e.g., k-th bias can be resetted to resetValues[k]).
+		 * @param activationFns The activation functions (e.g., activationFns[i][j] is a pointer to an activation function that takes an input of type of index i and return a type of index j output).
 		 * @param logger A pointer to the logger for logging.
 		 * @param stats_filename The filename for statistics. (default is an empty string, which doesn't create any file)
 		 */
-		Population (const std::string& filename, const std::vector<void*>& bias_values, const std::vector<void*>& resetValues, spdlog::logger* logger, const std::string& stats_filename = "");
+		Population (const std::string& filename, const std::vector<void*>& bias_values, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, spdlog::logger* logger, const std::string& stats_filename = "");
 
 		/**
 		 * @brief Destructor for the Population class.
@@ -337,9 +338,10 @@ Population<Args...>::Population(unsigned int popSize, const std::vector<size_t>&
 }
 
 template <typename... Args>
-Population<Args...>::Population (const std::string& filename, const std::vector<void*>& bias_values, const std::vector<void*>& resetValues, spdlog::logger* logger, const std::string& stats_filename) :
+Population<Args...>::Population (const std::string& filename, const std::vector<void*>& bias_values, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, spdlog::logger* logger, const std::string& stats_filename) :
 	bias_values (bias_values),
 	resetValues (resetValues),
+	activationFns (activationFns),
 	logger (logger)
 {
 	logger->info ("Population loading");
@@ -895,19 +897,6 @@ void Population<Args...>::serialize (std::ofstream& outFile) {
 		species [i].serialize (outFile);
 	}
 
-    Serialize (activationFns.size (), outFile);
-	for (size_t i = 0; i < activationFns.size (); i++) {
-
-    	Serialize (activationFns [i].size (), outFile);
-		for (size_t j = 0; j < activationFns [i].size (); j++) {
-	
-    		Serialize (activationFns [i][j].size (), outFile);
-			for (size_t k = 0; k < activationFns [i][j].size (); k++) {
-				activationFns [i][j][k]->serialize (outFile);
-			}
-		}
-	}
-
 	conn_innov.serialize (outFile);
 	node_innov.serialize (outFile);
 }
@@ -932,8 +921,6 @@ void Population<Args...>::deserialize (std::ifstream& inFile) {
     Deserialize (fittergenome_id, inFile);
 
 	size_t sz;
-	size_t sz1;
-	size_t sz2;
 
 	Deserialize (sz, inFile);
 	genomes.clear ();
@@ -947,28 +934,6 @@ void Population<Args...>::deserialize (std::ifstream& inFile) {
 	species.reserve (sz);
 	for (size_t i = 0; i < sz; i++) {
 		species.push_back (Species<Args...> (inFile));
-	}
-
-	Deserialize (sz, inFile);
-	activationFns.clear ();	// TODO each clear should be do with delete ()
-	activationFns.reserve (sz);
-	for (size_t i = 0; i < sz; i++) {
-		activationFns.push_back ({});
-
-		Deserialize (sz1, inFile);
-		activationFns [i].clear ();
-		activationFns [i].reserve (sz1);
-		for (size_t j = 0; j < sz1; j++) {
-			activationFns [i].push_back ({});
-
-			Deserialize (sz2, inFile);
-			activationFns [i][j].clear ();
-			activationFns [i][j].reserve (sz2);
-			for (size_t k = 0; k < sz2; k++) {
-				activationFns [i][j].push_back (CreateActivationFn::get<Args...> (i, j));
-				activationFns [i][j].back ()->deserialize (inFile);
-			}
-		}
 	}
 
 	conn_innov.deserialize (inFile);
