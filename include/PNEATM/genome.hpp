@@ -229,10 +229,11 @@ class Genome {
 		/**
 		 * @brief Constructor for the Genome class from an input file stream.
 		 * @param inFile The input file stream.
+		 * @param resetValues The biases reset values (e.g., k-th bias can be resetted to resetValues[k]).
 		 * @param activationFns The activation functions (e.g., activationFns[i][j] is a pointer to an activation function that takes an input of type of index i and return a type of index j output).
 		 * @param logger A pointer to the logger for logging.
 		 */
-		Genome (std::ifstream& inFile, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, spdlog::logger* logger);
+		Genome (std::ifstream& inFile, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, spdlog::logger* logger);
 
 		/**
 		 * @brief Destructor for the Genome class.
@@ -563,8 +564,9 @@ Genome<Args...>::Genome (unsigned int nbBias, unsigned int nbInput, unsigned int
 }
 
 template <typename... Args>
-Genome<Args...>::Genome (std::ifstream& inFile, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, spdlog::logger* logger) :
+Genome<Args...>::Genome (std::ifstream& inFile, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, spdlog::logger* logger) :
 	activationFns (activationFns),
+	resetValues (resetValues),
 	logger (logger)
 {
 	logger->trace ("Genome loading");

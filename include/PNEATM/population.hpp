@@ -916,7 +916,7 @@ void Population<Args...>::deserialize (std::ifstream& inFile) {
 	genomes.clear ();
 	genomes.reserve (sz);
 	for (size_t i = 0; i < sz; i++) {
-		genomes.push_back (std::make_unique<Genome<Args...>> (inFile, activationFns, logger));
+		genomes.push_back (std::make_unique<Genome<Args...>> (inFile, resetValues, activationFns, logger));
 	}
 
 	Deserialize (sz, inFile);
