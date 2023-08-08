@@ -5,7 +5,7 @@ int main () {
 
     // init pneatm logger
 	spdlog::set_pattern ("[%Y-%m-%d %H:%M:%S.%e] [%t] [%^%l%$] %v");
-    spdlog::set_level(spdlog::level::err);
+    spdlog::set_level(spdlog::level::warn);
     auto logger = spdlog::stdout_color_mt("console");
     //auto logger = spdlog::rotating_logger_mt("pneatm_logger", "logs/log.txt", 1048576 * 100, 500);
 
@@ -124,10 +124,10 @@ int main () {
 
     // print info and draw genome's network
     pop.getGenome (-1).print ();
-    pop.getGenome (-1).draw ("/usr/share/fonts/OTF/SF-Pro-Rounded-Light.otf");
+    /*pop.getGenome (-1).draw ("/usr/share/fonts/OTF/SF-Pro-Rounded-Light.otf");
 
     // play a game by the fitter genome
-    playGameFitter (pop.getGenome (-1), maxIterationThresh, false, {800, 600}, 0.12f, 8);
+    playGameFitter (pop.getGenome (-1), maxIterationThresh, false, {800, 600}, 0.12f, 8);*/
 
     return 0;
 }
