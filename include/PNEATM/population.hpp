@@ -335,10 +335,6 @@ Population<Args...>::Population(unsigned int popSize, const std::vector<size_t>&
 	for (unsigned int i = 0; i < popSize; i++) {
 		genomes.push_back (std::make_unique<Genome<Args...>> (bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_values, resetValues, activationFns, &conn_innov, &node_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger));
 	}
-
-	// TODO tmp rm species 0 test issue7
-	species.push_back (Species<Args...> (0, genomes [0]->connections, dstType));
-	species [0].isDead = true;
 }
 
 template <typename... Args>
