@@ -21,7 +21,7 @@ target_compile_options(${PROJECT_NAME} PRIVATE
 
 # Add Libraries
 add_subdirectory(../../ ../../build)
-target_include_directories(${PROJECT_NAME} PUBLIC ../../include)
+target_include_directories(${PROJECT_NAME} PUBLIC ${PNEATM_INCLUDES})
 
 # Link Libraries
 target_link_libraries(${PROJECT_NAME} PUBLIC pneatm)

@@ -9,6 +9,9 @@ file(GLOB_RECURSE SOURCES src/*.cpp)
 # Includes
 include_directories(include)
 
+# Set Env Variables
+set(PNEATM_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/include" PARENT_SCOPE)
+
 # Add the library
 add_library(${PROJECT_NAME} STATIC ${SOURCES})
 
