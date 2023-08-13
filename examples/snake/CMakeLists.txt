@@ -19,16 +19,9 @@ target_compile_options(${PROJECT_NAME} PRIVATE
 	$<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-O3 -Wall -Wextra -Werror -Wfloat-equal -Wundef -Wcast-align -Wwrite-strings -Wunreachable-code -Wconversion -Wno-error=maybe-uninitialized -Wpedantic>
 )
 
-# Libraries
-
-## PNEATM
+# Add Libraries
 add_subdirectory(../../ ../../build)
 target_include_directories(${PROJECT_NAME} PUBLIC ../../include)
+
+# Link Libraries
 target_link_libraries(${PROJECT_NAME} PUBLIC pneatm)
-
-## SFML
-target_link_libraries(${PROJECT_NAME} PRIVATE sfml-window sfml-system sfml-graphics)
-
-## SPDLOG
-find_package(spdlog REQUIRED)
-target_link_libraries(${PROJECT_NAME} PRIVATE spdlog::spdlog)
