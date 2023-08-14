@@ -48,5 +48,5 @@ This project is currently under development and is provided as-is, without any g
 - [ ] GPU acceleration
 - [ ] Vectorization, SIMD?
 - [ ] Memory Management optimization
-- [ ] Algo optimization
+- [ ] Algo optimization: vector, unordered_map and map, sort connections by calls...
 - [ ] Compiler optimizations (PGO, LTO ...)
