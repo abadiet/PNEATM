@@ -87,9 +87,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:abcb6baf2c2c07b902ead3e9683b5bbea"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Genome.html#abcb6baf2c2c07b902ead3e9683b5bbea">Genome</a> (unsigned int nbBias, unsigned int nbInput, unsigned int nbOutput, unsigned int N_types, const std::vector&lt; void * &gt; &amp;resetValues, const std::vector&lt; std::vector&lt; std::vector&lt; <a class="el" href="classpneatm_1_1ActivationFnBase.html">ActivationFnBase</a> * &gt;&gt;&gt; &amp;activationFns, double weightExtremumInit, spdlog::logger *logger)</td></tr>
 <tr class="memdesc:abcb6baf2c2c07b902ead3e9683b5bbea"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor for the <a class="el" href="classpneatm_1_1Genome.html" title="A template class representing a genome.">Genome</a> class. This constructor will not initialized any network.  <a href="classpneatm_1_1Genome.html#abcb6baf2c2c07b902ead3e9683b5bbea">More...</a><br /></td></tr>
 <tr class="separator:abcb6baf2c2c07b902ead3e9683b5bbea"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6443b95ea3bc50b5a189a6d45e2de0c5"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Genome.html#a6443b95ea3bc50b5a189a6d45e2de0c5">Genome</a> (std::ifstream &amp;inFile, const std::vector&lt; std::vector&lt; std::vector&lt; <a class="el" href="classpneatm_1_1ActivationFnBase.html">ActivationFnBase</a> * &gt;&gt;&gt; &amp;activationFns, spdlog::logger *logger)</td></tr>
-<tr class="memdesc:a6443b95ea3bc50b5a189a6d45e2de0c5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor for the <a class="el" href="classpneatm_1_1Genome.html" title="A template class representing a genome.">Genome</a> class from an input file stream.  <a href="classpneatm_1_1Genome.html#a6443b95ea3bc50b5a189a6d45e2de0c5">More...</a><br /></td></tr>
-<tr class="separator:a6443b95ea3bc50b5a189a6d45e2de0c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aef9702c1eef98f89ca2c1b284c06d711"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Genome.html#aef9702c1eef98f89ca2c1b284c06d711">Genome</a> (std::ifstream &amp;inFile, const std::vector&lt; void * &gt; &amp;resetValues, const std::vector&lt; std::vector&lt; std::vector&lt; <a class="el" href="classpneatm_1_1ActivationFnBase.html">ActivationFnBase</a> * &gt;&gt;&gt; &amp;activationFns, spdlog::logger *logger)</td></tr>
+<tr class="memdesc:aef9702c1eef98f89ca2c1b284c06d711"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor for the <a class="el" href="classpneatm_1_1Genome.html" title="A template class representing a genome.">Genome</a> class from an input file stream.  <a href="classpneatm_1_1Genome.html#aef9702c1eef98f89ca2c1b284c06d711">More...</a><br /></td></tr>
+<tr class="separator:aef9702c1eef98f89ca2c1b284c06d711"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab162fd64ae6cb15dd4fe4af14bebeb21"><td class="memItemLeft" align="right" valign="top"><a id="ab162fd64ae6cb15dd4fe4af14bebeb21"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Genome.html#ab162fd64ae6cb15dd4fe4af14bebeb21">~Genome</a> ()</td></tr>
 <tr class="memdesc:ab162fd64ae6cb15dd4fe4af14bebeb21"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destructor for the <a class="el" href="classpneatm_1_1Genome.html" title="A template class representing a genome.">Genome</a> class. <br /></td></tr>
@@ -370,8 +370,8 @@ template&lt;typename... Args&gt; </div>
 
 </div>
 </div>
-<a id="a6443b95ea3bc50b5a189a6d45e2de0c5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6443b95ea3bc50b5a189a6d45e2de0c5">&#9670;&nbsp;</a></span>Genome() <span class="overload">[3/3]</span></h2>
+<a id="aef9702c1eef98f89ca2c1b284c06d711"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aef9702c1eef98f89ca2c1b284c06d711">&#9670;&nbsp;</a></span>Genome() <span class="overload">[3/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -383,6 +383,12 @@ template&lt;typename... Args&gt; </div>
           <td>(</td>
           <td class="paramtype">std::ifstream &amp;&#160;</td>
           <td class="paramname"><em>inFile</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::vector&lt; void * &gt; &amp;&#160;</td>
+          <td class="paramname"><em>resetValues</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -408,6 +414,7 @@ template&lt;typename... Args&gt; </div>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">inFile</td><td>The input file stream. </td></tr>
+    <tr><td class="paramname">resetValues</td><td>The biases reset values (e.g., k-th bias can be resetted to resetValues[k]). </td></tr>
     <tr><td class="paramname">activationFns</td><td>The activation functions (e.g., activationFns[i][j] is a pointer to an activation function that takes an input of type of index i and return a type of index j output). </td></tr>
     <tr><td class="paramname">logger</td><td>A pointer to the logger for logging. </td></tr>
   </table>

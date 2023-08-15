@@ -81,9 +81,9 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a9c0380a4e1d961a80603dbeab07a378e"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Species.html#a9c0380a4e1d961a80603dbeab07a378e">Species</a> (unsigned int id, const std::vector&lt; <a class="el" href="classpneatm_1_1Connection.html">Connection</a> &gt; &amp;connections, distanceFn dstType)</td></tr>
-<tr class="memdesc:a9c0380a4e1d961a80603dbeab07a378e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor for the <a class="el" href="classpneatm_1_1Species.html" title="A template class representing a species.">Species</a> class.  <a href="classpneatm_1_1Species.html#a9c0380a4e1d961a80603dbeab07a378e">More...</a><br /></td></tr>
-<tr class="separator:a9c0380a4e1d961a80603dbeab07a378e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a198246be59be425e7d0b145e588a84e3"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Species.html#a198246be59be425e7d0b145e588a84e3">Species</a> (unsigned int id, const std::unordered_map&lt; unsigned int, <a class="el" href="classpneatm_1_1Connection.html">Connection</a> &gt; &amp;connections, distanceFn dstType)</td></tr>
+<tr class="memdesc:a198246be59be425e7d0b145e588a84e3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor for the <a class="el" href="classpneatm_1_1Species.html" title="A template class representing a species.">Species</a> class.  <a href="classpneatm_1_1Species.html#a198246be59be425e7d0b145e588a84e3">More...</a><br /></td></tr>
+<tr class="separator:a198246be59be425e7d0b145e588a84e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab48be3aeca5f36eeff086ad1c7d8348b"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Species.html#ab48be3aeca5f36eeff086ad1c7d8348b">Species</a> (std::ifstream &amp;inFile)</td></tr>
 <tr class="memdesc:ab48be3aeca5f36eeff086ad1c7d8348b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor for the <a class="el" href="classpneatm_1_1Species.html" title="A template class representing a species.">Species</a> class from an input file stream.  <a href="classpneatm_1_1Species.html#ab48be3aeca5f36eeff086ad1c7d8348b">More...</a><br /></td></tr>
 <tr class="separator:ab48be3aeca5f36eeff086ad1c7d8348b"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -123,8 +123,8 @@ class pneatm::Species&lt; Args &gt;</h3>
   </dd>
 </dl>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="a9c0380a4e1d961a80603dbeab07a378e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9c0380a4e1d961a80603dbeab07a378e">&#9670;&nbsp;</a></span>Species() <span class="overload">[1/2]</span></h2>
+<a id="a198246be59be425e7d0b145e588a84e3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a198246be59be425e7d0b145e588a84e3">&#9670;&nbsp;</a></span>Species() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -140,7 +140,7 @@ template&lt;typename... Args&gt; </div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const std::vector&lt; <a class="el" href="classpneatm_1_1Connection.html">Connection</a> &gt; &amp;&#160;</td>
+          <td class="paramtype">const std::unordered_map&lt; unsigned int, <a class="el" href="classpneatm_1_1Connection.html">Connection</a> &gt; &amp;&#160;</td>
           <td class="paramname"><em>connections</em>, </td>
         </tr>
         <tr>
@@ -161,7 +161,7 @@ template&lt;typename... Args&gt; </div>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">id</td><td>the species ID. </td></tr>
-    <tr><td class="paramname">connections</td><td>A vector of connection that define the species traits. Will be used to process the distance between the species and genomes. </td></tr>
+    <tr><td class="paramname">connections</td><td>A unordered map of connection that define the species traits. Will be used to process the distance between the species and genomes. </td></tr>
     <tr><td class="paramname">dstType</td><td>The distance algorithm to use:<br  />
  - <code>CONVENTIONAL</code>: algorithm used in the original NEAT<br  />
  - <code>EUCLIDIAN</code>: euclidian distance in the connections's space </td></tr>

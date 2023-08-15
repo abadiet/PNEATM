@@ -134,12 +134,12 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <tr class="memitem:ad0d398692f22c7b8bfc2b264bca7b40c"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; <a class="el" href="classpneatm_1_1NodeBase.html">NodeBase</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Node.html#ad0d398692f22c7b8bfc2b264bca7b40c">clone</a> () override</td></tr>
 <tr class="memdesc:ad0d398692f22c7b8bfc2b264bca7b40c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a clone of the node.  <a href="classpneatm_1_1Node.html#ad0d398692f22c7b8bfc2b264bca7b40c">More...</a><br /></td></tr>
 <tr class="separator:ad0d398692f22c7b8bfc2b264bca7b40c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa677a073c367f74d527d4b78b5c50495"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Node.html#aa677a073c367f74d527d4b78b5c50495">print</a> (const std::string &amp;prefix=&quot;&quot;) override</td></tr>
-<tr class="memdesc:aa677a073c367f74d527d4b78b5c50495"><td class="mdescLeft">&#160;</td><td class="mdescRight">Print information about the node.  <a href="classpneatm_1_1Node.html#aa677a073c367f74d527d4b78b5c50495">More...</a><br /></td></tr>
-<tr class="separator:aa677a073c367f74d527d4b78b5c50495"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a746dd934190c367ca59f1180f465d7c0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Node.html#a746dd934190c367ca59f1180f465d7c0">serialize</a> (std::ofstream &amp;outFile) override</td></tr>
-<tr class="memdesc:a746dd934190c367ca59f1180f465d7c0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Serialize the <a class="el" href="classpneatm_1_1Node.html" title="A template class representing a node in a neural network.">Node</a> instance to an output file stream.  <a href="classpneatm_1_1Node.html#a746dd934190c367ca59f1180f465d7c0">More...</a><br /></td></tr>
-<tr class="separator:a746dd934190c367ca59f1180f465d7c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa1157c67a7a9edbd1acd8334eb6a37e0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Node.html#aa1157c67a7a9edbd1acd8334eb6a37e0">print</a> (const std::string &amp;prefix=&quot;&quot;) const override</td></tr>
+<tr class="memdesc:aa1157c67a7a9edbd1acd8334eb6a37e0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Print information about the node.  <a href="classpneatm_1_1Node.html#aa1157c67a7a9edbd1acd8334eb6a37e0">More...</a><br /></td></tr>
+<tr class="separator:aa1157c67a7a9edbd1acd8334eb6a37e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af208682ccd89232230530a7c7afa0cfe"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Node.html#af208682ccd89232230530a7c7afa0cfe">serialize</a> (std::ofstream &amp;outFile) const override</td></tr>
+<tr class="memdesc:af208682ccd89232230530a7c7afa0cfe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Serialize the <a class="el" href="classpneatm_1_1Node.html" title="A template class representing a node in a neural network.">Node</a> instance to an output file stream.  <a href="classpneatm_1_1Node.html#af208682ccd89232230530a7c7afa0cfe">More...</a><br /></td></tr>
+<tr class="separator:af208682ccd89232230530a7c7afa0cfe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a839713e8038ccff51d61ecd2933811ad"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Node.html#a839713e8038ccff51d61ecd2933811ad">deserialize</a> (std::ifstream &amp;inFile, const std::vector&lt; std::vector&lt; std::vector&lt; <a class="el" href="classpneatm_1_1ActivationFnBase.html">ActivationFnBase</a> * &gt;&gt;&gt; &amp;activationFns) override</td></tr>
 <tr class="memdesc:a839713e8038ccff51d61ecd2933811ad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deserialize a <a class="el" href="classpneatm_1_1Node.html" title="A template class representing a node in a neural network.">Node</a> instance from an input file stream.  <a href="classpneatm_1_1Node.html#a839713e8038ccff51d61ecd2933811ad">More...</a><br /></td></tr>
 <tr class="separator:a839713e8038ccff51d61ecd2933811ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -428,8 +428,8 @@ template&lt;typename T_in , typename T_out &gt; </div>
 
 </div>
 </div>
-<a id="aa677a073c367f74d527d4b78b5c50495"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa677a073c367f74d527d4b78b5c50495">&#9670;&nbsp;</a></span>print()</h2>
+<a id="aa1157c67a7a9edbd1acd8334eb6a37e0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa1157c67a7a9edbd1acd8334eb6a37e0">&#9670;&nbsp;</a></span>print()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -444,7 +444,7 @@ template&lt;typename T_in , typename T_out &gt; </div>
           <td>(</td>
           <td class="paramtype">const std::string &amp;&#160;</td>
           <td class="paramname"><em>prefix</em> = <code>&quot;&quot;</code></td><td>)</td>
-          <td></td>
+          <td> const</td>
         </tr>
       </table>
   </td>
@@ -462,7 +462,7 @@ template&lt;typename T_in , typename T_out &gt; </div>
   </dd>
 </dl>
 
-<p>Implements <a class="el" href="classpneatm_1_1NodeBase.html#ab22d299a92c47b9f861e0d139fb2c45f">pneatm::NodeBase</a>.</p>
+<p>Implements <a class="el" href="classpneatm_1_1NodeBase.html#a49740e76a16ce8f27389d745c719df1a">pneatm::NodeBase</a>.</p>
 
 </div>
 </div>
@@ -504,8 +504,8 @@ template&lt;typename T_in , typename T_out &gt; </div>
 
 </div>
 </div>
-<a id="a746dd934190c367ca59f1180f465d7c0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a746dd934190c367ca59f1180f465d7c0">&#9670;&nbsp;</a></span>serialize()</h2>
+<a id="af208682ccd89232230530a7c7afa0cfe"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af208682ccd89232230530a7c7afa0cfe">&#9670;&nbsp;</a></span>serialize()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -520,7 +520,7 @@ template&lt;typename T_in , typename T_out &gt; </div>
           <td>(</td>
           <td class="paramtype">std::ofstream &amp;&#160;</td>
           <td class="paramname"><em>outFile</em></td><td>)</td>
-          <td></td>
+          <td> const</td>
         </tr>
       </table>
   </td>
@@ -538,7 +538,7 @@ template&lt;typename T_in , typename T_out &gt; </div>
   </dd>
 </dl>
 
-<p>Implements <a class="el" href="classpneatm_1_1NodeBase.html#accbb4f8ab493fb9085a35737f8cd52bb">pneatm::NodeBase</a>.</p>
+<p>Implements <a class="el" href="classpneatm_1_1NodeBase.html#a55c93c67fbcd59585b68d52f9afce3cc">pneatm::NodeBase</a>.</p>
 
 </div>
 </div>
