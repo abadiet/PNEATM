@@ -9,6 +9,7 @@
 #include <PNEATM/Node/create_node.hpp>
 #include <PNEATM/utils.hpp>
 #include <vector>
+#include <unordered_map>
 #include <SFML/Graphics.hpp>
 #include <cmath>
 #include <iostream>
@@ -346,8 +347,8 @@ class Genome {
 		std::vector<std::vector<std::vector<ActivationFnBase*>>> activationFns;
 		std::vector<void*> resetValues;
 
-		std::vector <std::unique_ptr<NodeBase>> nodes;
-		std::vector <Connection> connections;
+		std::unordered_map <unsigned int, std::unique_ptr<NodeBase>> nodes;
+		std::unordered_map <unsigned int, Connection> connections;
 
 		double fitness;
 		int speciesId;
@@ -399,26 +400,28 @@ Genome<Args...>::Genome (const std::vector<size_t>& bias_sch, const std::vector<
 	for (size_t i = 0; i < bias_sch.size (); i++) {
 		for (size_t k = 0; k < bias_sch [i]; k++) {
 			// get Node<T_in, T_out>
-			nodes.push_back(CreateNode::get<Args...> (i, i));
+			nodes.insert (std::make_pair (nbBias, CreateNode::get<Args...> (i, i)));
+
+			std::unique_ptr<NodeBase>& node = nodes [nbBias];
 
 			// setup the node
-			nodes.back ()->id = nbBias;
-			nodes.back ()->layer = 0;
-			nodes.back ()->index_T_in = (unsigned int) i;
-			nodes.back ()->index_T_out = (unsigned int) i;
-			nodes.back ()->index_activation_fn = 0;	// identity function is set on the first position
-			nodes.back ()->setActivationFn (
-				activationFns [nodes.back ()->index_T_in][nodes.back ()->index_T_out][nodes.back ()->index_activation_fn]->clone (false)	//activation function with new fresh parameters
+			node->id = nbBias;
+			node->layer = 0;
+			node->index_T_in = (unsigned int) i;
+			node->index_T_out = (unsigned int) i;
+			node->index_activation_fn = 0;	// identity function is set on the first position
+			node->setActivationFn (
+				activationFns [node->index_T_in][node->index_T_out][node->index_activation_fn]->clone (false)	//activation function with new fresh parameters
 			);
-			nodes.back ()->innovId = node_innov->getInnovId (
-				nodes.back ()->index_T_in,
-				nodes.back ()->index_T_out,
-				nodes.back ()->index_activation_fn,
-				RepetitionNodeCheck (nodes.back ()->index_T_in, nodes.back ()->index_T_out, nodes.back ()->index_activation_fn) - 1
+			node->innovId = node_innov->getInnovId (
+				node->index_T_in,
+				node->index_T_out,
+				node->index_activation_fn,
+				RepetitionNodeCheck (node->index_T_in, node->index_T_out, node->index_activation_fn) - 1
 			);
-			nodes.back ()->setResetValue (resetValues [i]);	// useless as bias nodes are never resetted
-			nodes.back ()->loadInput (bias_values [i]);	// load input now as it will always be the same
-			nodes.back ()->process ();	// load output now as it will always be the same
+			node->setResetValue (resetValues [i]);	// useless as bias nodes are never resetted
+			node->loadInput (bias_values [i]);	// load input now as it will always be the same
+			node->process ();	// load output now as it will always be the same
 
 			nbBias ++;
 		}
@@ -428,24 +431,26 @@ Genome<Args...>::Genome (const std::vector<size_t>& bias_sch, const std::vector<
 	for (size_t i = 0; i < inputs_sch.size (); i++) {
 		for (size_t k = 0; k < inputs_sch [i]; k++) {
 			// get Node<T_in, T_out>
-			nodes.push_back(CreateNode::get<Args...> (i, i));
+			nodes.insert (std::make_pair (nbBias + nbInput, CreateNode::get<Args...> (i, i)));
+
+			std::unique_ptr<NodeBase>& node = nodes [nbBias + nbInput];
 
 			// setup the node
-			nodes.back ()->id = nbBias + nbInput;
-			nodes.back ()->layer = 0;
-			nodes.back ()->index_T_in = (unsigned int) i;
-			nodes.back ()->index_T_out = (unsigned int) i;
-			nodes.back ()->index_activation_fn = 0;	// identity function is set on the first position
-			nodes.back ()->setActivationFn (
-				activationFns [nodes.back ()->index_T_in][nodes.back ()->index_T_out][nodes.back ()->index_activation_fn]->clone (false)	//activation function with new fresh parameters
+			node->id = nbBias + nbInput;
+			node->layer = 0;
+			node->index_T_in = (unsigned int) i;
+			node->index_T_out = (unsigned int) i;
+			node->index_activation_fn = 0;	// identity function is set on the first position
+			node->setActivationFn (
+				activationFns [node->index_T_in][node->index_T_out][node->index_activation_fn]->clone (false)	//activation function with new fresh parameters
 			);
-			nodes.back ()->innovId = node_innov->getInnovId (
-				nodes.back ()->index_T_in,
-				nodes.back ()->index_T_out,
-				nodes.back ()->index_activation_fn,
-				RepetitionNodeCheck (nodes.back ()->index_T_in, nodes.back ()->index_T_out, nodes.back ()->index_activation_fn) - 1
+			node->innovId = node_innov->getInnovId (
+				node->index_T_in,
+				node->index_T_out,
+				node->index_activation_fn,
+				RepetitionNodeCheck (node->index_T_in, node->index_T_out, node->index_activation_fn) - 1
 			);
-			nodes.back ()->setResetValue (resetValues [i]);
+			node->setResetValue (resetValues [i]);
 
 			nbInput ++;
 		}
@@ -461,24 +466,26 @@ Genome<Args...>::Genome (const std::vector<size_t>& bias_sch, const std::vector<
 	for (size_t i = 0; i < outputs_sch.size (); i++) {
 		for (size_t k = 0; k < outputs_sch [i]; k++) {
 			// get Node<T_in, T_out>
-			nodes.push_back(CreateNode::get<Args...> (i, i));
+			nodes.insert (std::make_pair (nbBias + nbInput + nbOutput, CreateNode::get<Args...> (i, i)));
+
+			std::unique_ptr<NodeBase>& node = nodes [nbBias + nbInput + nbOutput];
 
 			// setup the node
-			nodes.back ()->id = nbBias + nbInput + nbOutput;
-			nodes.back ()->layer = outputLayer;
-			nodes.back ()->index_T_in = (unsigned int) i;
-			nodes.back ()->index_T_out = (unsigned int) i;
-			nodes.back ()->index_activation_fn = 0;	// identity function is set on the first position
-			nodes.back ()->setActivationFn (
-				activationFns [nodes.back ()->index_T_in][nodes.back ()->index_T_out][nodes.back ()->index_activation_fn]->clone (false)	//activation function with new fresh parameters
+			node->id = nbBias + nbInput + nbOutput;
+			node->layer = outputLayer;
+			node->index_T_in = (unsigned int) i;
+			node->index_T_out = (unsigned int) i;
+			node->index_activation_fn = 0;	// identity function is set on the first position
+			node->setActivationFn (
+				activationFns [node->index_T_in][node->index_T_out][node->index_activation_fn]->clone (false)	//activation function with new fresh parameters
 			);
-			nodes.back ()->innovId = node_innov->getInnovId (
-				nodes.back ()->index_T_in,
-				nodes.back ()->index_T_out,
-				nodes.back ()->index_activation_fn,
-				RepetitionNodeCheck (nodes.back ()->index_T_in, nodes.back ()->index_T_out, nodes.back ()->index_activation_fn) - 1
+			node->innovId = node_innov->getInnovId (
+				node->index_T_in,
+				node->index_T_out,
+				node->index_activation_fn,
+				RepetitionNodeCheck (node->index_T_in, node->index_T_out, node->index_activation_fn) - 1
 			);
-			nodes.back ()->setResetValue (resetValues [i]);
+			node->setResetValue (resetValues [i]);
 
 			nbOutput ++;
 		}
@@ -489,24 +496,26 @@ Genome<Args...>::Genome (const std::vector<size_t>& bias_sch, const std::vector<
 		for (size_t j = 0; j < hiddens_sch_init [i].size (); j++) {
 			for (size_t k = 0; k < hiddens_sch_init [i][j]; k++) {
 				// get Node<T_in, T_out>
-				nodes.push_back(CreateNode::get<Args...> (i, j));
+				nodes.insert (std::make_pair (nbBias + nbInput + nbOutput + nbHidden, CreateNode::get<Args...> (i, j)));
+
+				std::unique_ptr<NodeBase>& node = nodes [nbBias + nbInput + nbOutput + nbHidden];
 
 				// setup the node
-				nodes.back ()->id = nbBias + nbInput + nbOutput + nbHidden;
-				nodes.back ()->layer = 1;
-				nodes.back ()->index_T_in = (unsigned int) i;
-				nodes.back ()->index_T_out = (unsigned int) j;
-				nodes.back ()->index_activation_fn = Random_UInt (0, (unsigned int) activationFns [i][j].size () - 1);
-				nodes.back ()->setActivationFn (
-					activationFns [nodes.back ()->index_T_in][nodes.back ()->index_T_out][nodes.back ()->index_activation_fn]->clone (false)	//activation function with new fresh parameters
+				node->id = nbBias + nbInput + nbOutput + nbHidden;
+				node->layer = 1;
+				node->index_T_in = (unsigned int) i;
+				node->index_T_out = (unsigned int) j;
+				node->index_activation_fn = Random_UInt (0, (unsigned int) activationFns [i][j].size () - 1);
+				node->setActivationFn (
+					activationFns [node->index_T_in][node->index_T_out][node->index_activation_fn]->clone (false)	//activation function with new fresh parameters
 				);
-				nodes.back ()->innovId = node_innov->getInnovId (
-					nodes.back ()->index_T_in,
-					nodes.back ()->index_T_out,
-					nodes.back ()->index_activation_fn,
-					RepetitionNodeCheck (nodes.back ()->index_T_in, nodes.back ()->index_T_out, nodes.back ()->index_activation_fn) - 1
+				node->innovId = node_innov->getInnovId (
+					node->index_T_in,
+					node->index_T_out,
+					node->index_activation_fn,
+					RepetitionNodeCheck (node->index_T_in, node->index_T_out, node->index_activation_fn) - 1
 				);
-				nodes.back ()->setResetValue (resetValues [i]);
+				node->setResetValue (resetValues [i]);
 
 				nbHidden ++;
 			}
@@ -527,13 +536,16 @@ Genome<Args...>::Genome (const std::vector<size_t>& bias_sch, const std::vector<
 			inNodeRecu = Random_UInt (0, maxRecuInit);
 		}
 		if (CheckNewConnectionValidity (inNodeId, outNodeId, inNodeRecu)) {	// we don't care of former connections as there is no disabled connection for now
+			// id
+			const unsigned int id = (unsigned int) connections.size ();
+			
 			// innovId
 			const unsigned int innov_id = conn_innov->getInnovId (nodes [inNodeId]->innovId, nodes [outNodeId]->innovId, inNodeRecu);
 
 			// weight
 			const double weight = Random_Double (- weightExtremumInit, weightExtremumInit);
 
-			connections.push_back (Connection (innov_id, inNodeId, outNodeId, inNodeRecu, weight, true));
+			connections.insert (std::make_pair (id, Connection (id, innov_id, inNodeId, outNodeId, inNodeRecu, weight, true)));
 
 			// update layers if needed
 			if (inNodeRecu == 0 && nodes [outNodeId]->layer <= nodes [inNodeId]->layer) {
@@ -597,24 +609,24 @@ void Genome<Args...>::loadInput (T_in& input, int input_id) {
 template <typename... Args>
 void Genome<Args...>::resetMemory () {
 	N_runNetwork = 0;
-	for (const std::unique_ptr<NodeBase>& node : nodes) {
-		node->reset (true);
+	for (std::pair<const unsigned int, std::unique_ptr<NodeBase>>& node : nodes) {
+		node.second->reset (true);
 	}
 }
 
 template <typename... Args>
-void Genome<Args...>::runNetwork() {
+void Genome<Args...>::runNetwork () {
 	/* Process all input and output. For that, it "scans" each layer from the inputs to the last hidden's layer to calculate input with already known value. */ 
 
 	N_runNetwork++;
 
 	// reset input
-	for (size_t i = nbBias + nbInput; i < nodes.size(); i++) {
+	for (unsigned int i = nbBias + nbInput; i < (unsigned int) nodes.size (); i++) {
 		nodes [i]->reset (false);
 	}
 
 	// process nodes[*]->output for input/bias nodes
-	for (unsigned int i = 0; i < nbBias + nbInput; i++) {
+	for (unsigned int i = 0; i < (unsigned int) nbBias + nbInput; i++) {
 		nodes [i]->process ();
 	}
 
@@ -622,17 +634,17 @@ void Genome<Args...>::runNetwork() {
 
 	for (int ilayer = 1; ilayer <= lastLayer; ilayer++) {
 		// process nodes[*]->input
-		for (size_t i = 0; i < connections.size (); i++) {
-			if (connections [i].enabled && nodes [connections [i].outNodeId]->layer == ilayer) {	// if the connections still exist and is pointing to the current layer
-				if (connections [i].inNodeRecu < N_runNetwork) {
+		for (const std::pair<const unsigned int, Connection>& conn : connections) {
+			if (conn.second.enabled && nodes [conn.second.outNodeId]->layer == ilayer) {	// if the connection still exist and is pointing to the current layer
+				if (conn.second.inNodeRecu < N_runNetwork) {
 
-					unsigned int depth = connections [i].inNodeRecu;
+					unsigned int depth = conn.second.inNodeRecu;
 					// if the connection's input node is further in the network it has not been processed and so its previous output is the current one for it!
-					if (nodes [connections [i].inNodeId]->layer >= nodes [connections [i].outNodeId]->layer) depth--;
+					if (nodes [conn.second.inNodeId]->layer >= nodes [conn.second.outNodeId]->layer) depth--;
 
-					nodes [connections [i].outNodeId]->AddToInput (
-						nodes [connections [i].inNodeId]->getOutput (depth),
-						connections [i].weight
+					nodes [conn.second.outNodeId]->AddToInput (
+						nodes [conn.second.inNodeId]->getOutput (depth),
+						conn.second.weight
 					);
 				} else {
 					// the input of the connection isn't existing yet!
@@ -642,9 +654,9 @@ void Genome<Args...>::runNetwork() {
 		}
 
 		// process nodes[*]->output & store outputs
-		for (size_t i = 0; i < nodes.size (); i++) {
-			if (nodes [i]->layer == ilayer) {
-				nodes [i]->process ();
+		for (std::pair<const unsigned int, std::unique_ptr<NodeBase>>& node : nodes) {
+			if (node.second->layer == ilayer) {
+				node.second->process ();
 			}
 		}
 	}
@@ -667,7 +679,7 @@ T_out Genome<Args...>::getOutput (int output_id) {
 }
 
 template <typename... Args>
-void Genome<Args...>::mutate(innovationConn_t* conn_innov, innovationNode_t* node_innov, const mutationParams_t& params) {
+void Genome<Args...>::mutate (innovationConn_t* conn_innov, innovationNode_t* node_innov, const mutationParams_t& params) {
 	// WEIGHTS
 	MutateWeights (params.weights.rate, params.weights.fullChangeRate, params.weights.perturbationFactor);
 
@@ -692,8 +704,8 @@ void Genome<Args...>::mutate(innovationConn_t* conn_innov, innovationNode_t* nod
 template <typename... Args>
 unsigned int Genome<Args...>::RepetitionNodeCheck (unsigned int index_T_in, unsigned int index_T_out, unsigned int index_activation_fn) {
 	unsigned int c = 0;
-	for (const std::unique_ptr<NodeBase>& node : nodes) {
-		if (node->index_T_in == index_T_in && node->index_T_out == index_T_out && node->index_activation_fn == index_activation_fn) {
+	for (const std::pair<const unsigned int, std::unique_ptr<NodeBase>>& node : nodes) {
+		if (node.second->index_T_in == index_T_in && node.second->index_T_out == index_T_out && node.second->index_activation_fn == index_activation_fn) {
 			// the same node is in nodes
 			c++;
 		}
@@ -707,17 +719,17 @@ bool Genome<Args...>::CheckNewConnectionValidity (unsigned int inNodeId, unsigne
 	if (nodes [inNodeId]->index_T_out != nodes [outNodeId]->index_T_in) return false;	// connections must link two same objects
 	if (outNodeId < nbBias + nbInput) return false;	// connections cannot point to an input node
 
-	for (size_t i = 0; i < connections.size (); i++) {
+	for (const std::pair<const unsigned int, Connection>& conn : connections) {
 		if (
-			connections[i].inNodeId == inNodeId
-			&& connections[i].outNodeId == outNodeId
-			&& connections[i].inNodeRecu == inNodeRecu
+			conn.second.inNodeId == inNodeId
+			&& conn.second.outNodeId == outNodeId
+			&& conn.second.inNodeRecu == inNodeRecu
 		) {
-			if (connections[i].enabled) {
+			if (conn.second.enabled) {
 				return false;	// it is already an enabled connection
 			} else {
 				// it is a disabled connection
-				 *disabled_conn_id = (int) i;
+				 *disabled_conn_id = (int) conn.second.id;
 			}
 		}
 	}
@@ -748,9 +760,9 @@ bool Genome<Args...>::CheckNewConnectionCircle (unsigned int inNodeId, unsigned 
 	if (inNodeId == outNodeId) {
 		return true;
 	}
-	for (size_t iConn = 0; iConn < connections.size (); iConn ++) {
-		if (connections [iConn].inNodeId == outNodeId && connections [iConn].inNodeRecu == 0) {
-			if (CheckNewConnectionCircle (inNodeId, connections [iConn].outNodeId)) {
+	for (const std::pair<const unsigned int, Connection>& conn : connections) {
+		if (conn.second.inNodeId == outNodeId && conn.second.inNodeRecu == 0) {
+			if (CheckNewConnectionCircle (inNodeId, conn.second.outNodeId)) {
 				return true;
 			}
 		}
@@ -762,14 +774,14 @@ bool Genome<Args...>::CheckNewConnectionCircle (unsigned int inNodeId, unsigned 
 template <typename... Args>
 void Genome<Args...>::MutateWeights (double mutateWeightThresh, double mutateWeightFullChangeThresh, double mutateWeightFactor) {
 	logger->trace ("mutation of weights");
-	for (size_t i = 0; i < connections.size (); i++) {
-		if (connections [i].enabled && Random_Double (0.0f, 1.0f, true, false) < mutateWeightThresh) {
+	for (std::pair<const unsigned int, Connection>& conn : connections) {
+		if (conn.second.enabled && Random_Double (0.0f, 1.0f, true, false) < mutateWeightThresh) {
 			if (Random_Double (0.0f, 1.0f, true, false) < mutateWeightFullChangeThresh) {
 				// reset weight
-				connections [i].weight = Random_Double (- weightExtremumInit, weightExtremumInit);
+				conn.second.weight = Random_Double (- weightExtremumInit, weightExtremumInit);
 			} else {
 				// pertub weight
-				connections [i].weight += connections [i].weight * Random_Double (- mutateWeightFactor, mutateWeightFactor);
+				conn.second.weight += conn.second.weight * Random_Double (- mutateWeightFactor, mutateWeightFactor);
 			}
 		}
 	}
@@ -778,9 +790,9 @@ void Genome<Args...>::MutateWeights (double mutateWeightThresh, double mutateWei
 template <typename... Args>
 void Genome<Args...>::MutateActivationFn (double rate) {
 	logger->trace ("mutation of activation functions");
-	for (size_t i = 0; i < nodes.size (); i++) {
+	for (std::pair<const unsigned int, std::unique_ptr<NodeBase>>& node : nodes) {
 		if (Random_Double (0.0f, 1.0f, true, false) < rate) {
-			nodes [i]->mutate (fitness);
+			node.second->mutate (fitness);
 		}
 	}
 }
@@ -816,13 +828,16 @@ bool Genome<Args...>::AddConnection (innovationConn_t* conn_innov, unsigned int 
 				return true;	// return true even no connection has been change because process ended well
 			}
 		} else {
+			//id
+			const unsigned int id = (unsigned int) connections.size ();
+
 			// innovId
 			const unsigned int innov_id = conn_innov->getInnovId (nodes [inNodeId]->innovId, nodes [outNodeId]->innovId, inNodeRecu);
 
 			// weight
 			const double weight = Random_Double (- weightExtremumInit, weightExtremumInit);
 
-			connections.push_back (Connection (innov_id, inNodeId, outNodeId, inNodeRecu, weight, true));
+			connections.insert (std::make_pair (id, Connection (id, innov_id, inNodeId, outNodeId, inNodeRecu, weight, true)));
 
 			// update layers
 			if (inNodeRecu == 0) {
@@ -846,75 +861,79 @@ template <typename... Args>
 bool Genome<Args...>::AddMonotypedNode (innovationConn_t* conn_innov, innovationNode_t* node_innov, unsigned int maxIterationsFindConnectionThresh) {
 	logger->trace ("adding a node");
 	// choose at random an enabled connection
-	if (connections.size() > 0) {	// if there is no connection, we cannot add a node!
-		unsigned int iConn = Random_UInt (0, (unsigned int) connections.size () - 1);
+	if (connections.size () > 0) {	// if there is no connection, we cannot add a node!
+		Connection& conn = connections [Random_UInt (0, (unsigned int) connections.size () - 1)];
 		unsigned int iterationNb = 0;
-		while (iterationNb < maxIterationsFindConnectionThresh && !connections [iConn].enabled) {
-			iConn = Random_UInt (0, (unsigned int) connections.size () - 1);
+		while (iterationNb < maxIterationsFindConnectionThresh && !conn.enabled) {
+			conn = connections [Random_UInt (0, (unsigned int) connections.size () - 1)];
 			iterationNb ++;
 		}
 		if (iterationNb < maxIterationsFindConnectionThresh) {	// a connection has been found
 			// disable former connection
-			connections [iConn].enabled = false;
+			conn.enabled = false;
 			
 			// setup new node
 			const unsigned int newNodeId = (unsigned int) nodes.size ();
-			const unsigned int iT_in = nodes [connections [iConn].inNodeId]->index_T_in;
-			const unsigned int iT_out = nodes [connections [iConn].outNodeId]->index_T_out;
+			const unsigned int iT_in = nodes [conn.inNodeId]->index_T_in;
+			const unsigned int iT_out = nodes [conn.outNodeId]->index_T_out;
 
 			// get Node<T_in, T_out>
-			nodes.push_back(CreateNode::get<Args...> (iT_in, iT_out));
+			nodes.insert (std::make_pair (newNodeId, CreateNode::get<Args...> (iT_in, iT_out)));
+
+			std::unique_ptr<NodeBase>& node = nodes [newNodeId];
 
 			// setup the node
-			nodes.back ()->id = newNodeId;
-			nodes.back ()->layer = -1;	// no layer for now
-			nodes.back ()->index_T_in = iT_in;
-			nodes.back ()->index_T_out = iT_out;
-			nodes.back ()->index_activation_fn = Random_UInt (0, (unsigned int) activationFns [iT_in][iT_out].size () - 1);
-			nodes.back ()->setActivationFn (
-				activationFns [iT_in][iT_out][nodes.back ()->index_activation_fn]->clone (false)	//activation function with new fresh parameters
+			node->id = newNodeId;
+			node->layer = -1;	// no layer for now
+			node->index_T_in = iT_in;
+			node->index_T_out = iT_out;
+			node->index_activation_fn = Random_UInt (0, (unsigned int) activationFns [iT_in][iT_out].size () - 1);
+			node->setActivationFn (
+				activationFns [iT_in][iT_out][node->index_activation_fn]->clone (false)	//activation function with new fresh parameters
 			);
-			nodes.back ()->innovId = node_innov->getInnovId (
-				nodes.back ()->index_T_in,
-				nodes.back ()->index_T_out,
-				nodes.back ()->index_activation_fn,
-				RepetitionNodeCheck (nodes.back ()->index_T_in, nodes.back ()->index_T_out, nodes.back ()->index_activation_fn) - 1
+			node->innovId = node_innov->getInnovId (
+				node->index_T_in,
+				node->index_T_out,
+				node->index_activation_fn,
+				RepetitionNodeCheck (node->index_T_in, node->index_T_out, node->index_activation_fn) - 1
 			);
-			nodes.back ()->setResetValue (resetValues [iT_in]);
+			node->setResetValue (resetValues [iT_in]);
 
 			// build first connection
-			int inNodeId = connections [iConn].inNodeId;
+			unsigned int id = (unsigned int) connections.size ();
+			int inNodeId = conn.inNodeId;
 			int outNodeId = newNodeId;
-			unsigned int inNodeRecu = connections [iConn].inNodeRecu;
+			unsigned int inNodeRecu = conn.inNodeRecu;
 			unsigned int innovId = conn_innov->getInnovId (nodes [inNodeId]->innovId, nodes [outNodeId]->innovId, inNodeRecu);
-			double weight = connections [iConn].weight;
+			double weight = conn.weight;
 
-			connections.push_back (Connection (innovId, inNodeId, outNodeId, inNodeRecu, weight, true));
+			connections.insert (std::make_pair (id, Connection (id, innovId, inNodeId, outNodeId, inNodeRecu, weight, true)));
 			
 			// build second connection
+			id++;
 			inNodeId = newNodeId;
-			outNodeId = connections [iConn].outNodeId;
+			outNodeId = conn.outNodeId;
 			inNodeRecu = 0;
 			innovId = conn_innov->getInnovId (nodes [inNodeId]->innovId, nodes [outNodeId]->innovId, inNodeRecu);
 			weight = Random_Double (- weightExtremumInit, weightExtremumInit);
 
-			connections.push_back (Connection (innovId, inNodeId, outNodeId, inNodeRecu, weight, true));
+			connections.insert (std::make_pair (id, Connection (id, innovId, inNodeId, outNodeId, inNodeRecu, weight, true)));
 
 			// update layers
-			if (connections [iConn].inNodeRecu > 0) {	// the connection was recurrent, so the layers are not changed
-				if (nodes [connections [iConn].outNodeId]->layer  == 1) {	// the output node was on the first layer, we cannot set the new node on the layer 0 (reserved for the input): everything has to moved
+			if (conn.inNodeRecu > 0) {	// the connection was recurrent, so the layers are not changed
+				if (nodes [conn.outNodeId]->layer  == 1) {	// the output node was on the first layer, we cannot set the new node on the layer 0 (reserved for the input): everything has to moved
 					nodes [newNodeId]->layer = 1;	// update newNodeId layer
-					nodes [connections [iConn].outNodeId]->layer = 2;	// update outNodeId layer
-					UpdateLayers (connections [iConn].outNodeId);	// update other layers
+					nodes [conn.outNodeId]->layer = 2;	// update outNodeId layer
+					UpdateLayers (conn.outNodeId);	// update other layers
 				} else {
 					// we set the new node's layer to the first one because there is no node connected to it on the same network (with a null recurrency) 
 					nodes [newNodeId]->layer = 1;	// update newNodeId layer
 				}
 			} else {									// else, the node is one layer further in the network
-				nodes [newNodeId]->layer = nodes [connections [iConn].inNodeId]->layer + 1;	// update newNodeId layer
-				if (nodes [newNodeId]->layer >= nodes [connections [iConn].outNodeId]->layer) {
-					nodes [connections [iConn].outNodeId]->layer = nodes [newNodeId]->layer + 1;	// the node is constraint, its layer is the following one
-					UpdateLayers (connections [iConn].outNodeId);
+				nodes [newNodeId]->layer = nodes [conn.inNodeId]->layer + 1;	// update newNodeId layer
+				if (nodes [newNodeId]->layer >= nodes [conn.outNodeId]->layer) {
+					nodes [conn.outNodeId]->layer = nodes [newNodeId]->layer + 1;	// the node is constraint, its layer is the following one
+					UpdateLayers (conn.outNodeId);
 				}
 			}
 			return true;
@@ -941,26 +960,29 @@ bool Genome<Args...>::AddBitypedNode (innovationConn_t* conn_innov, innovationNo
 		}
 
 		// get Node<T_in, T_out>
-		nodes.push_back(CreateNode::get<Args...> (iT_in, iT_out));
+		nodes.insert (std::make_pair (newNodeId, CreateNode::get<Args...> (iT_in, iT_out)));
+
+		std::unique_ptr<NodeBase>& node = nodes [newNodeId];
 
 		// setup the node
-		nodes.back ()->id = newNodeId;
-		nodes.back ()->layer = 1;	// default to first layer
-		nodes.back ()->index_T_in = iT_in;
-		nodes.back ()->index_T_out = iT_out;
-		nodes.back ()->index_activation_fn = Random_UInt (0, (unsigned int) activationFns [iT_in][iT_out].size () - 1);
-		nodes.back ()->setActivationFn (
-			activationFns [iT_in][iT_out][nodes.back ()->index_activation_fn]->clone (false)	//activation function with new fresh parameters
+		node->id = newNodeId;
+		node->layer = 1;	// default to first layer
+		node->index_T_in = iT_in;
+		node->index_T_out = iT_out;
+		node->index_activation_fn = Random_UInt (0, (unsigned int) activationFns [iT_in][iT_out].size () - 1);
+		node->setActivationFn (
+			activationFns [iT_in][iT_out][node->index_activation_fn]->clone (false)	//activation function with new fresh parameters
 		);
-		nodes.back ()->innovId = node_innov->getInnovId (
-			nodes.back ()->index_T_in,
-			nodes.back ()->index_T_out,
-			nodes.back ()->index_activation_fn,
-			RepetitionNodeCheck (nodes.back ()->index_T_in, nodes.back ()->index_T_out, nodes.back ()->index_activation_fn) - 1
+		node->innovId = node_innov->getInnovId (
+			node->index_T_in,
+			node->index_T_out,
+			node->index_activation_fn,
+			RepetitionNodeCheck (node->index_T_in, node->index_T_out, node->index_activation_fn) - 1
 		);
-		nodes.back ()->setResetValue (resetValues [iT_in]);
+		node->setResetValue (resetValues [iT_in]);
 
 		// Add the first connection
+		unsigned int id = (unsigned int) connections.size ();
 		unsigned int inNodeId = Random_UInt (0, (unsigned int) nodes.size () - 1);
 		unsigned int inNodeRecu = Random_UInt (0, maxRecurrency);
 		unsigned int iterationNb = 0;
@@ -986,7 +1008,7 @@ bool Genome<Args...>::AddBitypedNode (innovationConn_t* conn_innov, innovationNo
 		unsigned int innov_id = conn_innov->getInnovId (nodes [inNodeId]->innovId, nodes [newNodeId]->innovId, inNodeRecu);
 		double weight = Random_Double (- weightExtremumInit, weightExtremumInit);
 
-		connections.push_back(Connection (innov_id, inNodeId, newNodeId, inNodeRecu, weight, true));
+		connections.insert (std::make_pair (id, Connection (id, innov_id, inNodeId, newNodeId, inNodeRecu, weight, true)));
 
 		// update newNode's layer
 		if (inNodeRecu > 0) {
@@ -996,6 +1018,7 @@ bool Genome<Args...>::AddBitypedNode (innovationConn_t* conn_innov, innovationNo
 		}
 
 		// Add the second connection
+		id++;
 		unsigned int outNodeId = Random_UInt (0, (unsigned int) nodes.size () - 1);
 		inNodeRecu = 0;
 		iterationNb = 0;
@@ -1014,7 +1037,7 @@ bool Genome<Args...>::AddBitypedNode (innovationConn_t* conn_innov, innovationNo
 		innov_id = conn_innov->getInnovId (nodes [newNodeId]->innovId, nodes [outNodeId]->innovId, inNodeRecu);
 		weight = Random_Double (- weightExtremumInit, weightExtremumInit);
 
-		connections.push_back(Connection (innov_id, newNodeId, outNodeId, inNodeRecu, weight, true));
+		connections.insert (std::make_pair (id, Connection (id, innov_id, newNodeId, outNodeId, inNodeRecu, weight, true)));
 
 		// update layers
 		if (nodes [newNodeId]->layer >= nodes [outNodeId]->layer) {
@@ -1031,13 +1054,13 @@ bool Genome<Args...>::AddBitypedNode (innovationConn_t* conn_innov, innovationNo
 
 template <typename... Args>
 void Genome<Args...>::UpdateLayers_Recursive (unsigned int nodeId) {
-	for (size_t iConn = 0; iConn < connections.size (); iConn ++) {
+	for (const std::pair<const unsigned int, Connection>& conn : connections) {
 		if (
-			!(connections [iConn].inNodeRecu > 0)
-			&& connections [iConn].enabled
-			&& connections [iConn].inNodeId == nodeId
+			!(conn.second.inNodeRecu > 0)
+			&& conn.second.enabled
+			&& conn.second.inNodeId == nodeId
 		) {
-			unsigned int newNodeId = connections [iConn].outNodeId;
+			unsigned int newNodeId = conn.second.outNodeId;
 
 			if (nodes [newNodeId]->layer <= nodes [nodeId]->layer) {
 				nodes [newNodeId]->layer = nodes [nodeId]->layer + 1;
@@ -1055,19 +1078,19 @@ void Genome<Args...>::UpdateLayers (int nodeId) {
 
 	// this might move some output's node, let's homogenize that
 	int outputLayer = nodes [nbBias + nbInput]->layer;
-	for (size_t i = nbBias + nbInput; i < nbBias + nbInput + nbOutput; i ++) {
+	for (unsigned int i = nbBias + nbInput; i < nbBias + nbInput + nbOutput; i ++) {
 		// check among the outputs which one is the highest and set the output layer to it
 		if (nodes [i]->layer > outputLayer) {
 			outputLayer = nodes [i]->layer;
 		}
 	}
-	for (size_t i = nbBias + nbInput + nbOutput; i < nodes.size (); i ++) {
+	for (unsigned int i = nbBias + nbInput + nbOutput; i < nodes.size (); i ++) {
 		// check among the hiddens which one is the highest and set the output layer to it + 1
 		if (nodes [i]->layer >= outputLayer) {
 			outputLayer = nodes [i]->layer + 1;
 		}
 	}
-	for (size_t i = nbBias + nbInput; i < nbBias + nbInput + nbOutput; i ++) {
+	for (unsigned int i = nbBias + nbInput; i < nbBias + nbInput + nbOutput; i ++) {
 		// new layer!
 		nodes [i]->layer = outputLayer;
 	}
@@ -1078,8 +1101,8 @@ std::unique_ptr<Genome<Args...>> Genome<Args...>::clone () {
 	std::unique_ptr<Genome<Args...>> genome =  std::make_unique<Genome<Args...>> (nbBias, nbInput, nbOutput, N_types, resetValues, activationFns, weightExtremumInit, logger);
 
 	genome->nodes.reserve (nodes.size ());
-	for (const std::unique_ptr<NodeBase>& node : nodes) {
-		genome->nodes.push_back (node->clone ());
+	for (std::pair<const unsigned int, std::unique_ptr<NodeBase>>& node : nodes) {
+		genome->nodes [node.second->id] = node.second->clone ();
 	}
 	genome->connections = connections;
 	genome->speciesId = speciesId;
@@ -1087,7 +1110,6 @@ std::unique_ptr<Genome<Args...>> Genome<Args...>::clone () {
 
 	return genome;
 }
-
 
 template <typename... Args>
 void Genome<Args...>::print (const std::string& prefix) {
@@ -1106,13 +1128,13 @@ void Genome<Args...>::print (const std::string& prefix) {
 	}
 	std::cout << std::endl;
 	std::cout << prefix << "Nodes: " << std::endl;
-	for (const std::unique_ptr<NodeBase>& node : nodes) {
-		node->print (prefix + "   ");
+	for (const std::pair<const unsigned int, std::unique_ptr<NodeBase>>& node : nodes) {
+		node.second->print (prefix + "   ");
 		std::cout << std::endl;
 	}
 	std::cout << prefix << "Connections: " << std::endl;
-	for (size_t i = 0; i < connections.size (); i++) {
-		connections [i].print (prefix + "   ");
+	for (const std::pair<const unsigned int, Connection>& conn : connections) {
+		conn.second.print (prefix + "   ");
 		std::cout << std::endl;
 	}
 }
@@ -1189,25 +1211,25 @@ void Genome<Args...>::draw (const std::string& font_path, unsigned int windowWid
 			}
 		}
 	}
-	
+
 	// ### CONNECTIONS ###
-	double maxWeight = connections[0].weight;
-	for (size_t i = 1; i < connections.size(); i++) {
-		if (connections [i].weight * connections [i].weight > maxWeight * maxWeight) {
-			maxWeight = connections [i].weight;
+	double maxWeight = connections [0].weight;
+	for (const std::pair<const unsigned int, Connection>& conn : connections) {
+		if (conn.second.weight * conn.second.weight > maxWeight * maxWeight) {
+			maxWeight = conn.second.weight;
 		}
 	}
 
-	for (size_t i = 0; i < connections.size(); i++) {
+	for (const std::pair<const unsigned int, Connection>& conn : connections) {
 		sf::Color color;
-		if (connections [i].enabled) {
-			if (!(connections [i].inNodeRecu > 0)) {
+		if (conn.second.enabled) {
+			if (!(conn.second.inNodeRecu > 0)) {
 				color = sf::Color::Green;
 			} else {
 				color = sf::Color::Blue;
 			}
 		} else {
-			if (!(connections [i].inNodeRecu > 0)) {
+			if (!(conn.second.inNodeRecu > 0)) {
 				color = sf::Color::Red;
 			} else {
 				color = sf::Color::Yellow;
@@ -1215,21 +1237,21 @@ void Genome<Args...>::draw (const std::string& font_path, unsigned int windowWid
 		}
 
 		// weighted connections
-		if (connections [i].weight / maxWeight > 0.0) {
-			float ratioColor = (float) pow(connections[i].weight / maxWeight, 0.4);
+		if (conn.second.weight / maxWeight > 0.0) {
+			float ratioColor = (float) pow(connections[conn.second.id].weight / maxWeight, 0.4);
 			color.r = static_cast<sf::Uint8>(color.r * ratioColor);
 			color.g = static_cast<sf::Uint8>(color.g * ratioColor);
 			color.b = static_cast<sf::Uint8>(color.b * ratioColor);
 		} else {
-			float ratioColor = (float) pow(-1 * connections[i].weight / maxWeight, 0.4);
+			float ratioColor = (float) pow(-1 * connections[conn.second.id].weight / maxWeight, 0.4);
 			color.r = static_cast<sf::Uint8>(color.r * ratioColor);
 			color.g = static_cast<sf::Uint8>(color.g * ratioColor);
 			color.b = static_cast<sf::Uint8>(color.b * ratioColor);
 		}
 
 		lines.push_back (sf::VertexArray (sf::Lines, 2));
-		lines [i][0] = sf::Vertex({dots [connections [i].inNodeId].getPosition ().x + dotsRadius, dots [connections [i].inNodeId].getPosition ().y + dotsRadius}, color);
-		lines [i][1] = sf::Vertex({dots [connections [i].outNodeId].getPosition ().x + dotsRadius, dots [connections [i].outNodeId].getPosition ().y + dotsRadius}, color);
+		lines.back ()[0] = sf::Vertex({dots [conn.second.inNodeId].getPosition ().x + dotsRadius, dots [conn.second.inNodeId].getPosition ().y + dotsRadius}, color);
+		lines.back ()[1] = sf::Vertex({dots [conn.second.outNodeId].getPosition ().x + dotsRadius, dots [conn.second.outNodeId].getPosition ().y + dotsRadius}, color);
 	}
 
 	// ### TEXT ###
@@ -1239,14 +1261,14 @@ void Genome<Args...>::draw (const std::string& font_path, unsigned int windowWid
 	mainText.setPosition ({15.0, 15.0});
 
 	sf::String stringMainText = "";
-	for (size_t i = 0; i < connections.size(); i++) {
-		stringMainText += std::to_string (connections [i].inNodeId) + "  ->  " + std::to_string (connections [i].outNodeId) + "   (" +  std::to_string (connections [i].weight) + ")";
-		if (connections [i].inNodeRecu > 0) {
+	for (const std::pair<const unsigned int, Connection>& conn : connections) {
+		stringMainText += std::to_string (conn.second.inNodeId) + "  ->  " + std::to_string (conn.second.outNodeId) + "   (" +  std::to_string (conn.second.weight) + ")";
+		if (conn.second.inNodeRecu > 0) {
 			stringMainText += " R (";
-			stringMainText += std::to_string (connections [i].inNodeRecu);
+			stringMainText += std::to_string (conn.second.inNodeRecu);
 			stringMainText += ")";
 		}
-		if (!connections [i].enabled) {
+		if (!conn.second.enabled) {
 			stringMainText += " D";
 		}
 		stringMainText += "\n";
@@ -1286,15 +1308,31 @@ void Genome<Args...>::serialize (std::ofstream& outFile) {
 	Serialize (nbBias, outFile);
 
 	Serialize (nodes.size (), outFile);
-	for (size_t k = 0; k < nodes.size (); k++) {
-		Serialize (nodes [k]->index_T_in, outFile);
-		Serialize (nodes [k]->index_T_out, outFile);
-		nodes [k]->serialize (outFile);
+	for (unsigned int k = 0; k < (unsigned int) nodes.size (); k++) {
+		unsigned int iNode = 0;
+		while (iNode < (unsigned int) nodes.size () && nodes [iNode]->id != k) {
+			iNode++;
+		}
+		if (iNode < (unsigned int) nodes.size ()) {
+			Serialize (nodes [iNode]->index_T_in, outFile);
+			Serialize (nodes [iNode]->index_T_out, outFile);
+			nodes [iNode]->serialize (outFile);
+		} else {
+			// impossible state
+		}
 	}
 
 	Serialize (connections.size (), outFile);
-	for (Connection& conn : connections) {
-		conn.serialize (outFile);
+	for (unsigned int k = 0; k < (unsigned int) connections.size (); k++) {
+		unsigned int iConn = 0;
+		while (iConn < (unsigned int) connections.size () && connections [iConn].id != k) {
+			iConn++;
+		}
+		if (iConn < (unsigned int) connections.size ()) {
+			connections [iConn].serialize (outFile);
+		} else {
+			// impossible state
+		}
 	}
 
 	Serialize (fitness, outFile);
@@ -1316,19 +1354,19 @@ void Genome<Args...>:: deserialize (std::ifstream& inFile) {
 	Deserialize (sz, inFile);
 	nodes.clear ();
 	nodes.reserve (sz);
-	for (size_t k = 0; k < sz; k++) {
+	for (unsigned int k = 0; k < (unsigned int) sz; k++) {
 		unsigned int iT_in, iT_out;
 		Deserialize (iT_in, inFile);
 		Deserialize (iT_out, inFile);
-		nodes.push_back (CreateNode::get<Args...> (iT_in, iT_out));
+		nodes.insert (std::make_pair (k, CreateNode::get<Args...> (iT_in, iT_out)));
 		nodes [k]->deserialize (inFile, activationFns);
 	}
 
 	Deserialize (sz, inFile);
 	connections.clear ();
 	connections.reserve (sz);
-	for (size_t k = 0; k < sz; k++) {
-		connections.push_back (Connection (inFile));
+	for (unsigned int k = 0; k < (unsigned int) sz; k++) {
+		connections.insert (std::make_pair (k, Connection (inFile)));
 	}
 
 	Deserialize (fitness, inFile);

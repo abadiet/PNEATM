@@ -59,13 +59,13 @@ class ActivationFnBase {
          * @brief Prints information about the activation function.
          * @param prefix A prefix to print before each line. (default is an empty string)
          */
-		virtual void print (const std::string& prefix = "") = 0;
+		virtual void print (const std::string& prefix = "") const = 0;
 
         /**
 		 * @brief Serialize the ActivationFnBase instance to an output file stream.
 		 * @param outFile The output file stream to which the ActivationFnBase instance will be written.
 		 */
-		virtual void serialize (std::ofstream& outFile) = 0;
+		virtual void serialize (std::ofstream& outFile) const = 0;
 
 		/**
 		 * @brief Deserialize a ActivationFnBase instance from an input file stream.

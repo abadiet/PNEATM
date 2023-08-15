@@ -5,6 +5,7 @@
 #include <PNEATM/genome.hpp>
 #include <PNEATM/utils.hpp>
 #include <vector>
+#include <unordered_map>
 #include <iostream>
 #include <memory>
 #include <cstring>
@@ -29,10 +30,10 @@ class Species {
 		/**
 		 * @brief Constructor for the Species class.
 		 * @param id the species ID.
-		 * @param connections A vector of connection that define the species traits. Will be used to process the distance between the species and genomes.
+		 * @param connections A unordered map of connection that define the species traits. Will be used to process the distance between the species and genomes.
 		 * @param dstType The distance algorithm to use:\n	- `CONVENTIONAL`: algorithm used in the original NEAT\n	- `EUCLIDIAN`: euclidian distance in the connections's space
 		 */
-		Species (unsigned int id, const std::vector<Connection>& connections, distanceFn dstType);
+		Species (unsigned int id, const std::unordered_map<unsigned int, Connection>& connections, distanceFn dstType);
 
 		/**
 		 * @brief Constructor for the Species class from an input file stream.
@@ -76,7 +77,7 @@ class Species {
 	private:
 		unsigned int id;
 		distanceFn dstType;
-		std::vector<Connection> connections;
+		std::unordered_map<unsigned int, Connection> connections;
 		double avgFitness;
 		double avgFitnessAdjusted;
 		int allowedOffspring;
@@ -101,7 +102,7 @@ class Species {
 using namespace pneatm;
 
 template <typename... Args>
-Species<Args...>::Species(unsigned int id, const std::vector<Connection>& connections, distanceFn dstType): 
+Species<Args...>::Species(unsigned int id, const std::unordered_map<unsigned int, Connection>& connections, distanceFn dstType): 
 	id (id),
 	dstType (dstType),
 	connections (connections),
@@ -137,24 +138,24 @@ template <typename... Args>
 double Species<Args...>::ConventionalNEAT (const std::unique_ptr<Genome<Args...>>& genome, double a, double b, double c) {
 	// get enabled connections and maxInnovId for genome 1
 	unsigned int maxInnovId1 = 0;
-	std::vector<size_t> connEnabled1;
-	for (size_t i = 0; i < genome->connections.size (); i++) {
-		if (genome->connections [i].enabled) {
-			connEnabled1.push_back(i);
-			if (genome->connections [i].innovId > maxInnovId1) {
-				maxInnovId1 = genome->connections [i].innovId;
+	std::vector<unsigned int> connEnabled1;
+	for (const std::pair<const unsigned int, Connection>& conn : genome->connections) {
+		if (conn.second.enabled) {
+			connEnabled1.push_back (conn.second.id);
+			if (conn.second.innovId > maxInnovId1) {
+				maxInnovId1 = conn.second.innovId;
 			}
 		}
 	}
 
 	// get enabled connections and maxInnovId for genome 2
 	unsigned int maxInnovId2 = 0;
-	std::vector<size_t> connEnabled2;
-	for (size_t i = 0; i < connections.size (); i++) {
-		if (connections [i].enabled) {
-			connEnabled2.push_back (i);
-			if (connections [i].innovId > maxInnovId2) {
-				maxInnovId2 = connections [i].innovId;
+	std::vector<unsigned int> connEnabled2;
+	for (const std::pair<const unsigned int, Connection>& conn : connections) {
+		if (conn.second.enabled) {
+			connEnabled2.push_back (conn.second.id);
+			if (conn.second.innovId > maxInnovId2) {
+				maxInnovId2 = conn.second.innovId;
 			}
 		}
 	}
@@ -229,18 +230,18 @@ double Species<Args...>::Euclidian (const std::unique_ptr<Genome<Args...>>& geno
 	double result = 0.0;
 
 	std::vector<size_t> usedId;
-	for (const Connection& conn : connections) {
+	for (const std::pair<const unsigned int, Connection>& conn : connections) {
 		size_t i = 0;
-		while (i < genome->connections.size () && genome->connections [i].innovId != conn.innovId) {
+		while (i < genome->connections.size () && genome->connections [(unsigned int) i].innovId != conn.second.innovId) {
 			i++;
 		}
 		if (i >= genome->connections.size ()) {
 			// the connection is not in the genome
-			result += conn.weight * conn.weight;
+			result += conn.second.weight * conn.second.weight;
 		} else {
 			usedId.push_back (i);
 			// the leader and the genome share this connection
-			result += (conn.weight - genome->connections [i].weight) * (conn.weight - genome->connections [i].weight);
+			result += (conn.second.weight - genome->connections [(unsigned int) i].weight) * (conn.second.weight - genome->connections [(unsigned int) i].weight);
 		}
 	}
 
@@ -251,7 +252,7 @@ double Species<Args...>::Euclidian (const std::unique_ptr<Genome<Args...>>& geno
 		}
 		if (k >= usedId.size ()) {
 			// the connection has not been take into account
-			result += genome->connections [i].weight * genome->connections [i].weight;
+			result += genome->connections [(unsigned int) i].weight * genome->connections [(unsigned int) i].weight;
 		}
 	}
 
@@ -280,8 +281,8 @@ void Species<Args...>::serialize (std::ofstream& outFile) {
 	Serialize (dstType, outFile);
 
 	Serialize (connections.size (), outFile);
-	for (Connection& conn : connections) {
-		conn.serialize (outFile);
+	for (const std::pair<const unsigned int, Connection>& conn : connections) {
+		conn.second.serialize (outFile);
 	}
 
 	Serialize (avgFitness, outFile);
@@ -303,8 +304,8 @@ void Species<Args...>::deserialize (std::ifstream& inFile) {
 	Deserialize (sz, inFile);
 	connections.clear ();
 	connections.reserve (sz);
-	for (size_t k = 0; k < sz; k++) {
-		connections.push_back (Connection (inFile));
+	for (unsigned int k = 0; k < (unsigned int) sz; k++) {
+		connections.insert (std::make_pair (k, Connection (inFile)));
 	}
 
 	Deserialize (avgFitness, inFile);

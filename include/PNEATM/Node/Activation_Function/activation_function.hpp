@@ -84,13 +84,13 @@ class ActivationFn : public ActivationFnBase {
 		 * @brief Print information about the activation function's parameters.
 		 * @param prefix A prefix to print before each line. (default is an empty string)
 		 */
-		void print (const std::string& prefix = "");
+		void print (const std::string& prefix = "") const override;
 
         /**
 		 * @brief Serialize the AcivationFn instance to an output file stream.
 		 * @param outFile The output file stream to which the AcivationFn instance will be written.
 		 */
-		void serialize (std::ofstream& outFile) override;
+		void serialize (std::ofstream& outFile) const override;
 
 		/**
 		 * @brief Deserialize a AcivationFn instance from an input file stream.
@@ -167,12 +167,12 @@ void ActivationFn<T_in, T_out>::mutate (double fitness) {
 }
 
 template <typename T_in, typename T_out>
-void ActivationFn<T_in, T_out>::print (const std::string& prefix) {
+void ActivationFn<T_in, T_out>::print (const std::string& prefix) const {
 	printingFn (params.get (), prefix);
 }
 
 template <typename T_in, typename T_out>
-void ActivationFn<T_in, T_out>::serialize (std::ofstream& outFile) {
+void ActivationFn<T_in, T_out>::serialize (std::ofstream& outFile) const {
 	Serialize (*params, outFile);
 }
 

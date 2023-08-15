@@ -14,6 +14,7 @@
 #include <cstring>
 #include <limits>
 #include <vector>
+#include <unordered_map>
 #include <spdlog/spdlog.h>
 #include <memory>
 #include <functional>
@@ -288,7 +289,7 @@ class Population {
 		spdlog::logger* logger;
 		std::ofstream statsFile;
 
-		std::vector<Connection> GetWeightedCentroid (unsigned int speciesId);
+		std::unordered_map <unsigned int, Connection> GetWeightedCentroid (unsigned int speciesId);
 		void UpdateFitnesses (double speciesSizeEvolutionLimit);
 		int SelectParent (unsigned int iSpe);
 
@@ -560,8 +561,8 @@ void Population<Args...>::speciate (unsigned int target, unsigned int maxIterati
 }
 
 template <typename... Args>
-std::vector<Connection> Population<Args...>::GetWeightedCentroid (unsigned int speciesId) {
-	std::vector<Connection> result;
+std::unordered_map <unsigned int, Connection> Population<Args...>::GetWeightedCentroid (unsigned int speciesId) {
+	std::unordered_map <unsigned int, Connection> result;
 
 	double sumFitness = 0.0;
 
@@ -571,11 +572,12 @@ std::vector<Connection> Population<Args...>::GetWeightedCentroid (unsigned int s
 		for (const Connection& conn : genomes [species [speciesId].members [i]]->connections) {	// for each of its connections
 			if (conn.enabled) {	// only pay attention to active ones
 				size_t curResConn = 0;
-				while (curResConn < result.size () && result [curResConn].innovId != conn.innovId) {	// while we have not found any corresponding connection in result
+				size_t result_sz = result.size ();
+				while (curResConn < result_sz && result [curResConn].innovId != conn.innovId) {	// while we have not found any corresponding connection in result
 					curResConn++;
 				}
-				if (curResConn >= result.size ()) {	// there is no corresponding connections, we add it
-					result.push_back (conn);
+				if (curResConn >= result_sz) {	// there is no corresponding connections, we add it
+					result [curResConn] = conn;
 					result [curResConn].weight = 0.0;	// set its weight as null as all the previous genomes doesn't contains it
 				}
 				result [curResConn].weight += conn.weight * fitness;	// we add the connection's weight dot the genome's fitness (weighted centroid, check below)
@@ -587,13 +589,13 @@ std::vector<Connection> Population<Args...>::GetWeightedCentroid (unsigned int s
 
 	// we divide each weight by sumFitness to have the average (weighted centroid)
 	if (sumFitness > 0.0) {
-		for (size_t i = 0; i < result.size (); i++) {
-			result [i].weight /= sumFitness;
+		for (std::pair<unsigned int, Connection>& conn : result) {
+			conn.second.weight /= sumFitness;
 		}
 	} else {
 		// null sumFitness
-		for (size_t i = 0; i < result.size (); i++) {
-			result [i].weight = std::numeric_limits<double>::max ();
+		for (std::pair<unsigned int, Connection>& conn : result) {
+			conn.second.weight = std::numeric_limits<double>::max ();
 		}
 	}
 
@@ -704,11 +706,11 @@ void Population<Args...>::crossover (bool elitism, double crossover_rate) {
 					newGenomes.push_back (genomes [iMainParent]->clone ());
 
 					// connections shared by both of the parents must be randomly wheighted
-					for (size_t iMainParentConn = 0; iMainParentConn < genomes [iMainParent]->connections.size (); iMainParentConn ++) {
-						for (size_t iSecondParentConn = 0; iSecondParentConn < genomes [iSecondParent]->connections.size (); iSecondParentConn ++) {
-							if (genomes [iMainParent]->connections [iMainParentConn].innovId == genomes [iSecondParent]->connections [iSecondParentConn].innovId) {
+					for (const std::pair<const unsigned int, Connection>& connMainParent : genomes [iMainParent]->connections) {
+						for (const std::pair<const unsigned int, Connection>& connSecondParent : genomes [iSecondParent]->connections) {
+							if (connMainParent.second.innovId == connSecondParent.second.innovId) {
 								if (Random_Double (0.0, 1.0, true, false) < 0.5) {	// 50 % of chance for each parent, newGenome already have the wheight of MainParent
-									newGenomes.back ()->connections [iMainParentConn].weight = genomes [iSecondParent]->connections [iSecondParentConn].weight;
+									newGenomes.back ()->connections [connMainParent.second.id].weight = connSecondParent.second.weight;
 								}
 							}
 						}

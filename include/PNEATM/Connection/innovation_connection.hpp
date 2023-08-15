@@ -66,7 +66,7 @@ typedef struct innovationConn {
      * @brief Print information about the innovation tracker.
      * @param prefix A prefix to print before each line. (default is an empty string)
      */
-    void print (const std::string& prefix = "") {
+    void print (const std::string& prefix = "") const {
         std::cout << prefix << "Number of attributed innovation: " << N_connectionId - 1 << std::endl;
     }
 
@@ -74,7 +74,7 @@ typedef struct innovationConn {
      * @brief Serialize the innovationConn instance to an output file stream.
      * @param outFile The output file stream to which the innovationConn instance will be written.
      */
-    void serialize (std::ofstream& outFile) {
+    void serialize (std::ofstream& outFile) const {
         Serialize (connectionIds, outFile);
         Serialize (N_connectionId, outFile);
     }

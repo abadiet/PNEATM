@@ -79,13 +79,13 @@ class NodeBase{
 		 * @brief Print information about the node.
 		 * @param prefix A prefix to print before each line. (default is an empty string)
 		 */
-		virtual void print (const std::string& prefix = "") = 0;
+		virtual void print (const std::string& prefix = "") const = 0;
 
 		/**
 		 * @brief Serialize the NodeBase instance to an output file stream.
 		 * @param outFile The output file stream to which the NodeBase instance will be written.
 		 */
-		virtual void serialize (std::ofstream& outFile) = 0;
+		virtual void serialize (std::ofstream& outFile) const = 0;
 
 		/**
 		 * @brief Deserialize a NodeBase instance from an input file stream.

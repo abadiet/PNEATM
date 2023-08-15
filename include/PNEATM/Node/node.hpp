@@ -97,13 +97,13 @@ class Node : public NodeBase {
 		 * @brief Print information about the node.
 		 * @param prefix A prefix to print before each line. (default is an empty string)
 		 */
-		void print (const std::string& prefix = "") override;
+		void print (const std::string& prefix = "") const override;
 
 		/**
 		 * @brief Serialize the Node instance to an output file stream.
 		 * @param outFile The output file stream to which the Node instance will be written.
 		 */
-		void serialize (std::ofstream& outFile) override;
+		void serialize (std::ofstream& outFile) const override;
 
 		/**
 		 * @brief Deserialize a Node instance from an input file stream.
@@ -192,7 +192,7 @@ std::unique_ptr<NodeBase> Node<T_in, T_out>::clone () {
 }
 
 template <typename T_in, typename T_out>
-void Node<T_in, T_out>::print (const std::string& prefix) {
+void Node<T_in, T_out>::print (const std::string& prefix) const {
 	std::cout << prefix << "ID: " << id << std::endl;
 	std::cout << prefix << "Innovation ID: " << innovId << std::endl;
 	std::cout << prefix << "Layer: " << layer << std::endl;
@@ -216,7 +216,7 @@ void Node<T_in, T_out>::print (const std::string& prefix) {
 }
 
 template <typename T_in, typename T_out>
-void Node<T_in, T_out>::serialize (std::ofstream& outFile) {
+void Node<T_in, T_out>::serialize (std::ofstream& outFile) const {
 	Serialize (id, outFile);
 	Serialize (innovId, outFile);
 	Serialize (layer, outFile);
