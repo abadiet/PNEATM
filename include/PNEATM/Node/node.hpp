@@ -115,6 +115,7 @@ class Node : public NodeBase {
 	private:
 		T_in input;
 		std::vector<T_out> outputs;
+		unsigned int N_outputs;
 		std::unique_ptr<ActivationFn<T_in, T_out>> activation_fn;
 
 		T_in resetValue;
@@ -128,7 +129,10 @@ class Node : public NodeBase {
 using namespace pneatm;
 
 template <typename T_in, typename T_out>
-Node<T_in, T_out>::Node () : activation_fn (std::make_unique<ActivationFn<T_in, T_out>> ()) {}
+Node<T_in, T_out>::Node () :
+	N_outputs (0),
+	activation_fn (std::make_unique<ActivationFn<T_in, T_out>> ())
+{}
 
 template <typename T_in, typename T_out>
 void Node<T_in, T_out>::setActivationFn (std::unique_ptr<ActivationFnBase> actfn) {
@@ -152,12 +156,21 @@ void Node<T_in, T_out>::AddToInput (void* value, double scalar) {
 
 template <typename T_in, typename T_out>
 void* Node<T_in, T_out>::getOutput (unsigned int depth) {
+	for (unsigned int k = (unsigned int) outputs.size (); k <= depth; k++) {
+		// the depth is too high for the number of outputs: we create empty outputs to be able to return the pointer to the upcoming output
+		outputs.push_back (T_out ());
+	}
 	return static_cast<void*> (&outputs [(unsigned int) outputs.size () - 1 - depth]);
 }
 
 template <typename T_in, typename T_out>
 void Node<T_in, T_out>::process () {
-	outputs.push_back (activation_fn->process (input));
+	if ((unsigned int) outputs.size () <= N_outputs) {	// equivalent to == as < is impossible
+		outputs.push_back (activation_fn->process (input));
+	} else {
+		outputs [N_outputs] = activation_fn->process (input);
+	}
+	N_outputs ++;
 }
 
 template <typename T_in, typename T_out>
@@ -169,6 +182,7 @@ template <typename T_in, typename T_out>
 void Node<T_in, T_out>::reset (bool resetMemory) {
 	input = resetValue;
 	if (resetMemory) {
+		N_outputs = 0;
 		outputs.clear ();
 	}
 }
@@ -186,7 +200,6 @@ std::unique_ptr<NodeBase> Node<T_in, T_out>::clone () {
 	node->setResetValue (static_cast<void*> (&resetValue));
 	node->setActivationFn (activation_fn->clone (true));	// note that we keep parameters as they are here
 	node->loadInput (static_cast<void*> (&input));
-	node->process ();
 
 	return node;
 }
@@ -201,9 +214,9 @@ void Node<T_in, T_out>::print (const std::string& prefix) const {
 	std::cout << prefix << "Activation Function ID: " << index_activation_fn << std::endl;
 	std::cout << prefix << "Current Input Value: " << input << std::endl;
 	std::cout << prefix << "Outputs Values (younger first): ";
-	for (size_t i = 0; i < outputs.size(); i++) {
-		std::cout << outputs[i];
-		if (i < outputs.size () - 1) {
+	for (unsigned int i = 0; i < N_outputs; i++) {
+		std::cout << outputs [i];
+		if (i < N_outputs - 1) {
 			std::cout << " ~ ";
 		} else {
 			std::cout << std::endl;
@@ -226,6 +239,7 @@ void Node<T_in, T_out>::serialize (std::ofstream& outFile) const {
 	activation_fn->serialize (outFile);
 	Serialize (input, outFile);
 	Serialize (outputs, outFile);
+	Serialize (N_outputs, outFile);
 	Serialize (resetValue, outFile);
 }
 
@@ -241,6 +255,7 @@ void Node<T_in, T_out>::deserialize (std::ifstream& inFile, const std::vector<st
 	activation_fn->deserialize (inFile);	// overwrite parameters
 	Deserialize (input, inFile);
 	Deserialize (outputs, inFile);
+	Deserialize (N_outputs, inFile);
 	Deserialize (resetValue, inFile);
 }
 
