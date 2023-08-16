@@ -21,7 +21,7 @@ typedef struct innovationConn {
     /**
      * @brief 3D array that represent the connection's innovation ids in the (*input node*, *output node*, *connection recurrency level*) space.
      */
-    std::vector<std::vector<std::vector<unsigned int>>> connectionIds;
+    std::unordered_map<unsigned int, std::unordered_map<unsigned int, std::unordered_map<unsigned int, unsigned int>>> connectionIds;
 
     /**
      * @brief The next innovation id to give.
@@ -33,10 +33,8 @@ typedef struct innovationConn {
      * 
      */
     innovationConn () :
-        connectionIds (1),
-        N_connectionId (1)
+        N_connectionId (0)
     {};
-
 
     /**
      * @brief Get the innovation ID for a connection.
@@ -46,16 +44,8 @@ typedef struct innovationConn {
      * @return The innovation ID for the specified connection.
      */
     unsigned int getInnovId (unsigned int inNodeInnovId, unsigned int outNodeInnovId, unsigned int inNodeRecu) {
-        while ((unsigned int) connectionIds.size () < inNodeInnovId + 1) {
-            connectionIds.push_back ({});
-        }
-        while ((unsigned int) connectionIds [inNodeInnovId].size () < outNodeInnovId + 1) {
-            connectionIds [inNodeInnovId].push_back ({});
-        }
-        while ((unsigned int) connectionIds [inNodeInnovId][outNodeInnovId].size () < inNodeRecu + 1) {
-            connectionIds [inNodeInnovId][outNodeInnovId].push_back (0);
-        }
-        if (connectionIds [inNodeInnovId][outNodeInnovId][inNodeRecu] == 0) {
+        if (connectionIds [inNodeInnovId][outNodeInnovId].find (inNodeRecu) == connectionIds [inNodeInnovId][outNodeInnovId].end ()) {
+            // the node isn't existing yet
             connectionIds [inNodeInnovId][outNodeInnovId][inNodeRecu] = N_connectionId;
             N_connectionId ++;
         }
