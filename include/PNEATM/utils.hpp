@@ -3,6 +3,7 @@
 
 #include <fstream>
 #include <vector>
+#include <unordered_map>
 
 #define UNUSED(expr) do { (void) (expr); } while (0)
 
@@ -89,6 +90,22 @@ void Serialize (const std::vector<T>& var, std::ofstream& outFile) {
 }
 
 /**
+ * @brief Serialize an unordered_map of type T with key of type unsigned int to an output file stream.
+ * @tparam T The type of the vector elements to be serialized.
+ * @param var The map to be serialized.
+ * @param outFile The output file stream to which the map will be written.
+ */
+template <typename T>
+void Serialize (const std::unordered_map<unsigned int, T>& var, std::ofstream& outFile) {
+    size_t size = var.size ();
+    outFile.write (reinterpret_cast<const char*> (&size), sizeof (size));
+    for (const std::pair<const unsigned int, T>& elem : var) {
+        Serialize (elem.first, outFile);
+        Serialize (elem.second, outFile);
+    }
+}
+
+/**
  * @brief Deserialize a single object of type T from an input file stream.
  * @tparam T The type of the object to be deserialized.
  * @param var The object to hold the deserialized data.
@@ -110,9 +127,30 @@ void Deserialize (std::vector<T>& var, std::ifstream& inFile) {
     size_t size;
     inFile.read (reinterpret_cast<char*> (&size), sizeof (size));
     var.clear ();
-    var.resize (size);
+    var.reserve (size);
     for (size_t i = 0; i < size; i++) {
-        Deserialize (var[i], inFile);
+        Deserialize (var [i], inFile);
+    }
+}
+
+/**
+ * @brief Deserialize an unordered_map of type T with key of type unsigned int from an input file stream.
+ * @tparam T The type of the vector elements to be deserialized.
+ * @param var The map to hold the deserialized data.
+ * @param inFile The input file stream from which the map will be read.
+ */
+template <typename T>
+void Deserialize (std::unordered_map<unsigned int, T>& var, std::ifstream& inFile) {
+    size_t size;
+    inFile.read (reinterpret_cast<char*> (&size), sizeof (size));
+    var.clear ();
+    var.reserve (size);
+    for (size_t i = 0; i < size; i++) {
+        unsigned int key;
+        T value;
+        Deserialize (key, inFile);
+        Deserialize (value, inFile);
+        var.insert (std::make_pair (key, value));
     }
 }
 
