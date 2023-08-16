@@ -3,6 +3,7 @@
 
 #include <PNEATM/utils.hpp>
 #include <vector>
+#include <unordered_map>
 #include <iostream>
 #include <cstring>
 #include <fstream>
@@ -19,9 +20,9 @@ namespace pneatm {
  */
 typedef struct innovationNode {
     /**
-     * @brief 4D array that represent the node's innovation ids in the (*input type index*, *output type index*, *activation function index*, *repetition level*) space.
+     * @brief 4D map that represent the node's innovation ids in the (*input type index*, *output type index*, *activation function index*, *repetition level*) space.
      */
-    std::vector<std::vector<std::vector<std::vector<unsigned int>>>> nodeIds;
+    std::unordered_map<unsigned int, std::unordered_map<unsigned int, std::unordered_map<unsigned int, std::unordered_map<unsigned int, unsigned int>>>> nodeIds;
 
     /**
      * @brief The next innovation id to give
@@ -33,8 +34,7 @@ typedef struct innovationNode {
      * 
      */
     innovationNode () :
-        nodeIds (1),
-        N_nodeId (1)
+        N_nodeId (0)
     {};
 
     /**
@@ -46,19 +46,8 @@ typedef struct innovationNode {
      * @return The innovation ID for the specified node.
      */
     unsigned int getInnovId (unsigned int index_T_in, unsigned int index_T_out, unsigned int index_activation_fn, unsigned int repetition) {
-        while ((unsigned int) nodeIds.size () < index_T_in + 1) {
-            nodeIds.push_back ({});
-        }
-        while ((unsigned int) nodeIds [index_T_in].size () < index_T_out + 1) {
-            nodeIds [index_T_in].push_back ({});
-        }
-        while ((unsigned int) nodeIds [index_T_in][index_T_out].size () < index_activation_fn + 1) {
-            nodeIds [index_T_in][index_T_out].push_back ({});
-        }
-        while ((unsigned int) nodeIds [index_T_in][index_T_out][index_activation_fn].size () < repetition + 1) {
-            nodeIds [index_T_in][index_T_out][index_activation_fn].push_back (0);
-        }
-        if (nodeIds [index_T_in][index_T_out][index_activation_fn][repetition] == 0) {
+        if (nodeIds [index_T_in][index_T_out][index_activation_fn].find (repetition) == nodeIds [index_T_in][index_T_out][index_activation_fn].end ()) {
+            // the node isn't existing yet
             nodeIds [index_T_in][index_T_out][index_activation_fn][repetition] = N_nodeId;
             N_nodeId ++;
         }

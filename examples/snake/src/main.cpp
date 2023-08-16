@@ -23,7 +23,7 @@ int main () {
     unsigned int maxIterationThresh = 500;
     int nbGame = 7;
     double bestFitness = 0.0;
-    while (bestFitness < 2500.0 && pop.getGeneration () < 2) { // while goal is not reach
+    while (bestFitness < 2500.0 && pop.getGeneration () < 500) { // while goal is not reach
         std::cout << "generation " << pop.getGeneration () << std::endl;
 
         for (unsigned int genomeId = 0; genomeId < popSize; genomeId ++) {
@@ -123,7 +123,7 @@ int main () {
     pop.speciate (5, 100, 0.3);
 
     // print info and draw genome's network
-    pop.getGenome (-1).print ();
+    pop.print ();
     pop.getGenome (-1).draw ("/usr/share/fonts/OTF/SF-Pro-Rounded-Light.otf");
 
     // play a game by the fitter genome
