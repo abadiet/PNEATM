@@ -280,7 +280,7 @@ class Population {
 		distanceFn dstType;
 
 		int fittergenome_id;
-		std::vector<std::unique_ptr<Genome<Args...>>> genomes;
+		std::unordered_map <unsigned int, std::unique_ptr<Genome<Args...>>> genomes;
 		std::vector<Species<Args...>> species;
 		std::vector<std::vector<std::vector<ActivationFnBase*>>> activationFns;
 		innovationConn_t conn_innov;
@@ -334,7 +334,7 @@ Population<Args...>::Population(unsigned int popSize, const std::vector<size_t>&
 
 	genomes.reserve (popSize);
 	for (unsigned int i = 0; i < popSize; i++) {
-		genomes.push_back (std::make_unique<Genome<Args...>> (bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_values, resetValues, activationFns, &conn_innov, &node_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger));
+		genomes.insert (std::make_pair (i, std::make_unique<Genome<Args...>> (i, bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_values, resetValues, activationFns, &conn_innov, &node_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger)));
 	}
 }
 
@@ -390,8 +390,8 @@ void Population<Args...>::loadInputs(const std::vector<T_in>& inputs, unsigned i
 template <typename... Args>
 template <typename T_in>
 void Population<Args...>::loadInput(T_in& input, unsigned int input_id) {
-	for (unsigned int i = 0; i < popSize; i++) {
-		genomes [i]->template loadInput<T_in> (input, input_id);
+	for (std::pair<const unsigned int, std::unique_ptr<Genome<Args...>>>& genome : genomes) {
+		genome.second->template loadInput<T_in> (input, input_id);
 	}
 }
 
@@ -403,8 +403,8 @@ void Population<Args...>::loadInput(T_in& input, unsigned int input_id, unsigned
 
 template <typename... Args>
 void Population<Args...>::resetMemory () {
-	for (size_t i = 0; i < genomes.size (); i++) {
-		genomes [i]->resetMemory ();
+	for (std::pair<const unsigned int, std::unique_ptr<Genome<Args...>>>& genome : genomes) {
+		genome.second->resetMemory ();
 	}
 }
 
@@ -544,7 +544,7 @@ void Population<Args...>::speciate (unsigned int target, unsigned int maxIterati
 		if (!species [iSpe].isDead) {	// if the species is still alive, this also ensure that there is at least one member
 			//species [iSpe].connections = GetWeightedCentroid ((unsigned int) iSpe);
 
-			size_t leaderId = species [iSpe].members [0];
+			unsigned int leaderId = species [iSpe].members [0];
 			for (size_t i = 1; i < species [iSpe].members.size (); i++) {
 				if (genomes [species [iSpe].members [i]]->fitness >= genomes [leaderId]->fitness) {
 					if (genomes [species [iSpe].members [i]]->fitness > genomes [leaderId]->fitness || Random_Double (0.0, 1.0, true, false) < 0.5) {
@@ -609,11 +609,11 @@ void Population<Args...>::UpdateFitnesses (double speciesSizeEvolutionLimit) {
 	avgFitnessAdjusted = 0;
 
 	// process avgFitness and found fittergenome_id
-	for (unsigned int i = 0; i < popSize; i++) {
-		avgFitness += genomes [i]->fitness;
+	for (const std::pair<const unsigned int, std::unique_ptr<Genome<Args...>>>& genome : genomes) {
+		avgFitness += genome.second->fitness;
 
-		if (genomes [i]->fitness > genomes [fittergenome_id]->fitness) {
-			fittergenome_id = i;
+		if (genome.second->fitness > genomes [fittergenome_id]->fitness) {
+			fittergenome_id = genome.second->id;
 		}
 	}
 	avgFitness /= (double) popSize;
@@ -674,11 +674,15 @@ void Population<Args...>::UpdateFitnesses (double speciesSizeEvolutionLimit) {
 template <typename... Args>
 void Population<Args...>::crossover (bool elitism, double crossover_rate) {
 	logger->info ("Crossover");
-	std::vector<std::unique_ptr<Genome<Args...>>> newGenomes;
+	std::unordered_map<unsigned int, std::unique_ptr<Genome<Args...>>> newGenomes;
 	newGenomes.reserve (popSize);
 
+	unsigned int genomeId = 0;
+
 	if (elitism) {	// elitism mode on = we conserve during generations the more fit genome
-		newGenomes.push_back (genomes [fittergenome_id]->clone ());
+		newGenomes.insert (std::make_pair (genomeId, genomes [fittergenome_id]->clone ()));
+		newGenomes [genomeId]->id = genomeId;
+		genomeId++;
 	}
 
 	for (unsigned int iSpe = 0; iSpe < (unsigned int) species.size (); iSpe ++) {
@@ -703,34 +707,39 @@ void Population<Args...>::crossover (bool elitism, double crossover_rate) {
 						iSecondParent = iParent1;
 					}
 
-					newGenomes.push_back (genomes [iMainParent]->clone ());
+					newGenomes.insert (std::make_pair (genomeId, genomes [iMainParent]->clone ()));
+					std::unique_ptr<Genome<Args...>>& genome = newGenomes [genomeId];
+					genome->id = genomeId;
+					genomeId++;
 
 					// connections shared by both of the parents must be randomly wheighted
 					for (const std::pair<const unsigned int, Connection>& connMainParent : genomes [iMainParent]->connections) {
 						for (const std::pair<const unsigned int, Connection>& connSecondParent : genomes [iSecondParent]->connections) {
 							if (connMainParent.second.innovId == connSecondParent.second.innovId) {
 								if (Random_Double (0.0, 1.0, true, false) < 0.5) {	// 50 % of chance for each parent, newGenome already have the wheight of MainParent
-									newGenomes.back ()->connections [connMainParent.second.id].weight = connSecondParent.second.weight;
+									genome->connections [connMainParent.second.id].weight = connSecondParent.second.weight;
 								}
 							}
 						}
 					}
 				} else {
 					// the genome is kept for the new generation (there is no crossover which emphasize mutation's effect eg exploration)
-					newGenomes.push_back (genomes [iParent1]->clone ());
+					newGenomes.insert (std::make_pair (genomeId, genomes [iParent1]->clone ()));
+					newGenomes [genomeId]->id = genomeId;
+					genomeId++;
 				}
 			}
 		}
 	}
 
-	int previousSize = (int) newGenomes.size();
+	unsigned int previousSize = (unsigned int) newGenomes.size();
 	// add genomes if some are missing
-	for (int k = 0; k < (int) popSize - (int) previousSize; k++) {
-		newGenomes.push_back (std::make_unique<Genome<Args...>> (bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_values, resetValues, activationFns, &conn_innov, &node_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger));
+	for (unsigned int k = previousSize; k < popSize; k++) {
+		newGenomes.insert (std::make_pair (k, std::make_unique<Genome<Args...>> (k, bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_values, resetValues, activationFns, &conn_innov, &node_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger)));
 	}
 	// or remove some genomes if there is too many genomes
-	for (int k = 0; k < (int) previousSize - (int) popSize; k++) {
-		newGenomes.pop_back ();
+	for (unsigned int k = previousSize - 1; k >= popSize; k--) {
+		newGenomes.erase (k);
 	}
 
 	// replace the current genomes by the new ones
@@ -742,10 +751,10 @@ void Population<Args...>::crossover (bool elitism, double crossover_rate) {
 		species [i].members.clear ();
 		species [i].isDead = true;
 	}
-	for (unsigned int i = 0; i < popSize; i++) {
-		if (genomes [i]->speciesId > -1) {
-			species [genomes [i]->speciesId].members.push_back (i);
-			species [genomes [i]->speciesId].isDead = false;	// empty species will stay to isDead = true
+	for (const std::pair<const unsigned int, std::unique_ptr<Genome<Args...>>>& genome : genomes) {
+		if (genome.second->speciesId > -1) {
+			species [genome.second->speciesId].members.push_back (genome.second->id);
+			species [genome.second->speciesId].isDead = false;	// empty species will stay to isDead = true
 		}
 	}
 
@@ -782,16 +791,16 @@ int Population<Args...>::SelectParent (unsigned int iSpe) {
 template <typename... Args>
 void Population<Args...>::mutate (const mutationParams_t& params) {
 	logger->info ("Mutations");
-	for (unsigned int i = 0; i < popSize; i++) {
-		genomes [i]->mutate (&conn_innov, &node_innov, params);
+	for (std::pair<const unsigned int, std::unique_ptr<Genome<Args...>>>& genome : genomes) {
+		genome.second->mutate (&conn_innov, &node_innov, params);
 	}
 }
 
 template <typename... Args>
 void Population<Args...>::mutate (const std::function<mutationParams_t (double)>& paramsMap) {
 	logger->info ("Mutations");
-	for (unsigned int i = 0; i < popSize; i++) {
-		genomes [i]->mutate (&conn_innov, &node_innov, paramsMap (genomes [i]->getFitness ()));
+	for (std::pair<const unsigned int, std::unique_ptr<Genome<Args...>>>& genome : genomes) {
+		genome.second->mutate (&conn_innov, &node_innov, paramsMap (genome.second->fitness));
 	}
 }
 
@@ -843,12 +852,11 @@ void Population<Args...>::print (const std::string& prefix) {
 	std::cout << prefix << "Nodes Innovations:" << std::endl;
 	node_innov.print (prefix + "   ");
 	std::cout << prefix << "Genomes: " << std::endl;
-	for (size_t i = 0; i < genomes.size (); i++) {
-		std::cout << prefix << " * Genome " << i << std::endl;
-		genomes [i]->print (prefix + "   ");
+	for (const std::pair<const unsigned int, std::unique_ptr<Genome<Args...>>>& genome : genomes) {
+		genomes.second->print (prefix + "   ");
 	}
 	std::cout << prefix << "Species: " << std::endl;
-	for (Species<Args...> spe : species) {
+	for (const Species<Args...>& spe : species) {
 		spe.print (prefix + "   ");
 	}
 }
@@ -880,13 +888,21 @@ void Population<Args...>::serialize (std::ofstream& outFile) {
     Serialize (fittergenome_id, outFile);
 
     Serialize (genomes.size (), outFile);
-	for (size_t i = 0; i < genomes.size (); i++) {
-		genomes [i]->serialize (outFile);
+	for (unsigned int k = 0; k < (unsigned int) genomes.size (); k++) {
+		unsigned int iGenome = 0;
+		while (iGenome < (unsigned int) genomes.size () && genomes [iGenome]->id != k) {
+			iGenome++;
+		}
+		if (iGenome < (unsigned int) genomes.size ()) {
+			genomes [iGenome]->serialize (outFile);
+		} else {
+			// impossible state
+		}
 	}
 
     Serialize (species.size (), outFile);
-	for (size_t i = 0; i < species.size (); i++) {
-		species [i].serialize (outFile);
+	for (const Species<Args...>& spe : species) {
+		spe.serialize (outFile);
 	}
 
 	conn_innov.serialize (outFile);
@@ -917,8 +933,8 @@ void Population<Args...>::deserialize (std::ifstream& inFile) {
 	Deserialize (sz, inFile);
 	genomes.clear ();
 	genomes.reserve (sz);
-	for (size_t i = 0; i < sz; i++) {
-		genomes.push_back (std::make_unique<Genome<Args...>> (inFile, resetValues, activationFns, logger));
+	for (unsigned int i = 0; i < (unsigned int) sz; i++) {
+		genomes.insert (std::make_pair (i, std::make_unique<Genome<Args...>> (inFile, resetValues, activationFns, logger)));
 	}
 
 	Deserialize (sz, inFile);

@@ -60,13 +60,13 @@ class Species {
 		 * @brief Print information on the species.
 		 * @param prefix A prefix to print before each line. (default is an empty string)
 		 */
-		void print (const std::string& prefix = "");
+		void print (const std::string& prefix = "") const;
 
 		/**
 		 * @brief Serialize the Species instance to an output file stream.
 		 * @param outFile The output file stream to which the Species instance will be written.
 		 */
-		void serialize (std::ofstream& outFile);
+		void serialize (std::ofstream& outFile) const;
 
 		/**
 		 * @brief Deserialize a Species instance from an input file stream.
@@ -260,7 +260,7 @@ double Species<Args...>::Euclidian (const std::unique_ptr<Genome<Args...>>& geno
 }
 
 template <typename... Args>
-void Species<Args...>::print (const std::string& prefix) {
+void Species<Args...>::print (const std::string& prefix) const {
 	std::cout << prefix << "ID: " << id << std::endl;
 	std::cout << prefix << "Current Average Fitness: " << avgFitness << std::endl;
 	std::cout << prefix << "Current Average Fitness Adjusted: " << avgFitnessAdjusted << std::endl;
@@ -276,7 +276,7 @@ void Species<Args...>::print (const std::string& prefix) {
 }
 
 template <typename... Args>
-void Species<Args...>::serialize (std::ofstream& outFile) {
+void Species<Args...>::serialize (std::ofstream& outFile) const {
 	Serialize (id, outFile);
 	Serialize (dstType, outFile);
 

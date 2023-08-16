@@ -197,6 +197,7 @@ class Genome {
 	public:
 		/**
 		 * @brief Constructor for the Genome class.
+		 * @param id The identifier of the genome
 		 * @param bias_sch The biases scheme (e.g., there is bias_sch[k] biases for type of index k).
 		 * @param inputs_sch The inputs scheme (e.g., there is inputs_sch[k] inputs for type of index k).
 		 * @param outputs_sch The outputs scheme (e.g., there is outputs_sch[k] outputs for type of index k).
@@ -212,10 +213,11 @@ class Genome {
 		 * @param maxRecuInit The maximum recurrence value.
 		 * @param logger A pointer to the logger for logging.
 		 */
-		Genome (const std::vector<size_t>& bias_sch, const std::vector<size_t>& inputs_sch, const std::vector<size_t>& outputs_sch, const std::vector<std::vector<size_t>>& hiddens_sch_init, const std::vector<void*>& bias_values, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, innovationConn_t* conn_innov, innovationNode_t* node_innov, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger);
+		Genome (const unsigned int id, const std::vector<size_t>& bias_sch, const std::vector<size_t>& inputs_sch, const std::vector<size_t>& outputs_sch, const std::vector<std::vector<size_t>>& hiddens_sch_init, const std::vector<void*>& bias_values, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, innovationConn_t* conn_innov, innovationNode_t* node_innov, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger);
 
 		/**
 		 * @brief Constructor for the Genome class. This constructor will not initialized any network.
+		 * @param id The identifier of the genome
 		 * @param nbBias The number of bias node.
 		 * @param nbInput The number of input node.
 		 * @param nbOutput The number of output node.
@@ -225,7 +227,7 @@ class Genome {
 		 * @param weightExtremumInit The initial weight extremum.
 		 * @param logger A pointer to the logger for logging.
 		 */
-		Genome (unsigned int nbBias, unsigned int nbInput, unsigned int nbOutput, unsigned int N_types, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, double weightExtremumInit, spdlog::logger* logger);
+		Genome (const unsigned int id, unsigned int nbBias, unsigned int nbInput, unsigned int nbOutput, unsigned int N_types, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, double weightExtremumInit, spdlog::logger* logger);
 
 		/**
 		 * @brief Constructor for the Genome class from an input file stream.
@@ -339,6 +341,7 @@ class Genome {
 		void deserialize (std::ifstream& inFile);
 
 	private:
+		unsigned int id;
 		unsigned int nbBias;
 		unsigned int nbInput;
 		unsigned int nbOutput;
@@ -381,7 +384,8 @@ class Genome {
 using namespace pneatm;
 
 template <typename... Args>
-Genome<Args...>::Genome (const std::vector<size_t>& bias_sch, const std::vector<size_t>& inputs_sch, const std::vector<size_t>& outputs_sch, const std::vector<std::vector<size_t>>& hiddens_sch_init, const std::vector<void*>& bias_values, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, innovationConn_t* conn_innov, innovationNode_t* node_innov, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger) :
+Genome<Args...>::Genome (const unsigned int id, const std::vector<size_t>& bias_sch, const std::vector<size_t>& inputs_sch, const std::vector<size_t>& outputs_sch, const std::vector<std::vector<size_t>>& hiddens_sch_init, const std::vector<void*>& bias_values, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, innovationConn_t* conn_innov, innovationNode_t* node_innov, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger) :
+	id (id),
 	weightExtremumInit (weightExtremumInit),
 	activationFns (activationFns),
 	resetValues (resetValues),
@@ -559,7 +563,8 @@ Genome<Args...>::Genome (const std::vector<size_t>& bias_sch, const std::vector<
 }
 
 template <typename... Args>
-Genome<Args...>::Genome (unsigned int nbBias, unsigned int nbInput, unsigned int nbOutput, unsigned int N_types, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, double weightExtremumInit, spdlog::logger* logger) :
+Genome<Args...>::Genome (const unsigned int id, unsigned int nbBias, unsigned int nbInput, unsigned int nbOutput, unsigned int N_types, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, double weightExtremumInit, spdlog::logger* logger) :
+	id (id),
 	nbBias (nbBias),
 	nbInput (nbInput),
 	nbOutput (nbOutput),
@@ -1098,12 +1103,13 @@ void Genome<Args...>::UpdateLayers (int nodeId) {
 
 template <typename... Args>
 std::unique_ptr<Genome<Args...>> Genome<Args...>::clone () {
-	std::unique_ptr<Genome<Args...>> genome =  std::make_unique<Genome<Args...>> (nbBias, nbInput, nbOutput, N_types, resetValues, activationFns, weightExtremumInit, logger);
+	std::unique_ptr<Genome<Args...>> genome =  std::make_unique<Genome<Args...>> (id, nbBias, nbInput, nbOutput, N_types, resetValues, activationFns, weightExtremumInit, logger);
 
 	genome->nodes.reserve (nodes.size ());
 	for (std::pair<const unsigned int, std::unique_ptr<NodeBase>>& node : nodes) {
-		genome->nodes [node.second->id] = node.second->clone ();
+		genome->nodes.insert (std::make_pair (node.second->id, node.second->clone ()));
 	}
+	genome->connections.reserve (connections.size ());
 	genome->connections = connections;
 	genome->speciesId = speciesId;
 	genome->fitness = fitness;
@@ -1300,6 +1306,7 @@ void Genome<Args...>::draw (const std::string& font_path, unsigned int windowWid
 
 template <typename... Args>
 void Genome<Args...>::serialize (std::ofstream& outFile) {
+	Serialize (id, outFile);
 	Serialize (nbBias, outFile);
 	Serialize (nbInput, outFile);
 	Serialize (nbOutput, outFile);
@@ -1342,6 +1349,7 @@ void Genome<Args...>::serialize (std::ofstream& outFile) {
 
 template <typename... Args>
 void Genome<Args...>:: deserialize (std::ifstream& inFile) {
+	Deserialize (id, inFile);
 	Deserialize (nbBias, inFile);
 	Deserialize (nbInput, inFile);
 	Deserialize (nbOutput, inFile);
