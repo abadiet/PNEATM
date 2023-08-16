@@ -853,7 +853,7 @@ void Population<Args...>::print (const std::string& prefix) {
 	node_innov.print (prefix + "   ");
 	std::cout << prefix << "Genomes: " << std::endl;
 	for (const std::pair<const unsigned int, std::unique_ptr<Genome<Args...>>>& genome : genomes) {
-		genomes.second->print (prefix + "   ");
+		genome.second->print (prefix + "   ");
 	}
 	std::cout << prefix << "Species: " << std::endl;
 	for (const Species<Args...>& spe : species) {
