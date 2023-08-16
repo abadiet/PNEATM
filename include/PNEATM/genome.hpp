@@ -425,7 +425,6 @@ Genome<Args...>::Genome (const unsigned int id, const std::vector<size_t>& bias_
 			);
 			node->setResetValue (resetValues [i]);	// useless as bias nodes are never resetted
 			node->loadInput (bias_values [i]);	// load input now as it will always be the same
-			node->process ();	// load output now as it will always be the same
 
 			nbBias ++;
 		}
@@ -623,8 +622,6 @@ template <typename... Args>
 void Genome<Args...>::runNetwork () {
 	/* Process all input and output. For that, it "scans" each layer from the inputs to the last hidden's layer to calculate input with already known value. */ 
 
-	N_runNetwork++;
-
 	// reset input
 	for (unsigned int i = nbBias + nbInput; i < (unsigned int) nodes.size (); i++) {
 		nodes [i]->reset (false);
@@ -635,22 +632,35 @@ void Genome<Args...>::runNetwork () {
 		nodes [i]->process ();
 	}
 
-	int lastLayer = nodes [nbBias + nbInput]->layer;
+	// To help the optimizer to optimize our code, we prepare the data to be processed in a loop
 
+	// the "basic" arrays
+	std::vector<std::vector<NodeBase*>> nodes_addToInput;
+	std::vector<std::vector<void*>> outputs;
+	std::vector<std::vector<double>> weights;
+	std::vector<std::vector<NodeBase*>> nodes_process;
+
+	// prepare the arrays
+	int lastLayer = nodes [nbBias + nbInput]->layer;
 	for (int ilayer = 1; ilayer <= lastLayer; ilayer++) {
+		nodes_addToInput.push_back ({});
+		outputs.push_back ({});
+		weights.push_back ({});
+		nodes_process.push_back ({});
+
 		// process nodes[*]->input
 		for (const std::pair<const unsigned int, Connection>& conn : connections) {
 			if (conn.second.enabled && nodes [conn.second.outNodeId]->layer == ilayer) {	// if the connection still exist and is pointing to the current layer
-				if (conn.second.inNodeRecu < N_runNetwork) {
+				if (conn.second.inNodeRecu <= N_runNetwork) {
 
 					unsigned int depth = conn.second.inNodeRecu;
 					// if the connection's input node is further in the network it has not been processed and so its previous output is the current one for it!
 					if (nodes [conn.second.inNodeId]->layer >= nodes [conn.second.outNodeId]->layer) depth--;
 
-					nodes [conn.second.outNodeId]->AddToInput (
-						nodes [conn.second.inNodeId]->getOutput (depth),
-						conn.second.weight
-					);
+					nodes_addToInput.back ().push_back (nodes [conn.second.outNodeId].get ());
+					outputs.back ().push_back (nodes [conn.second.inNodeId]->getOutput (depth));
+					weights.back ().push_back (conn.second.weight);
+
 				} else {
 					// the input of the connection isn't existing yet!
 					// we consider that the connection isn't existing
@@ -661,10 +671,26 @@ void Genome<Args...>::runNetwork () {
 		// process nodes[*]->output & store outputs
 		for (std::pair<const unsigned int, std::unique_ptr<NodeBase>>& node : nodes) {
 			if (node.second->layer == ilayer) {
-				node.second->process ();
+				nodes_process.back ().push_back (node.second.get ());
 			}
 		}
 	}
+
+	// Actually run the networks: this part might be optimized
+	for (size_t i = 0; i < nodes_addToInput.size (); i++) {
+		for (size_t j = 0; j < nodes_addToInput [i].size (); j++) {
+			nodes_addToInput [i][j]->AddToInput (
+				outputs [i][j],
+				weights [i][j]
+			);
+		}
+
+		for (size_t j = 0; j < nodes_process [i].size (); j++) {
+			nodes_process [i][j]->process ();
+		}
+	}
+
+	N_runNetwork++;
 }
 
 template <typename... Args>
