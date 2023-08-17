@@ -11,8 +11,8 @@ int main () {
 
     // init population
     unsigned int popSize = 100;
-    pneatm::Population<myInt, myFloat> pop = SetupPopulation (popSize, logger.get ());
-    //pneatm::Population<myInt, myFloat> pop = LoadPopulation ("snakePneatm_save", logger.get (), "stats_new.csv");
+    //pneatm::Population<myInt, myFloat> pop = SetupPopulation (popSize, logger.get ());
+    pneatm::Population<myInt, myFloat> pop = LoadPopulation ("snakePneatm_save", logger.get (), "stats_new.csv");
 
     // init snake
     Snake snake (8);
@@ -123,7 +123,7 @@ int main () {
     pop.speciate (5, 100, 0.3);
 
     // print info and draw genome's network
-    pop.print ();
+    pop.getGenome (-1).print ();
     pop.getGenome (-1).draw ("/usr/share/fonts/OTF/SF-Pro-Rounded-Light.otf");
 
     // play a game by the fitter genome
