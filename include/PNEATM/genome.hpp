@@ -609,6 +609,7 @@ Genome<Args...>::Genome (std::ifstream& inFile, const std::vector<void*>& resetV
 	logger (logger)
 {
 	logger->trace ("Genome loading");
+	network_is_optimized = false;
 
 	deserialize (inFile);
 }

@@ -130,6 +130,7 @@ using namespace pneatm;
 
 template <typename T_in, typename T_out>
 Node<T_in, T_out>::Node () :
+	is_useful (false),
 	N_outputs (0),
 	activation_fn (std::make_unique<ActivationFn<T_in, T_out>> ())
 {}
