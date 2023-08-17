@@ -23,7 +23,7 @@ int main () {
     unsigned int maxIterationThresh = 500;
     int nbGame = 7;
     double bestFitness = 0.0;
-    while (bestFitness < 2500.0 && pop.getGeneration () < 500) { // while goal is not reach
+    while (bestFitness < 2500.0 && pop.getGeneration () < 360) { // while goal is not reach
         std::cout << "generation " << pop.getGeneration () << std::endl;
 
         for (unsigned int genomeId = 0; genomeId < popSize; genomeId ++) {
@@ -78,7 +78,7 @@ int main () {
         // mutation step
         pop.mutate (paramsMap);
     }
-
+/*
     pop.save ("snakePneatm_save");
 
     // we have to run once again the network to do a speciation to get the last fitter genome
@@ -121,13 +121,13 @@ int main () {
         pop.setFitness (score / (float) nbGame, genomeId);
     }
     pop.speciate (5, 100, 0.3);
-
+*/
     // print info and draw genome's network
     pop.getGenome (-1).print ();
     pop.getGenome (-1).draw ("/usr/share/fonts/OTF/SF-Pro-Rounded-Light.otf");
 
     // play a game by the fitter genome
-    playGameFitter (pop.getGenome (-1), maxIterationThresh, false, {800, 600}, 0.12f, 8);
+    //playGameFitter (pop.getGenome (-1), maxIterationThresh, false, {800, 600}, 0.12f, 8);
 
     return 0;
 }

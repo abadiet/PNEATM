@@ -341,6 +341,20 @@ class Genome {
 		void deserialize (std::ifstream& inFile);
 
 	private:
+		struct optimize_network_ope {
+			NodeBase* node_addToInput;
+			NodeBase* node_getOutput;
+			unsigned int conn_inNodeRecu;
+			double conn_weight;
+
+			optimize_network_ope (NodeBase* node_addToInput, NodeBase* node_getOutput, unsigned int& conn_inNodeRecu, double& conn_weight) :
+				node_addToInput (node_addToInput),
+				node_getOutput (node_getOutput),
+				conn_inNodeRecu (conn_inNodeRecu),
+				conn_weight (conn_weight)
+			{}
+		};
+
 		unsigned int id;
 		unsigned int nbBias;
 		unsigned int nbInput;
@@ -354,8 +368,9 @@ class Genome {
 		std::unordered_map <unsigned int, Connection> connections;
 		std::vector<std::vector<NodeBase*>> optimize_nodes_process;	// TODO pointers or ids
 		std::vector<NodeBase*> optimize_nodes_reset;	// TODO pointers or ids
-		std::vector<std::vector<Connection*>> optimize_conn_nonrecu;	// TODO pointers or ids
-		std::vector<Connection*> optimize_conn_recu;	// TODO pointers or ids
+		std::vector<std::vector<optimize_network_ope>> optimize_operations_nonrecu;	// TODO pointers or ids
+		std::vector<optimize_network_ope> optimize_operations_recu;	// TODO pointers or ids
+		bool network_is_optimized;
 
 		double fitness;
 		int speciesId;
@@ -403,6 +418,7 @@ Genome<Args...>::Genome (const unsigned int id, const std::vector<size_t>& bias_
 	speciesId = -1;
 	fitness = 0.0;
 	N_runNetwork = 0;
+	network_is_optimized = false;
 
 	// NODES
 	// bias
@@ -583,6 +599,7 @@ Genome<Args...>::Genome (const unsigned int id, unsigned int nbBias, unsigned in
 	speciesId = -1;
 	fitness = 0.0;
 	N_runNetwork = 0;
+	network_is_optimized = false;
 }
 
 template <typename... Args>
@@ -626,8 +643,8 @@ void Genome<Args...>::resetMemory () {
 
 template <typename... Args>
 void Genome<Args...>::runNetwork () {
-	// prepare the connections and nodes by sorting which ones are useful
-	if (optimize_nodes_process.size () <= 0) {
+	// optimize the network by sorting connections and dissociate useless nodes from useful ones
+	if (!network_is_optimized) {
 		// the function population::OptimizeNetwork has not been run
 		OptimizeNetwork ();
 	}
@@ -643,11 +660,11 @@ void Genome<Args...>::runNetwork () {
 	}
 
 	// recurent connections: we already know every input, so we don't care of layers
-	for (const Connection* conn : optimize_conn_recu) {
-		if (conn->inNodeRecu <= N_runNetwork) {
-			nodes [conn->outNodeId]->AddToInput (
-				nodes [conn->inNodeId]->getOutput (conn->inNodeRecu - 1),
-				conn->weight
+	for (optimize_network_ope& ope : optimize_operations_recu) {
+		if (ope.conn_inNodeRecu <= N_runNetwork) {
+			ope.node_addToInput->AddToInput (
+				ope.node_getOutput->getOutput (ope.conn_inNodeRecu - 1),
+				ope.conn_weight
 			);
 		} else {
 			// the input of the connection isn't existing yet!
@@ -658,10 +675,10 @@ void Genome<Args...>::runNetwork () {
 	unsigned int lastLayer = nodes [nbBias + nbInput]->layer;
 	for (unsigned int ilayer = 0; ilayer <= lastLayer - 2; ilayer++) {
 		// non-recurrent connections: can depend on layers and so we processed them sequentially, layer per layer
-		for (const Connection* conn : optimize_conn_nonrecu [ilayer]) {
-			nodes [conn->outNodeId]->AddToInput (
-				nodes [conn->inNodeId]->getOutput (0),
-				conn->weight
+		for (optimize_network_ope& ope : optimize_operations_nonrecu [ilayer]) {
+			ope.node_addToInput->AddToInput (
+				ope.node_getOutput->getOutput (0),
+				ope.conn_weight
 			);
 		}
 
@@ -674,10 +691,10 @@ void Genome<Args...>::runNetwork () {
 	// we process the two last layer and then process the output layer 
 	for (unsigned int ilayer = lastLayer - 1; ilayer <= lastLayer; ilayer++) {
 		// non-recurrent connections
-		for (const Connection* conn : optimize_conn_nonrecu [ilayer]) {
-			nodes [conn->outNodeId]->AddToInput (
-				nodes [conn->inNodeId]->getOutput (0),
-				conn->weight
+		for (optimize_network_ope& ope : optimize_operations_nonrecu [ilayer]) {
+			ope.node_addToInput->AddToInput (
+				ope.node_getOutput->getOutput (0),
+				ope.conn_weight
 			);
 		}
 	}
@@ -706,13 +723,13 @@ void Genome<Args...>::OptimizeNetwork () {
 
 	optimize_nodes_process.clear ();
 	optimize_nodes_reset.clear ();
-	optimize_conn_recu.clear ();
-	optimize_conn_nonrecu.clear ();
+	optimize_operations_recu.clear ();
+	optimize_operations_nonrecu.clear ();
 	const int lastLayer = nodes [nbBias + nbInput]->layer;
 
 	// non-recurrent connections
 	for (int ilayer = 0; ilayer <= lastLayer; ilayer++) {
-		optimize_conn_nonrecu.push_back ({});
+		optimize_operations_nonrecu.push_back ({});
 
 		for (std::pair<const unsigned int, Connection>& conn : connections) {
 			if (
@@ -721,7 +738,7 @@ void Genome<Args...>::OptimizeNetwork () {
 				&& nodes [conn.second.inNodeId]->layer == ilayer
 				&& conn.second.inNodeRecu <= 0
 			) {	// if the connection still exist, is useful, start from the current layer and is not recurrent
-				optimize_conn_nonrecu.back ().push_back (&conn.second);
+				optimize_operations_nonrecu.back ().push_back (optimize_network_ope (nodes [conn.second.outNodeId].get (), nodes [conn.second.inNodeId].get (), conn.second.inNodeRecu, conn.second.weight));
 			}
 		}
 	}
@@ -733,7 +750,7 @@ void Genome<Args...>::OptimizeNetwork () {
 			&& nodes [conn.second.outNodeId]->is_useful
 			&& conn.second.inNodeRecu > 0
 		) {	// if the connection still exist, is useful and is recurrent
-			optimize_conn_recu.push_back (&conn.second);
+			optimize_operations_recu.push_back (optimize_network_ope (nodes [conn.second.outNodeId].get (), nodes [conn.second.inNodeId].get (), conn.second.inNodeRecu, conn.second.weight));
 		}
 	}
 
@@ -752,6 +769,8 @@ void Genome<Args...>::OptimizeNetwork () {
 			}
 		}
 	}
+
+	network_is_optimized = true;
 }
 
 template <typename... Args>
@@ -809,10 +828,7 @@ void Genome<Args...>::mutate (innovationConn_t* conn_innov, innovationNode_t* no
 	}
 
 	// reset optimizer as the network may have changed
-	optimize_conn_nonrecu.clear ();
-	optimize_conn_recu.clear ();
-	optimize_nodes_process.clear ();
-	optimize_nodes_reset.clear ();
+	network_is_optimized = false;
 }
 
 template <typename... Args>
