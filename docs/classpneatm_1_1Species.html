@@ -94,12 +94,12 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:af4892d44c4078ce1e832bbcd7d623af4"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Species.html#af4892d44c4078ce1e832bbcd7d623af4">distanceWith</a> (const std::unique_ptr&lt; <a class="el" href="classpneatm_1_1Genome.html">Genome</a>&lt; Args... &gt;&gt; &amp;genome, double a=1.0, double b=1.0, double c=0.4)</td></tr>
 <tr class="memdesc:af4892d44c4078ce1e832bbcd7d623af4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the distance between a given genome and the species.  <a href="classpneatm_1_1Species.html#af4892d44c4078ce1e832bbcd7d623af4">More...</a><br /></td></tr>
 <tr class="separator:af4892d44c4078ce1e832bbcd7d623af4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa334d08803c528dad4af77de96298c78"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Species.html#aa334d08803c528dad4af77de96298c78">print</a> (const std::string &amp;prefix=&quot;&quot;)</td></tr>
-<tr class="memdesc:aa334d08803c528dad4af77de96298c78"><td class="mdescLeft">&#160;</td><td class="mdescRight">Print information on the species.  <a href="classpneatm_1_1Species.html#aa334d08803c528dad4af77de96298c78">More...</a><br /></td></tr>
-<tr class="separator:aa334d08803c528dad4af77de96298c78"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a81a7647e73adceef280efc5b42712b81"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Species.html#a81a7647e73adceef280efc5b42712b81">serialize</a> (std::ofstream &amp;outFile)</td></tr>
-<tr class="memdesc:a81a7647e73adceef280efc5b42712b81"><td class="mdescLeft">&#160;</td><td class="mdescRight">Serialize the <a class="el" href="classpneatm_1_1Species.html" title="A template class representing a species.">Species</a> instance to an output file stream.  <a href="classpneatm_1_1Species.html#a81a7647e73adceef280efc5b42712b81">More...</a><br /></td></tr>
-<tr class="separator:a81a7647e73adceef280efc5b42712b81"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a532e25ae200d195cd583c5d4f55c64ea"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Species.html#a532e25ae200d195cd583c5d4f55c64ea">print</a> (const std::string &amp;prefix=&quot;&quot;) const</td></tr>
+<tr class="memdesc:a532e25ae200d195cd583c5d4f55c64ea"><td class="mdescLeft">&#160;</td><td class="mdescRight">Print information on the species.  <a href="classpneatm_1_1Species.html#a532e25ae200d195cd583c5d4f55c64ea">More...</a><br /></td></tr>
+<tr class="separator:a532e25ae200d195cd583c5d4f55c64ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a47c9cbefbb3c3eb88e6e829bd0e1482d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Species.html#a47c9cbefbb3c3eb88e6e829bd0e1482d">serialize</a> (std::ofstream &amp;outFile) const</td></tr>
+<tr class="memdesc:a47c9cbefbb3c3eb88e6e829bd0e1482d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Serialize the <a class="el" href="classpneatm_1_1Species.html" title="A template class representing a species.">Species</a> instance to an output file stream.  <a href="classpneatm_1_1Species.html#a47c9cbefbb3c3eb88e6e829bd0e1482d">More...</a><br /></td></tr>
+<tr class="separator:a47c9cbefbb3c3eb88e6e829bd0e1482d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a88c30717c478b50218887278f9e6b6a9"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Species.html#a88c30717c478b50218887278f9e6b6a9">deserialize</a> (std::ifstream &amp;inFile)</td></tr>
 <tr class="memdesc:a88c30717c478b50218887278f9e6b6a9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deserialize a <a class="el" href="classpneatm_1_1Species.html" title="A template class representing a species.">Species</a> instance from an input file stream.  <a href="classpneatm_1_1Species.html#a88c30717c478b50218887278f9e6b6a9">More...</a><br /></td></tr>
 <tr class="separator:a88c30717c478b50218887278f9e6b6a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -282,8 +282,8 @@ template&lt;typename... Args&gt; </div>
 
 </div>
 </div>
-<a id="aa334d08803c528dad4af77de96298c78"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa334d08803c528dad4af77de96298c78">&#9670;&nbsp;</a></span>print()</h2>
+<a id="a532e25ae200d195cd583c5d4f55c64ea"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a532e25ae200d195cd583c5d4f55c64ea">&#9670;&nbsp;</a></span>print()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -295,7 +295,7 @@ template&lt;typename... Args&gt; </div>
           <td>(</td>
           <td class="paramtype">const std::string &amp;&#160;</td>
           <td class="paramname"><em>prefix</em> = <code>&quot;&quot;</code></td><td>)</td>
-          <td></td>
+          <td> const</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -310,8 +310,8 @@ template&lt;typename... Args&gt; </div>
 
 </div>
 </div>
-<a id="a81a7647e73adceef280efc5b42712b81"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a81a7647e73adceef280efc5b42712b81">&#9670;&nbsp;</a></span>serialize()</h2>
+<a id="a47c9cbefbb3c3eb88e6e829bd0e1482d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a47c9cbefbb3c3eb88e6e829bd0e1482d">&#9670;&nbsp;</a></span>serialize()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -323,7 +323,7 @@ template&lt;typename... Args&gt; </div>
           <td>(</td>
           <td class="paramtype">std::ofstream &amp;&#160;</td>
           <td class="paramname"><em>outFile</em></td><td>)</td>
-          <td></td>
+          <td> const</td>
         </tr>
       </table>
 </div><div class="memdoc">

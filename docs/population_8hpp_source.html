@@ -181,7 +181,7 @@ $(function() {
 <div class="line"><a name="l00280"></a><span class="lineno">  280</span>&#160;        distanceFn dstType;</div>
 <div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160; </div>
 <div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160;        <span class="keywordtype">int</span> fittergenome_id;</div>
-<div class="line"><a name="l00283"></a><span class="lineno">  283</span>&#160;        std::vector&lt;std::unique_ptr&lt;<a class="code" href="classpneatm_1_1Genome.html">Genome</a>&lt;Args...&gt;&gt;&gt; genomes;</div>
+<div class="line"><a name="l00283"></a><span class="lineno">  283</span>&#160;        std::unordered_map &lt;<span class="keywordtype">unsigned</span> int, std::unique_ptr&lt;<a class="code" href="classpneatm_1_1Genome.html">Genome</a>&lt;Args...&gt;&gt;&gt; genomes;</div>
 <div class="line"><a name="l00284"></a><span class="lineno">  284</span>&#160;        std::vector&lt;<a class="code" href="classpneatm_1_1Species.html">Species</a>&lt;Args...&gt;&gt; species;</div>
 <div class="line"><a name="l00285"></a><span class="lineno">  285</span>&#160;        std::vector&lt;std::vector&lt;std::vector&lt;ActivationFnBase*&gt;&gt;&gt; activationFns;</div>
 <div class="line"><a name="l00286"></a><span class="lineno">  286</span>&#160;        <a class="code" href="structpneatm_1_1innovationConn.html">innovationConn_t</a> conn_innov;</div>
@@ -235,7 +235,7 @@ $(function() {
 <div class="line"><a name="l00334"></a><span class="lineno">  334</span>&#160; </div>
 <div class="line"><a name="l00335"></a><span class="lineno">  335</span>&#160;    genomes.reserve (popSize);</div>
 <div class="line"><a name="l00336"></a><span class="lineno">  336</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> i = 0; i &lt; popSize; i++) {</div>
-<div class="line"><a name="l00337"></a><span class="lineno">  337</span>&#160;        genomes.push_back (std::make_unique&lt;<a class="code" href="classpneatm_1_1Genome.html">Genome&lt;Args...&gt;</a>&gt; (bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_values, resetValues, activationFns, &amp;conn_innov, &amp;node_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger));</div>
+<div class="line"><a name="l00337"></a><span class="lineno">  337</span>&#160;        genomes.insert (std::make_pair (i, std::make_unique&lt;<a class="code" href="classpneatm_1_1Genome.html">Genome&lt;Args...&gt;</a>&gt; (i, bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_values, resetValues, activationFns, &amp;conn_innov, &amp;node_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger)));</div>
 <div class="line"><a name="l00338"></a><span class="lineno">  338</span>&#160;    }</div>
 <div class="line"><a name="l00339"></a><span class="lineno">  339</span>&#160;}</div>
 <div class="line"><a name="l00340"></a><span class="lineno">  340</span>&#160; </div>
@@ -291,8 +291,8 @@ $(function() {
 <div class="line"><a name="l00390"></a><span class="lineno">  390</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span>... Args&gt;</div>
 <div class="line"><a name="l00391"></a><span class="lineno">  391</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> T_in&gt;</div>
 <div class="line"><a name="l00392"></a><span class="lineno"><a class="line" href="classpneatm_1_1Population.html#ab909f5d506517a42b26b1ccfbd148674">  392</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="classpneatm_1_1Population.html#ab909f5d506517a42b26b1ccfbd148674">Population&lt;Args...&gt;::loadInput</a>(T_in&amp; input, <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> input_id) {</div>
-<div class="line"><a name="l00393"></a><span class="lineno">  393</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> i = 0; i &lt; popSize; i++) {</div>
-<div class="line"><a name="l00394"></a><span class="lineno">  394</span>&#160;        genomes [i]-&gt;template loadInput&lt;T_in&gt; (input, input_id);</div>
+<div class="line"><a name="l00393"></a><span class="lineno">  393</span>&#160;    <span class="keywordflow">for</span> (std::pair&lt;<span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span>, std::unique_ptr&lt;<a class="code" href="classpneatm_1_1Genome.html">Genome&lt;Args...&gt;</a>&gt;&gt;&amp; genome : genomes) {</div>
+<div class="line"><a name="l00394"></a><span class="lineno">  394</span>&#160;        genome.second-&gt;template loadInput&lt;T_in&gt; (input, input_id);</div>
 <div class="line"><a name="l00395"></a><span class="lineno">  395</span>&#160;    }</div>
 <div class="line"><a name="l00396"></a><span class="lineno">  396</span>&#160;}</div>
 <div class="line"><a name="l00397"></a><span class="lineno">  397</span>&#160; </div>
@@ -304,8 +304,8 @@ $(function() {
 <div class="line"><a name="l00403"></a><span class="lineno">  403</span>&#160; </div>
 <div class="line"><a name="l00404"></a><span class="lineno">  404</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span>... Args&gt;</div>
 <div class="line"><a name="l00405"></a><span class="lineno"><a class="line" href="classpneatm_1_1Population.html#a47afebc2d61ba3821f7aff4724314608">  405</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="classpneatm_1_1Population.html#a47afebc2d61ba3821f7aff4724314608">Population&lt;Args...&gt;::resetMemory</a> () {</div>
-<div class="line"><a name="l00406"></a><span class="lineno">  406</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; genomes.size (); i++) {</div>
-<div class="line"><a name="l00407"></a><span class="lineno">  407</span>&#160;        genomes [i]-&gt;resetMemory ();</div>
+<div class="line"><a name="l00406"></a><span class="lineno">  406</span>&#160;    <span class="keywordflow">for</span> (std::pair&lt;<span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span>, std::unique_ptr&lt;<a class="code" href="classpneatm_1_1Genome.html">Genome&lt;Args...&gt;</a>&gt;&gt;&amp; genome : genomes) {</div>
+<div class="line"><a name="l00407"></a><span class="lineno">  407</span>&#160;        genome.second-&gt;resetMemory ();</div>
 <div class="line"><a name="l00408"></a><span class="lineno">  408</span>&#160;    }</div>
 <div class="line"><a name="l00409"></a><span class="lineno">  409</span>&#160;}</div>
 <div class="line"><a name="l00410"></a><span class="lineno">  410</span>&#160; </div>
@@ -445,7 +445,7 @@ $(function() {
 <div class="line"><a name="l00544"></a><span class="lineno">  544</span>&#160;        <span class="keywordflow">if</span> (!species [iSpe].isDead) {   <span class="comment">// if the species is still alive, this also ensure that there is at least one member</span></div>
 <div class="line"><a name="l00545"></a><span class="lineno">  545</span>&#160;            <span class="comment">//species [iSpe].connections = GetWeightedCentroid ((unsigned int) iSpe);</span></div>
 <div class="line"><a name="l00546"></a><span class="lineno">  546</span>&#160; </div>
-<div class="line"><a name="l00547"></a><span class="lineno">  547</span>&#160;            <span class="keywordtype">size_t</span> leaderId = species [iSpe].members [0];</div>
+<div class="line"><a name="l00547"></a><span class="lineno">  547</span>&#160;            <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> leaderId = species [iSpe].members [0];</div>
 <div class="line"><a name="l00548"></a><span class="lineno">  548</span>&#160;            <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 1; i &lt; species [iSpe].members.size (); i++) {</div>
 <div class="line"><a name="l00549"></a><span class="lineno">  549</span>&#160;                <span class="keywordflow">if</span> (genomes [species [iSpe].members [i]]-&gt;fitness &gt;= genomes [leaderId]-&gt;fitness) {</div>
 <div class="line"><a name="l00550"></a><span class="lineno">  550</span>&#160;                    <span class="keywordflow">if</span> (genomes [species [iSpe].members [i]]-&gt;fitness &gt; genomes [leaderId]-&gt;fitness || Random_Double (0.0, 1.0, <span class="keyword">true</span>, <span class="keyword">false</span>) &lt; 0.5) {</div>
@@ -510,11 +510,11 @@ $(function() {
 <div class="line"><a name="l00609"></a><span class="lineno">  609</span>&#160;    avgFitnessAdjusted = 0;</div>
 <div class="line"><a name="l00610"></a><span class="lineno">  610</span>&#160; </div>
 <div class="line"><a name="l00611"></a><span class="lineno">  611</span>&#160;    <span class="comment">// process avgFitness and found fittergenome_id</span></div>
-<div class="line"><a name="l00612"></a><span class="lineno">  612</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> i = 0; i &lt; popSize; i++) {</div>
-<div class="line"><a name="l00613"></a><span class="lineno">  613</span>&#160;        avgFitness += genomes [i]-&gt;fitness;</div>
+<div class="line"><a name="l00612"></a><span class="lineno">  612</span>&#160;    <span class="keywordflow">for</span> (<span class="keyword">const</span> std::pair&lt;<span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span>, std::unique_ptr&lt;<a class="code" href="classpneatm_1_1Genome.html">Genome&lt;Args...&gt;</a>&gt;&gt;&amp; genome : genomes) {</div>
+<div class="line"><a name="l00613"></a><span class="lineno">  613</span>&#160;        avgFitness += genome.second-&gt;fitness;</div>
 <div class="line"><a name="l00614"></a><span class="lineno">  614</span>&#160; </div>
-<div class="line"><a name="l00615"></a><span class="lineno">  615</span>&#160;        <span class="keywordflow">if</span> (genomes [i]-&gt;fitness &gt; genomes [fittergenome_id]-&gt;fitness) {</div>
-<div class="line"><a name="l00616"></a><span class="lineno">  616</span>&#160;            fittergenome_id = i;</div>
+<div class="line"><a name="l00615"></a><span class="lineno">  615</span>&#160;        <span class="keywordflow">if</span> (genome.second-&gt;fitness &gt; genomes [fittergenome_id]-&gt;fitness) {</div>
+<div class="line"><a name="l00616"></a><span class="lineno">  616</span>&#160;            fittergenome_id = genome.second-&gt;id;</div>
 <div class="line"><a name="l00617"></a><span class="lineno">  617</span>&#160;        }</div>
 <div class="line"><a name="l00618"></a><span class="lineno">  618</span>&#160;    }</div>
 <div class="line"><a name="l00619"></a><span class="lineno">  619</span>&#160;    avgFitness /= (double) popSize;</div>
@@ -575,319 +575,337 @@ $(function() {
 <div class="line"><a name="l00674"></a><span class="lineno">  674</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span>... Args&gt;</div>
 <div class="line"><a name="l00675"></a><span class="lineno"><a class="line" href="classpneatm_1_1Population.html#a82911e4075c134221ccf305750ae205a">  675</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="classpneatm_1_1Population.html#a82911e4075c134221ccf305750ae205a">Population&lt;Args...&gt;::crossover</a> (<span class="keywordtype">bool</span> elitism, <span class="keywordtype">double</span> crossover_rate) {</div>
 <div class="line"><a name="l00676"></a><span class="lineno">  676</span>&#160;    logger-&gt;info (<span class="stringliteral">&quot;Crossover&quot;</span>);</div>
-<div class="line"><a name="l00677"></a><span class="lineno">  677</span>&#160;    std::vector&lt;std::unique_ptr&lt;<a class="code" href="classpneatm_1_1Genome.html">Genome</a>&lt;Args...&gt;&gt;&gt; newGenomes;</div>
+<div class="line"><a name="l00677"></a><span class="lineno">  677</span>&#160;    std::unordered_map&lt;<span class="keywordtype">unsigned</span> int, std::unique_ptr&lt;<a class="code" href="classpneatm_1_1Genome.html">Genome</a>&lt;Args...&gt;&gt;&gt; newGenomes;</div>
 <div class="line"><a name="l00678"></a><span class="lineno">  678</span>&#160;    newGenomes.reserve (popSize);</div>
 <div class="line"><a name="l00679"></a><span class="lineno">  679</span>&#160; </div>
-<div class="line"><a name="l00680"></a><span class="lineno">  680</span>&#160;    <span class="keywordflow">if</span> (elitism) {  <span class="comment">// elitism mode on = we conserve during generations the more fit genome</span></div>
-<div class="line"><a name="l00681"></a><span class="lineno">  681</span>&#160;        newGenomes.push_back (genomes [fittergenome_id]-&gt;clone ());</div>
-<div class="line"><a name="l00682"></a><span class="lineno">  682</span>&#160;    }</div>
-<div class="line"><a name="l00683"></a><span class="lineno">  683</span>&#160; </div>
-<div class="line"><a name="l00684"></a><span class="lineno">  684</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> iSpe = 0; iSpe &lt; (<span class="keywordtype">unsigned</span> int) species.size (); iSpe ++) {</div>
-<div class="line"><a name="l00685"></a><span class="lineno">  685</span>&#160;        <span class="keywordflow">if</span> (!species [iSpe].isDead) {</div>
-<div class="line"><a name="l00686"></a><span class="lineno">  686</span>&#160;            <span class="keywordflow">for</span> (<span class="keywordtype">int</span> k = 0; k &lt; species [iSpe].allowedOffspring; k++) {</div>
+<div class="line"><a name="l00680"></a><span class="lineno">  680</span>&#160;    <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> genomeId = 0;</div>
+<div class="line"><a name="l00681"></a><span class="lineno">  681</span>&#160; </div>
+<div class="line"><a name="l00682"></a><span class="lineno">  682</span>&#160;    <span class="keywordflow">if</span> (elitism) {  <span class="comment">// elitism mode on = we conserve during generations the more fit genome</span></div>
+<div class="line"><a name="l00683"></a><span class="lineno">  683</span>&#160;        newGenomes.insert (std::make_pair (genomeId, genomes [fittergenome_id]-&gt;clone ()));</div>
+<div class="line"><a name="l00684"></a><span class="lineno">  684</span>&#160;        newGenomes [genomeId]-&gt;id = genomeId;</div>
+<div class="line"><a name="l00685"></a><span class="lineno">  685</span>&#160;        genomeId++;</div>
+<div class="line"><a name="l00686"></a><span class="lineno">  686</span>&#160;    }</div>
 <div class="line"><a name="l00687"></a><span class="lineno">  687</span>&#160; </div>
-<div class="line"><a name="l00688"></a><span class="lineno">  688</span>&#160;                <span class="comment">// choose pseudo-randomly a first parent</span></div>
-<div class="line"><a name="l00689"></a><span class="lineno">  689</span>&#160;                <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> iParent1 = SelectParent (iSpe);</div>
-<div class="line"><a name="l00690"></a><span class="lineno">  690</span>&#160; </div>
-<div class="line"><a name="l00691"></a><span class="lineno">  691</span>&#160;                <span class="keywordflow">if</span> (Random_Double (0.0, 1.0, <span class="keyword">true</span>, <span class="keyword">false</span>) &lt; crossover_rate &amp;&amp; species [iSpe].members.size () &gt; 1) {</div>
-<div class="line"><a name="l00692"></a><span class="lineno">  692</span>&#160;                    <span class="comment">// choose pseudo-randomly a second parent</span></div>
-<div class="line"><a name="l00693"></a><span class="lineno">  693</span>&#160;                    <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> iParent2 = SelectParent (iSpe);    <span class="comment">// TODO might be the same parent as iParent1: is that an issue?</span></div>
+<div class="line"><a name="l00688"></a><span class="lineno">  688</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> iSpe = 0; iSpe &lt; (<span class="keywordtype">unsigned</span> int) species.size (); iSpe ++) {</div>
+<div class="line"><a name="l00689"></a><span class="lineno">  689</span>&#160;        <span class="keywordflow">if</span> (!species [iSpe].isDead) {</div>
+<div class="line"><a name="l00690"></a><span class="lineno">  690</span>&#160;            <span class="keywordflow">for</span> (<span class="keywordtype">int</span> k = 0; k &lt; species [iSpe].allowedOffspring; k++) {</div>
+<div class="line"><a name="l00691"></a><span class="lineno">  691</span>&#160; </div>
+<div class="line"><a name="l00692"></a><span class="lineno">  692</span>&#160;                <span class="comment">// choose pseudo-randomly a first parent</span></div>
+<div class="line"><a name="l00693"></a><span class="lineno">  693</span>&#160;                <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> iParent1 = SelectParent (iSpe);</div>
 <div class="line"><a name="l00694"></a><span class="lineno">  694</span>&#160; </div>
-<div class="line"><a name="l00695"></a><span class="lineno">  695</span>&#160;                    <span class="comment">// clone the more fit</span></div>
-<div class="line"><a name="l00696"></a><span class="lineno">  696</span>&#160;                    <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> iMainParent;</div>
-<div class="line"><a name="l00697"></a><span class="lineno">  697</span>&#160;                    <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> iSecondParent;</div>
-<div class="line"><a name="l00698"></a><span class="lineno">  698</span>&#160;                    <span class="keywordflow">if</span> (genomes [iParent1]-&gt;fitness &gt; genomes [iParent2]-&gt;fitness) {</div>
-<div class="line"><a name="l00699"></a><span class="lineno">  699</span>&#160;                        iMainParent = iParent1;</div>
-<div class="line"><a name="l00700"></a><span class="lineno">  700</span>&#160;                        iSecondParent = iParent2;</div>
-<div class="line"><a name="l00701"></a><span class="lineno">  701</span>&#160;                    } <span class="keywordflow">else</span> {</div>
-<div class="line"><a name="l00702"></a><span class="lineno">  702</span>&#160;                        iMainParent = iParent2;</div>
-<div class="line"><a name="l00703"></a><span class="lineno">  703</span>&#160;                        iSecondParent = iParent1;</div>
-<div class="line"><a name="l00704"></a><span class="lineno">  704</span>&#160;                    }</div>
-<div class="line"><a name="l00705"></a><span class="lineno">  705</span>&#160; </div>
-<div class="line"><a name="l00706"></a><span class="lineno">  706</span>&#160;                    newGenomes.push_back (genomes [iMainParent]-&gt;clone ());</div>
-<div class="line"><a name="l00707"></a><span class="lineno">  707</span>&#160; </div>
-<div class="line"><a name="l00708"></a><span class="lineno">  708</span>&#160;                    <span class="comment">// connections shared by both of the parents must be randomly wheighted</span></div>
-<div class="line"><a name="l00709"></a><span class="lineno">  709</span>&#160;                    <span class="keywordflow">for</span> (<span class="keyword">const</span> std::pair&lt;const unsigned int, Connection&gt;&amp; connMainParent : genomes [iMainParent]-&gt;connections) {</div>
-<div class="line"><a name="l00710"></a><span class="lineno">  710</span>&#160;                        <span class="keywordflow">for</span> (<span class="keyword">const</span> std::pair&lt;const unsigned int, Connection&gt;&amp; connSecondParent : genomes [iSecondParent]-&gt;connections) {</div>
-<div class="line"><a name="l00711"></a><span class="lineno">  711</span>&#160;                            <span class="keywordflow">if</span> (connMainParent.second.innovId == connSecondParent.second.innovId) {</div>
-<div class="line"><a name="l00712"></a><span class="lineno">  712</span>&#160;                                <span class="keywordflow">if</span> (Random_Double (0.0, 1.0, <span class="keyword">true</span>, <span class="keyword">false</span>) &lt; 0.5) {  <span class="comment">// 50 % of chance for each parent, newGenome already have the wheight of MainParent</span></div>
-<div class="line"><a name="l00713"></a><span class="lineno">  713</span>&#160;                                    newGenomes.back ()-&gt;connections [connMainParent.second.id].weight = connSecondParent.second.weight;</div>
-<div class="line"><a name="l00714"></a><span class="lineno">  714</span>&#160;                                }</div>
-<div class="line"><a name="l00715"></a><span class="lineno">  715</span>&#160;                            }</div>
-<div class="line"><a name="l00716"></a><span class="lineno">  716</span>&#160;                        }</div>
-<div class="line"><a name="l00717"></a><span class="lineno">  717</span>&#160;                    }</div>
-<div class="line"><a name="l00718"></a><span class="lineno">  718</span>&#160;                } <span class="keywordflow">else</span> {</div>
-<div class="line"><a name="l00719"></a><span class="lineno">  719</span>&#160;                    <span class="comment">// the genome is kept for the new generation (there is no crossover which emphasize mutation&#39;s effect eg exploration)</span></div>
-<div class="line"><a name="l00720"></a><span class="lineno">  720</span>&#160;                    newGenomes.push_back (genomes [iParent1]-&gt;clone ());</div>
-<div class="line"><a name="l00721"></a><span class="lineno">  721</span>&#160;                }</div>
-<div class="line"><a name="l00722"></a><span class="lineno">  722</span>&#160;            }</div>
-<div class="line"><a name="l00723"></a><span class="lineno">  723</span>&#160;        }</div>
-<div class="line"><a name="l00724"></a><span class="lineno">  724</span>&#160;    }</div>
-<div class="line"><a name="l00725"></a><span class="lineno">  725</span>&#160; </div>
-<div class="line"><a name="l00726"></a><span class="lineno">  726</span>&#160;    <span class="keywordtype">int</span> previousSize = (int) newGenomes.size();</div>
-<div class="line"><a name="l00727"></a><span class="lineno">  727</span>&#160;    <span class="comment">// add genomes if some are missing</span></div>
-<div class="line"><a name="l00728"></a><span class="lineno">  728</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> k = 0; k &lt; (int) popSize - (<span class="keywordtype">int</span>) previousSize; k++) {</div>
-<div class="line"><a name="l00729"></a><span class="lineno">  729</span>&#160;        newGenomes.push_back (std::make_unique&lt;<a class="code" href="classpneatm_1_1Genome.html">Genome&lt;Args...&gt;</a>&gt; (bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_values, resetValues, activationFns, &amp;conn_innov, &amp;node_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger));</div>
-<div class="line"><a name="l00730"></a><span class="lineno">  730</span>&#160;    }</div>
-<div class="line"><a name="l00731"></a><span class="lineno">  731</span>&#160;    <span class="comment">// or remove some genomes if there is too many genomes</span></div>
-<div class="line"><a name="l00732"></a><span class="lineno">  732</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> k = 0; k &lt; (int) previousSize - (<span class="keywordtype">int</span>) popSize; k++) {</div>
-<div class="line"><a name="l00733"></a><span class="lineno">  733</span>&#160;        newGenomes.pop_back ();</div>
-<div class="line"><a name="l00734"></a><span class="lineno">  734</span>&#160;    }</div>
-<div class="line"><a name="l00735"></a><span class="lineno">  735</span>&#160; </div>
-<div class="line"><a name="l00736"></a><span class="lineno">  736</span>&#160;    <span class="comment">// replace the current genomes by the new ones</span></div>
-<div class="line"><a name="l00737"></a><span class="lineno">  737</span>&#160;    genomes.clear ();</div>
-<div class="line"><a name="l00738"></a><span class="lineno">  738</span>&#160;    genomes = std::move (newGenomes);</div>
-<div class="line"><a name="l00739"></a><span class="lineno">  739</span>&#160; </div>
-<div class="line"><a name="l00740"></a><span class="lineno">  740</span>&#160;    <span class="comment">// reset species members</span></div>
-<div class="line"><a name="l00741"></a><span class="lineno">  741</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; species.size (); i++) {</div>
-<div class="line"><a name="l00742"></a><span class="lineno">  742</span>&#160;        species [i].members.clear ();</div>
-<div class="line"><a name="l00743"></a><span class="lineno">  743</span>&#160;        species [i].isDead = <span class="keyword">true</span>;</div>
-<div class="line"><a name="l00744"></a><span class="lineno">  744</span>&#160;    }</div>
-<div class="line"><a name="l00745"></a><span class="lineno">  745</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> i = 0; i &lt; popSize; i++) {</div>
-<div class="line"><a name="l00746"></a><span class="lineno">  746</span>&#160;        <span class="keywordflow">if</span> (genomes [i]-&gt;speciesId &gt; -1) {</div>
-<div class="line"><a name="l00747"></a><span class="lineno">  747</span>&#160;            species [genomes [i]-&gt;speciesId].members.push_back (i);</div>
-<div class="line"><a name="l00748"></a><span class="lineno">  748</span>&#160;            species [genomes [i]-&gt;speciesId].isDead = <span class="keyword">false</span>;    <span class="comment">// empty species will stay to isDead = true</span></div>
-<div class="line"><a name="l00749"></a><span class="lineno">  749</span>&#160;        }</div>
-<div class="line"><a name="l00750"></a><span class="lineno">  750</span>&#160;    }</div>
-<div class="line"><a name="l00751"></a><span class="lineno">  751</span>&#160; </div>
-<div class="line"><a name="l00752"></a><span class="lineno">  752</span>&#160;    fittergenome_id = -1;   <span class="comment">// avoid a missuse of fittergenome_id</span></div>
-<div class="line"><a name="l00753"></a><span class="lineno">  753</span>&#160; </div>
-<div class="line"><a name="l00754"></a><span class="lineno">  754</span>&#160;    generation ++;</div>
-<div class="line"><a name="l00755"></a><span class="lineno">  755</span>&#160;}</div>
-<div class="line"><a name="l00756"></a><span class="lineno">  756</span>&#160; </div>
-<div class="line"><a name="l00757"></a><span class="lineno">  757</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span>... Args&gt;</div>
-<div class="line"><a name="l00758"></a><span class="lineno">  758</span>&#160;<span class="keywordtype">int</span> <a class="code" href="classpneatm_1_1Population.html">Population&lt;Args...&gt;::SelectParent</a> (<span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> iSpe) {</div>
-<div class="line"><a name="l00759"></a><span class="lineno">  759</span>&#160;    <span class="comment">/* Chooses player from the population to return randomly(considering fitness).</span></div>
-<div class="line"><a name="l00760"></a><span class="lineno">  760</span>&#160;<span class="comment">    This works by randomly choosing a value between 0 and the sum of all the fitnesses then go through all the genomes</span></div>
-<div class="line"><a name="l00761"></a><span class="lineno">  761</span>&#160;<span class="comment">    and add their fitness to a running sum and if that sum is greater than the random value generated,</span></div>
-<div class="line"><a name="l00762"></a><span class="lineno">  762</span>&#160;<span class="comment">    that genome is chosen since players with a higher fitness function add more to the running sum then they have a higher chance of being chosen */</span></div>
-<div class="line"><a name="l00763"></a><span class="lineno">  763</span>&#160; </div>
-<div class="line"><a name="l00764"></a><span class="lineno">  764</span>&#160;    <span class="keywordflow">if</span> (Eq_Double (species [iSpe].sumFitness, 0.0)) {</div>
-<div class="line"><a name="l00765"></a><span class="lineno">  765</span>&#160;        <span class="comment">// everyone as a null fitness: we return a random genome</span></div>
-<div class="line"><a name="l00766"></a><span class="lineno">  766</span>&#160;        <span class="keywordflow">return</span> species [iSpe].members [</div>
-<div class="line"><a name="l00767"></a><span class="lineno">  767</span>&#160;            Random_UInt (0, (<span class="keywordtype">unsigned</span> <span class="keywordtype">int</span>) species [iSpe].members.size () - 1)</div>
-<div class="line"><a name="l00768"></a><span class="lineno">  768</span>&#160;        ];</div>
-<div class="line"><a name="l00769"></a><span class="lineno">  769</span>&#160;    }</div>
-<div class="line"><a name="l00770"></a><span class="lineno">  770</span>&#160; </div>
-<div class="line"><a name="l00771"></a><span class="lineno">  771</span>&#160;    <span class="keywordtype">double</span> randThresh = Random_Double (0.0, species [iSpe].sumFitness, <span class="keyword">true</span>, <span class="keyword">false</span>);</div>
-<div class="line"><a name="l00772"></a><span class="lineno">  772</span>&#160;    <span class="keywordtype">double</span> runningSum = 0.0;</div>
-<div class="line"><a name="l00773"></a><span class="lineno">  773</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; species [iSpe].members.size (); i++) {</div>
-<div class="line"><a name="l00774"></a><span class="lineno">  774</span>&#160;        runningSum += genomes [species [iSpe].members [i]]-&gt;fitness;</div>
-<div class="line"><a name="l00775"></a><span class="lineno">  775</span>&#160;        <span class="keywordflow">if</span> (runningSum &gt; randThresh) {</div>
-<div class="line"><a name="l00776"></a><span class="lineno">  776</span>&#160;            <span class="keywordflow">return</span> species [iSpe].members [i];</div>
-<div class="line"><a name="l00777"></a><span class="lineno">  777</span>&#160;        }</div>
+<div class="line"><a name="l00695"></a><span class="lineno">  695</span>&#160;                <span class="keywordflow">if</span> (Random_Double (0.0, 1.0, <span class="keyword">true</span>, <span class="keyword">false</span>) &lt; crossover_rate &amp;&amp; species [iSpe].members.size () &gt; 1) {</div>
+<div class="line"><a name="l00696"></a><span class="lineno">  696</span>&#160;                    <span class="comment">// choose pseudo-randomly a second parent</span></div>
+<div class="line"><a name="l00697"></a><span class="lineno">  697</span>&#160;                    <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> iParent2 = SelectParent (iSpe);    <span class="comment">// TODO might be the same parent as iParent1: is that an issue?</span></div>
+<div class="line"><a name="l00698"></a><span class="lineno">  698</span>&#160; </div>
+<div class="line"><a name="l00699"></a><span class="lineno">  699</span>&#160;                    <span class="comment">// clone the more fit</span></div>
+<div class="line"><a name="l00700"></a><span class="lineno">  700</span>&#160;                    <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> iMainParent;</div>
+<div class="line"><a name="l00701"></a><span class="lineno">  701</span>&#160;                    <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> iSecondParent;</div>
+<div class="line"><a name="l00702"></a><span class="lineno">  702</span>&#160;                    <span class="keywordflow">if</span> (genomes [iParent1]-&gt;fitness &gt; genomes [iParent2]-&gt;fitness) {</div>
+<div class="line"><a name="l00703"></a><span class="lineno">  703</span>&#160;                        iMainParent = iParent1;</div>
+<div class="line"><a name="l00704"></a><span class="lineno">  704</span>&#160;                        iSecondParent = iParent2;</div>
+<div class="line"><a name="l00705"></a><span class="lineno">  705</span>&#160;                    } <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l00706"></a><span class="lineno">  706</span>&#160;                        iMainParent = iParent2;</div>
+<div class="line"><a name="l00707"></a><span class="lineno">  707</span>&#160;                        iSecondParent = iParent1;</div>
+<div class="line"><a name="l00708"></a><span class="lineno">  708</span>&#160;                    }</div>
+<div class="line"><a name="l00709"></a><span class="lineno">  709</span>&#160; </div>
+<div class="line"><a name="l00710"></a><span class="lineno">  710</span>&#160;                    newGenomes.insert (std::make_pair (genomeId, genomes [iMainParent]-&gt;clone ()));</div>
+<div class="line"><a name="l00711"></a><span class="lineno">  711</span>&#160;                    std::unique_ptr&lt;<a class="code" href="classpneatm_1_1Genome.html">Genome</a>&lt;Args...&gt;&gt;&amp; genome = newGenomes [genomeId];</div>
+<div class="line"><a name="l00712"></a><span class="lineno">  712</span>&#160;                    genome-&gt;id = genomeId;</div>
+<div class="line"><a name="l00713"></a><span class="lineno">  713</span>&#160;                    genomeId++;</div>
+<div class="line"><a name="l00714"></a><span class="lineno">  714</span>&#160; </div>
+<div class="line"><a name="l00715"></a><span class="lineno">  715</span>&#160;                    <span class="comment">// connections shared by both of the parents must be randomly wheighted</span></div>
+<div class="line"><a name="l00716"></a><span class="lineno">  716</span>&#160;                    <span class="keywordflow">for</span> (<span class="keyword">const</span> std::pair&lt;const unsigned int, Connection&gt;&amp; connMainParent : genomes [iMainParent]-&gt;connections) {</div>
+<div class="line"><a name="l00717"></a><span class="lineno">  717</span>&#160;                        <span class="keywordflow">for</span> (<span class="keyword">const</span> std::pair&lt;const unsigned int, Connection&gt;&amp; connSecondParent : genomes [iSecondParent]-&gt;connections) {</div>
+<div class="line"><a name="l00718"></a><span class="lineno">  718</span>&#160;                            <span class="keywordflow">if</span> (connMainParent.second.innovId == connSecondParent.second.innovId) {</div>
+<div class="line"><a name="l00719"></a><span class="lineno">  719</span>&#160;                                <span class="keywordflow">if</span> (Random_Double (0.0, 1.0, <span class="keyword">true</span>, <span class="keyword">false</span>) &lt; 0.5) {  <span class="comment">// 50 % of chance for each parent, newGenome already have the wheight of MainParent</span></div>
+<div class="line"><a name="l00720"></a><span class="lineno">  720</span>&#160;                                    genome-&gt;connections [connMainParent.second.id].weight = connSecondParent.second.weight;</div>
+<div class="line"><a name="l00721"></a><span class="lineno">  721</span>&#160;                                }</div>
+<div class="line"><a name="l00722"></a><span class="lineno">  722</span>&#160;                            }</div>
+<div class="line"><a name="l00723"></a><span class="lineno">  723</span>&#160;                        }</div>
+<div class="line"><a name="l00724"></a><span class="lineno">  724</span>&#160;                    }</div>
+<div class="line"><a name="l00725"></a><span class="lineno">  725</span>&#160;                } <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l00726"></a><span class="lineno">  726</span>&#160;                    <span class="comment">// the genome is kept for the new generation (there is no crossover which emphasize mutation&#39;s effect eg exploration)</span></div>
+<div class="line"><a name="l00727"></a><span class="lineno">  727</span>&#160;                    newGenomes.insert (std::make_pair (genomeId, genomes [iParent1]-&gt;clone ()));</div>
+<div class="line"><a name="l00728"></a><span class="lineno">  728</span>&#160;                    newGenomes [genomeId]-&gt;id = genomeId;</div>
+<div class="line"><a name="l00729"></a><span class="lineno">  729</span>&#160;                    genomeId++;</div>
+<div class="line"><a name="l00730"></a><span class="lineno">  730</span>&#160;                }</div>
+<div class="line"><a name="l00731"></a><span class="lineno">  731</span>&#160;            }</div>
+<div class="line"><a name="l00732"></a><span class="lineno">  732</span>&#160;        }</div>
+<div class="line"><a name="l00733"></a><span class="lineno">  733</span>&#160;    }</div>
+<div class="line"><a name="l00734"></a><span class="lineno">  734</span>&#160; </div>
+<div class="line"><a name="l00735"></a><span class="lineno">  735</span>&#160;    <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> previousSize = (<span class="keywordtype">unsigned</span> int) newGenomes.size();</div>
+<div class="line"><a name="l00736"></a><span class="lineno">  736</span>&#160;    <span class="comment">// add genomes if some are missing</span></div>
+<div class="line"><a name="l00737"></a><span class="lineno">  737</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> k = previousSize; k &lt; popSize; k++) {</div>
+<div class="line"><a name="l00738"></a><span class="lineno">  738</span>&#160;        newGenomes.insert (std::make_pair (k, std::make_unique&lt;<a class="code" href="classpneatm_1_1Genome.html">Genome&lt;Args...&gt;</a>&gt; (k, bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_values, resetValues, activationFns, &amp;conn_innov, &amp;node_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger)));</div>
+<div class="line"><a name="l00739"></a><span class="lineno">  739</span>&#160;    }</div>
+<div class="line"><a name="l00740"></a><span class="lineno">  740</span>&#160;    <span class="comment">// or remove some genomes if there is too many genomes</span></div>
+<div class="line"><a name="l00741"></a><span class="lineno">  741</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> k = previousSize - 1; k &gt;= popSize; k--) {</div>
+<div class="line"><a name="l00742"></a><span class="lineno">  742</span>&#160;        newGenomes.erase (k);</div>
+<div class="line"><a name="l00743"></a><span class="lineno">  743</span>&#160;    }</div>
+<div class="line"><a name="l00744"></a><span class="lineno">  744</span>&#160; </div>
+<div class="line"><a name="l00745"></a><span class="lineno">  745</span>&#160;    <span class="comment">// replace the current genomes by the new ones</span></div>
+<div class="line"><a name="l00746"></a><span class="lineno">  746</span>&#160;    genomes.clear ();</div>
+<div class="line"><a name="l00747"></a><span class="lineno">  747</span>&#160;    genomes = std::move (newGenomes);</div>
+<div class="line"><a name="l00748"></a><span class="lineno">  748</span>&#160; </div>
+<div class="line"><a name="l00749"></a><span class="lineno">  749</span>&#160;    <span class="comment">// reset species members</span></div>
+<div class="line"><a name="l00750"></a><span class="lineno">  750</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; species.size (); i++) {</div>
+<div class="line"><a name="l00751"></a><span class="lineno">  751</span>&#160;        species [i].members.clear ();</div>
+<div class="line"><a name="l00752"></a><span class="lineno">  752</span>&#160;        species [i].isDead = <span class="keyword">true</span>;</div>
+<div class="line"><a name="l00753"></a><span class="lineno">  753</span>&#160;    }</div>
+<div class="line"><a name="l00754"></a><span class="lineno">  754</span>&#160;    <span class="keywordflow">for</span> (<span class="keyword">const</span> std::pair&lt;<span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span>, std::unique_ptr&lt;<a class="code" href="classpneatm_1_1Genome.html">Genome&lt;Args...&gt;</a>&gt;&gt;&amp; genome : genomes) {</div>
+<div class="line"><a name="l00755"></a><span class="lineno">  755</span>&#160;        <span class="keywordflow">if</span> (genome.second-&gt;speciesId &gt; -1) {</div>
+<div class="line"><a name="l00756"></a><span class="lineno">  756</span>&#160;            species [genome.second-&gt;speciesId].members.push_back (genome.second-&gt;id);</div>
+<div class="line"><a name="l00757"></a><span class="lineno">  757</span>&#160;            species [genome.second-&gt;speciesId].isDead = <span class="keyword">false</span>;  <span class="comment">// empty species will stay to isDead = true</span></div>
+<div class="line"><a name="l00758"></a><span class="lineno">  758</span>&#160;        }</div>
+<div class="line"><a name="l00759"></a><span class="lineno">  759</span>&#160;    }</div>
+<div class="line"><a name="l00760"></a><span class="lineno">  760</span>&#160; </div>
+<div class="line"><a name="l00761"></a><span class="lineno">  761</span>&#160;    fittergenome_id = -1;   <span class="comment">// avoid a missuse of fittergenome_id</span></div>
+<div class="line"><a name="l00762"></a><span class="lineno">  762</span>&#160; </div>
+<div class="line"><a name="l00763"></a><span class="lineno">  763</span>&#160;    generation ++;</div>
+<div class="line"><a name="l00764"></a><span class="lineno">  764</span>&#160;}</div>
+<div class="line"><a name="l00765"></a><span class="lineno">  765</span>&#160; </div>
+<div class="line"><a name="l00766"></a><span class="lineno">  766</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span>... Args&gt;</div>
+<div class="line"><a name="l00767"></a><span class="lineno">  767</span>&#160;<span class="keywordtype">int</span> <a class="code" href="classpneatm_1_1Population.html">Population&lt;Args...&gt;::SelectParent</a> (<span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> iSpe) {</div>
+<div class="line"><a name="l00768"></a><span class="lineno">  768</span>&#160;    <span class="comment">/* Chooses player from the population to return randomly(considering fitness).</span></div>
+<div class="line"><a name="l00769"></a><span class="lineno">  769</span>&#160;<span class="comment">    This works by randomly choosing a value between 0 and the sum of all the fitnesses then go through all the genomes</span></div>
+<div class="line"><a name="l00770"></a><span class="lineno">  770</span>&#160;<span class="comment">    and add their fitness to a running sum and if that sum is greater than the random value generated,</span></div>
+<div class="line"><a name="l00771"></a><span class="lineno">  771</span>&#160;<span class="comment">    that genome is chosen since players with a higher fitness function add more to the running sum then they have a higher chance of being chosen */</span></div>
+<div class="line"><a name="l00772"></a><span class="lineno">  772</span>&#160; </div>
+<div class="line"><a name="l00773"></a><span class="lineno">  773</span>&#160;    <span class="keywordflow">if</span> (Eq_Double (species [iSpe].sumFitness, 0.0)) {</div>
+<div class="line"><a name="l00774"></a><span class="lineno">  774</span>&#160;        <span class="comment">// everyone as a null fitness: we return a random genome</span></div>
+<div class="line"><a name="l00775"></a><span class="lineno">  775</span>&#160;        <span class="keywordflow">return</span> species [iSpe].members [</div>
+<div class="line"><a name="l00776"></a><span class="lineno">  776</span>&#160;            Random_UInt (0, (<span class="keywordtype">unsigned</span> <span class="keywordtype">int</span>) species [iSpe].members.size () - 1)</div>
+<div class="line"><a name="l00777"></a><span class="lineno">  777</span>&#160;        ];</div>
 <div class="line"><a name="l00778"></a><span class="lineno">  778</span>&#160;    }</div>
-<div class="line"><a name="l00779"></a><span class="lineno">  779</span>&#160;    <span class="keywordflow">return</span> -1;  <span class="comment">// impossible</span></div>
-<div class="line"><a name="l00780"></a><span class="lineno">  780</span>&#160;}</div>
-<div class="line"><a name="l00781"></a><span class="lineno">  781</span>&#160; </div>
-<div class="line"><a name="l00782"></a><span class="lineno">  782</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span>... Args&gt;</div>
-<div class="line"><a name="l00783"></a><span class="lineno"><a class="line" href="classpneatm_1_1Population.html#ac12909d7b1023793908a145ac5fc4d4c">  783</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="classpneatm_1_1Population.html#ac12909d7b1023793908a145ac5fc4d4c">Population&lt;Args...&gt;::mutate</a> (<span class="keyword">const</span> <a class="code" href="structpneatm_1_1mutationParams.html">mutationParams_t</a>&amp; params) {</div>
-<div class="line"><a name="l00784"></a><span class="lineno">  784</span>&#160;    logger-&gt;info (<span class="stringliteral">&quot;Mutations&quot;</span>);</div>
-<div class="line"><a name="l00785"></a><span class="lineno">  785</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> i = 0; i &lt; popSize; i++) {</div>
-<div class="line"><a name="l00786"></a><span class="lineno">  786</span>&#160;        genomes [i]-&gt;mutate (&amp;conn_innov, &amp;node_innov, params);</div>
+<div class="line"><a name="l00779"></a><span class="lineno">  779</span>&#160; </div>
+<div class="line"><a name="l00780"></a><span class="lineno">  780</span>&#160;    <span class="keywordtype">double</span> randThresh = Random_Double (0.0, species [iSpe].sumFitness, <span class="keyword">true</span>, <span class="keyword">false</span>);</div>
+<div class="line"><a name="l00781"></a><span class="lineno">  781</span>&#160;    <span class="keywordtype">double</span> runningSum = 0.0;</div>
+<div class="line"><a name="l00782"></a><span class="lineno">  782</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; species [iSpe].members.size (); i++) {</div>
+<div class="line"><a name="l00783"></a><span class="lineno">  783</span>&#160;        runningSum += genomes [species [iSpe].members [i]]-&gt;fitness;</div>
+<div class="line"><a name="l00784"></a><span class="lineno">  784</span>&#160;        <span class="keywordflow">if</span> (runningSum &gt; randThresh) {</div>
+<div class="line"><a name="l00785"></a><span class="lineno">  785</span>&#160;            <span class="keywordflow">return</span> species [iSpe].members [i];</div>
+<div class="line"><a name="l00786"></a><span class="lineno">  786</span>&#160;        }</div>
 <div class="line"><a name="l00787"></a><span class="lineno">  787</span>&#160;    }</div>
-<div class="line"><a name="l00788"></a><span class="lineno">  788</span>&#160;}</div>
-<div class="line"><a name="l00789"></a><span class="lineno">  789</span>&#160; </div>
-<div class="line"><a name="l00790"></a><span class="lineno">  790</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span>... Args&gt;</div>
-<div class="line"><a name="l00791"></a><span class="lineno"><a class="line" href="classpneatm_1_1Population.html#aed4c70a9d89898a1a9e88ad5421db8cc">  791</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="classpneatm_1_1Population.html#ac12909d7b1023793908a145ac5fc4d4c">Population&lt;Args...&gt;::mutate</a> (<span class="keyword">const</span> std::function&lt;<a class="code" href="structpneatm_1_1mutationParams.html">mutationParams_t</a> (<span class="keywordtype">double</span>)&gt;&amp; paramsMap) {</div>
-<div class="line"><a name="l00792"></a><span class="lineno">  792</span>&#160;    logger-&gt;info (<span class="stringliteral">&quot;Mutations&quot;</span>);</div>
-<div class="line"><a name="l00793"></a><span class="lineno">  793</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> i = 0; i &lt; popSize; i++) {</div>
-<div class="line"><a name="l00794"></a><span class="lineno">  794</span>&#160;        genomes [i]-&gt;mutate (&amp;conn_innov, &amp;node_innov, paramsMap (genomes [i]-&gt;getFitness ()));</div>
-<div class="line"><a name="l00795"></a><span class="lineno">  795</span>&#160;    }</div>
-<div class="line"><a name="l00796"></a><span class="lineno">  796</span>&#160;}</div>
-<div class="line"><a name="l00797"></a><span class="lineno">  797</span>&#160; </div>
-<div class="line"><a name="l00798"></a><span class="lineno">  798</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span>... Args&gt;</div>
-<div class="line"><a name="l00799"></a><span class="lineno"><a class="line" href="classpneatm_1_1Population.html#a4de9b65fe4c94f199eae400bc35164fe">  799</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="classpneatm_1_1Population.html#a4de9b65fe4c94f199eae400bc35164fe">Population&lt;Args...&gt;::print</a> (<span class="keyword">const</span> std::string&amp; prefix) {</div>
-<div class="line"><a name="l00800"></a><span class="lineno">  800</span>&#160;    std::cout &lt;&lt; prefix &lt;&lt; <span class="stringliteral">&quot;Generation Number: &quot;</span> &lt;&lt; generation &lt;&lt; std::endl;</div>
-<div class="line"><a name="l00801"></a><span class="lineno">  801</span>&#160;    std::cout &lt;&lt; prefix &lt;&lt; <span class="stringliteral">&quot;Population Size: &quot;</span> &lt;&lt; popSize &lt;&lt; std::endl;</div>
-<div class="line"><a name="l00802"></a><span class="lineno">  802</span>&#160;    std::cout &lt;&lt; prefix &lt;&lt; <span class="stringliteral">&quot;Current Average Fitness: &quot;</span> &lt;&lt; avgFitness &lt;&lt; std::endl;</div>
-<div class="line"><a name="l00803"></a><span class="lineno">  803</span>&#160;    std::cout &lt;&lt; prefix &lt;&lt; <span class="stringliteral">&quot;Current Average Fitness Adjusted: &quot;</span> &lt;&lt; avgFitnessAdjusted &lt;&lt; std::endl;</div>
-<div class="line"><a name="l00804"></a><span class="lineno">  804</span>&#160;    std::cout &lt;&lt; prefix &lt;&lt; <span class="stringliteral">&quot;Current Speciation Threshold: &quot;</span> &lt;&lt; speciationThresh &lt;&lt; std::endl;</div>
-<div class="line"><a name="l00805"></a><span class="lineno">  805</span>&#160;    std::cout &lt;&lt; prefix &lt;&lt; <span class="stringliteral">&quot;Species die if they does not improve in &quot;</span> &lt;&lt; threshGensSinceImproved &lt;&lt; <span class="stringliteral">&quot; generations&quot;</span> &lt;&lt; std::endl;</div>
-<div class="line"><a name="l00806"></a><span class="lineno">  806</span>&#160;    std::cout &lt;&lt; prefix &lt;&lt; <span class="stringliteral">&quot;When creating a new Genome: &quot;</span> &lt;&lt; std::endl;</div>
-<div class="line"><a name="l00807"></a><span class="lineno">  807</span>&#160;    std::cout &lt;&lt; prefix &lt;&lt; <span class="stringliteral">&quot;   Bias Nodes Initialisation [TypeID (Number of Bias Node)]: &quot;</span>;</div>
-<div class="line"><a name="l00808"></a><span class="lineno">  808</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; bias_sch.size (); i++) {</div>
-<div class="line"><a name="l00809"></a><span class="lineno">  809</span>&#160;        std::cout &lt;&lt; i &lt;&lt; <span class="stringliteral">&quot; (&quot;</span> &lt;&lt; bias_sch [i] &lt;&lt; <span class="stringliteral">&quot;), &quot;</span>;</div>
-<div class="line"><a name="l00810"></a><span class="lineno">  810</span>&#160;    }</div>
-<div class="line"><a name="l00811"></a><span class="lineno">  811</span>&#160;    std::cout &lt;&lt; std::endl;</div>
-<div class="line"><a name="l00812"></a><span class="lineno">  812</span>&#160;    std::cout &lt;&lt; prefix &lt;&lt; <span class="stringliteral">&quot;   Input Nodes Initialisation [TypeID (Number of Input Node)]: &quot;</span>;</div>
-<div class="line"><a name="l00813"></a><span class="lineno">  813</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; inputs_sch.size (); i++) {</div>
-<div class="line"><a name="l00814"></a><span class="lineno">  814</span>&#160;        std::cout &lt;&lt; i &lt;&lt; <span class="stringliteral">&quot; (&quot;</span> &lt;&lt; inputs_sch [i] &lt;&lt; <span class="stringliteral">&quot;), &quot;</span>;</div>
-<div class="line"><a name="l00815"></a><span class="lineno">  815</span>&#160;    }</div>
-<div class="line"><a name="l00816"></a><span class="lineno">  816</span>&#160;    std::cout &lt;&lt; std::endl;</div>
-<div class="line"><a name="l00817"></a><span class="lineno">  817</span>&#160;    std::cout &lt;&lt; prefix &lt;&lt; <span class="stringliteral">&quot;   Output Nodes Initialisation [TypeID (Number of Output Node)]: &quot;</span>;</div>
-<div class="line"><a name="l00818"></a><span class="lineno">  818</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; outputs_sch.size (); i++) {</div>
-<div class="line"><a name="l00819"></a><span class="lineno">  819</span>&#160;        std::cout &lt;&lt; i &lt;&lt; <span class="stringliteral">&quot; (&quot;</span> &lt;&lt; outputs_sch [i] &lt;&lt; <span class="stringliteral">&quot;), &quot;</span>;</div>
-<div class="line"><a name="l00820"></a><span class="lineno">  820</span>&#160;    }</div>
-<div class="line"><a name="l00821"></a><span class="lineno">  821</span>&#160;    std::cout &lt;&lt; std::endl;</div>
-<div class="line"><a name="l00822"></a><span class="lineno">  822</span>&#160;    std::cout &lt;&lt; prefix &lt;&lt; <span class="stringliteral">&quot;   Hidden Nodes Initialisation [Input TypeID to Output TypeID2 (Number of Hidden Node)]: &quot;</span>;</div>
-<div class="line"><a name="l00823"></a><span class="lineno">  823</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; hiddens_sch_init.size (); i++) {</div>
-<div class="line"><a name="l00824"></a><span class="lineno">  824</span>&#160;        <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> j = 0; j &lt; hiddens_sch_init [i].size (); j++) {</div>
-<div class="line"><a name="l00825"></a><span class="lineno">  825</span>&#160;            std::cout &lt;&lt; i  &lt;&lt; <span class="stringliteral">&quot; to &quot;</span> &lt;&lt; j &lt;&lt; <span class="stringliteral">&quot; (&quot;</span> &lt;&lt; hiddens_sch_init [i][j] &lt;&lt; <span class="stringliteral">&quot;), &quot;</span>;</div>
-<div class="line"><a name="l00826"></a><span class="lineno">  826</span>&#160;        }</div>
-<div class="line"><a name="l00827"></a><span class="lineno">  827</span>&#160;    }</div>
-<div class="line"><a name="l00828"></a><span class="lineno">  828</span>&#160;    std::cout &lt;&lt; std::endl;</div>
-<div class="line"><a name="l00829"></a><span class="lineno">  829</span>&#160;    std::cout &lt;&lt; prefix &lt;&lt; <span class="stringliteral">&quot;   Number of connections at initialization: &quot;</span> &lt;&lt; N_ConnInit &lt;&lt; std::endl;</div>
-<div class="line"><a name="l00830"></a><span class="lineno">  830</span>&#160;    std::cout &lt;&lt; prefix &lt;&lt; <span class="stringliteral">&quot;   Probability of adding recurrency: &quot;</span> &lt;&lt; probRecuInit &lt;&lt; std::endl;</div>
-<div class="line"><a name="l00831"></a><span class="lineno">  831</span>&#160;    std::cout &lt;&lt; prefix &lt;&lt; <span class="stringliteral">&quot;   Maximum recurrency at initialization: &quot;</span> &lt;&lt; maxRecuInit &lt;&lt; std::endl;</div>
-<div class="line"><a name="l00832"></a><span class="lineno">  832</span>&#160;    std::cout &lt;&lt; prefix &lt;&lt; <span class="stringliteral">&quot;   Weight&#39;s range at intialization: [&quot;</span> &lt;&lt; -1.0 * weightExtremumInit &lt;&lt; <span class="stringliteral">&quot;, &quot;</span> &lt;&lt; weightExtremumInit &lt;&lt; <span class="stringliteral">&quot;]&quot;</span> &lt;&lt; std::endl;</div>
-<div class="line"><a name="l00833"></a><span class="lineno">  833</span>&#160;    std::cout &lt;&lt; prefix &lt;&lt; <span class="stringliteral">&quot;Current More Fit Genome ID: &quot;</span> &lt;&lt; fittergenome_id &lt;&lt; std::endl;</div>
-<div class="line"><a name="l00834"></a><span class="lineno">  834</span>&#160;    std::cout &lt;&lt; prefix &lt;&lt; <span class="stringliteral">&quot;Number of Activation Functions [Input TypeID to Output TypeID (Number of functions)]: &quot;</span>;</div>
-<div class="line"><a name="l00835"></a><span class="lineno">  835</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; activationFns.size (); i++) {</div>
-<div class="line"><a name="l00836"></a><span class="lineno">  836</span>&#160;        <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> j = 0; j &lt; activationFns [i].size (); j++) {</div>
-<div class="line"><a name="l00837"></a><span class="lineno">  837</span>&#160;            std::cout &lt;&lt; i &lt;&lt; <span class="stringliteral">&quot; to &quot;</span> &lt;&lt; j &lt;&lt; <span class="stringliteral">&quot; (&quot;</span> &lt;&lt; activationFns [i][j].size () &lt;&lt; <span class="stringliteral">&quot;), &quot;</span>;</div>
-<div class="line"><a name="l00838"></a><span class="lineno">  838</span>&#160;        }</div>
-<div class="line"><a name="l00839"></a><span class="lineno">  839</span>&#160;    }</div>
-<div class="line"><a name="l00840"></a><span class="lineno">  840</span>&#160;    std::cout &lt;&lt; std::endl;</div>
-<div class="line"><a name="l00841"></a><span class="lineno">  841</span>&#160;    std::cout &lt;&lt; prefix &lt;&lt; <span class="stringliteral">&quot;Connections Innovations:&quot;</span> &lt;&lt; std::endl;</div>
-<div class="line"><a name="l00842"></a><span class="lineno">  842</span>&#160;    conn_innov.print (prefix + <span class="stringliteral">&quot;   &quot;</span>);</div>
-<div class="line"><a name="l00843"></a><span class="lineno">  843</span>&#160;    std::cout &lt;&lt; prefix &lt;&lt; <span class="stringliteral">&quot;Nodes Innovations:&quot;</span> &lt;&lt; std::endl;</div>
-<div class="line"><a name="l00844"></a><span class="lineno">  844</span>&#160;    node_innov.print (prefix + <span class="stringliteral">&quot;   &quot;</span>);</div>
-<div class="line"><a name="l00845"></a><span class="lineno">  845</span>&#160;    std::cout &lt;&lt; prefix &lt;&lt; <span class="stringliteral">&quot;Genomes: &quot;</span> &lt;&lt; std::endl;</div>
-<div class="line"><a name="l00846"></a><span class="lineno">  846</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; genomes.size (); i++) {</div>
-<div class="line"><a name="l00847"></a><span class="lineno">  847</span>&#160;        std::cout &lt;&lt; prefix &lt;&lt; <span class="stringliteral">&quot; * Genome &quot;</span> &lt;&lt; i &lt;&lt; std::endl;</div>
-<div class="line"><a name="l00848"></a><span class="lineno">  848</span>&#160;        genomes [i]-&gt;print (prefix + <span class="stringliteral">&quot;   &quot;</span>);</div>
-<div class="line"><a name="l00849"></a><span class="lineno">  849</span>&#160;    }</div>
-<div class="line"><a name="l00850"></a><span class="lineno">  850</span>&#160;    std::cout &lt;&lt; prefix &lt;&lt; <span class="stringliteral">&quot;Species: &quot;</span> &lt;&lt; std::endl;</div>
-<div class="line"><a name="l00851"></a><span class="lineno">  851</span>&#160;    <span class="keywordflow">for</span> (<a class="code" href="classpneatm_1_1Species.html">Species&lt;Args...&gt;</a> spe : species) {</div>
-<div class="line"><a name="l00852"></a><span class="lineno">  852</span>&#160;        spe.print (prefix + <span class="stringliteral">&quot;   &quot;</span>);</div>
-<div class="line"><a name="l00853"></a><span class="lineno">  853</span>&#160;    }</div>
-<div class="line"><a name="l00854"></a><span class="lineno">  854</span>&#160;}</div>
-<div class="line"><a name="l00855"></a><span class="lineno">  855</span>&#160; </div>
-<div class="line"><a name="l00856"></a><span class="lineno">  856</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span>... Args&gt;</div>
-<div class="line"><a name="l00857"></a><span class="lineno"><a class="line" href="classpneatm_1_1Population.html#a39df3f66e09e07d578206a615dbdfa24">  857</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="classpneatm_1_1Population.html#a39df3f66e09e07d578206a615dbdfa24">Population&lt;Args...&gt;::drawGenome</a> (<span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> genome_id, <span class="keyword">const</span> std::string&amp; font_path, <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> windowWidth, <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> windowHeight, <span class="keywordtype">float</span> dotsRadius) {</div>
-<div class="line"><a name="l00858"></a><span class="lineno">  858</span>&#160;    logger-&gt;info (<span class="stringliteral">&quot;Drawing genome{}&#39;s network&quot;</span>, genome_id);</div>
-<div class="line"><a name="l00859"></a><span class="lineno">  859</span>&#160;    genomes [genome_id]-&gt;draw (font_path, windowWidth, windowHeight, dotsRadius);</div>
-<div class="line"><a name="l00860"></a><span class="lineno">  860</span>&#160;}</div>
-<div class="line"><a name="l00861"></a><span class="lineno">  861</span>&#160; </div>
-<div class="line"><a name="l00862"></a><span class="lineno">  862</span>&#160; </div>
-<div class="line"><a name="l00863"></a><span class="lineno">  863</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span>... Args&gt;</div>
-<div class="line"><a name="l00864"></a><span class="lineno"><a class="line" href="classpneatm_1_1Population.html#a5dd848337fef8512f1e89dcf844a9027">  864</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="classpneatm_1_1Population.html#a5dd848337fef8512f1e89dcf844a9027">Population&lt;Args...&gt;::serialize</a> (std::ofstream&amp; outFile) {</div>
-<div class="line"><a name="l00865"></a><span class="lineno">  865</span>&#160;    Serialize (generation, outFile);</div>
-<div class="line"><a name="l00866"></a><span class="lineno">  866</span>&#160;    Serialize (avgFitness, outFile);</div>
-<div class="line"><a name="l00867"></a><span class="lineno">  867</span>&#160;    Serialize (avgFitnessAdjusted, outFile);</div>
-<div class="line"><a name="l00868"></a><span class="lineno">  868</span>&#160;    Serialize (popSize, outFile);</div>
-<div class="line"><a name="l00869"></a><span class="lineno">  869</span>&#160;    Serialize (speciationThresh, outFile);</div>
-<div class="line"><a name="l00870"></a><span class="lineno">  870</span>&#160;    Serialize (threshGensSinceImproved, outFile);</div>
-<div class="line"><a name="l00871"></a><span class="lineno">  871</span>&#160;    Serialize (bias_sch, outFile);</div>
-<div class="line"><a name="l00872"></a><span class="lineno">  872</span>&#160;    Serialize (inputs_sch, outFile);</div>
-<div class="line"><a name="l00873"></a><span class="lineno">  873</span>&#160;    Serialize (outputs_sch, outFile);</div>
-<div class="line"><a name="l00874"></a><span class="lineno">  874</span>&#160;    Serialize (hiddens_sch_init, outFile);</div>
-<div class="line"><a name="l00875"></a><span class="lineno">  875</span>&#160;    Serialize (N_ConnInit, outFile);</div>
-<div class="line"><a name="l00876"></a><span class="lineno">  876</span>&#160;    Serialize (probRecuInit, outFile);</div>
-<div class="line"><a name="l00877"></a><span class="lineno">  877</span>&#160;    Serialize (weightExtremumInit, outFile);</div>
-<div class="line"><a name="l00878"></a><span class="lineno">  878</span>&#160;    Serialize (maxRecuInit, outFile);</div>
-<div class="line"><a name="l00879"></a><span class="lineno">  879</span>&#160;    Serialize (dstType, outFile);</div>
-<div class="line"><a name="l00880"></a><span class="lineno">  880</span>&#160;    Serialize (fittergenome_id, outFile);</div>
-<div class="line"><a name="l00881"></a><span class="lineno">  881</span>&#160; </div>
-<div class="line"><a name="l00882"></a><span class="lineno">  882</span>&#160;    Serialize (genomes.size (), outFile);</div>
-<div class="line"><a name="l00883"></a><span class="lineno">  883</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; genomes.size (); i++) {</div>
-<div class="line"><a name="l00884"></a><span class="lineno">  884</span>&#160;        genomes [i]-&gt;serialize (outFile);</div>
-<div class="line"><a name="l00885"></a><span class="lineno">  885</span>&#160;    }</div>
-<div class="line"><a name="l00886"></a><span class="lineno">  886</span>&#160; </div>
-<div class="line"><a name="l00887"></a><span class="lineno">  887</span>&#160;    Serialize (species.size (), outFile);</div>
-<div class="line"><a name="l00888"></a><span class="lineno">  888</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; species.size (); i++) {</div>
-<div class="line"><a name="l00889"></a><span class="lineno">  889</span>&#160;        species [i].serialize (outFile);</div>
-<div class="line"><a name="l00890"></a><span class="lineno">  890</span>&#160;    }</div>
+<div class="line"><a name="l00788"></a><span class="lineno">  788</span>&#160;    <span class="keywordflow">return</span> -1;  <span class="comment">// impossible</span></div>
+<div class="line"><a name="l00789"></a><span class="lineno">  789</span>&#160;}</div>
+<div class="line"><a name="l00790"></a><span class="lineno">  790</span>&#160; </div>
+<div class="line"><a name="l00791"></a><span class="lineno">  791</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span>... Args&gt;</div>
+<div class="line"><a name="l00792"></a><span class="lineno"><a class="line" href="classpneatm_1_1Population.html#ac12909d7b1023793908a145ac5fc4d4c">  792</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="classpneatm_1_1Population.html#ac12909d7b1023793908a145ac5fc4d4c">Population&lt;Args...&gt;::mutate</a> (<span class="keyword">const</span> <a class="code" href="structpneatm_1_1mutationParams.html">mutationParams_t</a>&amp; params) {</div>
+<div class="line"><a name="l00793"></a><span class="lineno">  793</span>&#160;    logger-&gt;info (<span class="stringliteral">&quot;Mutations&quot;</span>);</div>
+<div class="line"><a name="l00794"></a><span class="lineno">  794</span>&#160;    <span class="keywordflow">for</span> (std::pair&lt;<span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span>, std::unique_ptr&lt;<a class="code" href="classpneatm_1_1Genome.html">Genome&lt;Args...&gt;</a>&gt;&gt;&amp; genome : genomes) {</div>
+<div class="line"><a name="l00795"></a><span class="lineno">  795</span>&#160;        genome.second-&gt;mutate (&amp;conn_innov, &amp;node_innov, params);</div>
+<div class="line"><a name="l00796"></a><span class="lineno">  796</span>&#160;    }</div>
+<div class="line"><a name="l00797"></a><span class="lineno">  797</span>&#160;}</div>
+<div class="line"><a name="l00798"></a><span class="lineno">  798</span>&#160; </div>
+<div class="line"><a name="l00799"></a><span class="lineno">  799</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span>... Args&gt;</div>
+<div class="line"><a name="l00800"></a><span class="lineno"><a class="line" href="classpneatm_1_1Population.html#aed4c70a9d89898a1a9e88ad5421db8cc">  800</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="classpneatm_1_1Population.html#ac12909d7b1023793908a145ac5fc4d4c">Population&lt;Args...&gt;::mutate</a> (<span class="keyword">const</span> std::function&lt;<a class="code" href="structpneatm_1_1mutationParams.html">mutationParams_t</a> (<span class="keywordtype">double</span>)&gt;&amp; paramsMap) {</div>
+<div class="line"><a name="l00801"></a><span class="lineno">  801</span>&#160;    logger-&gt;info (<span class="stringliteral">&quot;Mutations&quot;</span>);</div>
+<div class="line"><a name="l00802"></a><span class="lineno">  802</span>&#160;    <span class="keywordflow">for</span> (std::pair&lt;<span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span>, std::unique_ptr&lt;<a class="code" href="classpneatm_1_1Genome.html">Genome&lt;Args...&gt;</a>&gt;&gt;&amp; genome : genomes) {</div>
+<div class="line"><a name="l00803"></a><span class="lineno">  803</span>&#160;        genome.second-&gt;mutate (&amp;conn_innov, &amp;node_innov, paramsMap (genome.second-&gt;fitness));</div>
+<div class="line"><a name="l00804"></a><span class="lineno">  804</span>&#160;    }</div>
+<div class="line"><a name="l00805"></a><span class="lineno">  805</span>&#160;}</div>
+<div class="line"><a name="l00806"></a><span class="lineno">  806</span>&#160; </div>
+<div class="line"><a name="l00807"></a><span class="lineno">  807</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span>... Args&gt;</div>
+<div class="line"><a name="l00808"></a><span class="lineno"><a class="line" href="classpneatm_1_1Population.html#a4de9b65fe4c94f199eae400bc35164fe">  808</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="classpneatm_1_1Population.html#a4de9b65fe4c94f199eae400bc35164fe">Population&lt;Args...&gt;::print</a> (<span class="keyword">const</span> std::string&amp; prefix) {</div>
+<div class="line"><a name="l00809"></a><span class="lineno">  809</span>&#160;    std::cout &lt;&lt; prefix &lt;&lt; <span class="stringliteral">&quot;Generation Number: &quot;</span> &lt;&lt; generation &lt;&lt; std::endl;</div>
+<div class="line"><a name="l00810"></a><span class="lineno">  810</span>&#160;    std::cout &lt;&lt; prefix &lt;&lt; <span class="stringliteral">&quot;Population Size: &quot;</span> &lt;&lt; popSize &lt;&lt; std::endl;</div>
+<div class="line"><a name="l00811"></a><span class="lineno">  811</span>&#160;    std::cout &lt;&lt; prefix &lt;&lt; <span class="stringliteral">&quot;Current Average Fitness: &quot;</span> &lt;&lt; avgFitness &lt;&lt; std::endl;</div>
+<div class="line"><a name="l00812"></a><span class="lineno">  812</span>&#160;    std::cout &lt;&lt; prefix &lt;&lt; <span class="stringliteral">&quot;Current Average Fitness Adjusted: &quot;</span> &lt;&lt; avgFitnessAdjusted &lt;&lt; std::endl;</div>
+<div class="line"><a name="l00813"></a><span class="lineno">  813</span>&#160;    std::cout &lt;&lt; prefix &lt;&lt; <span class="stringliteral">&quot;Current Speciation Threshold: &quot;</span> &lt;&lt; speciationThresh &lt;&lt; std::endl;</div>
+<div class="line"><a name="l00814"></a><span class="lineno">  814</span>&#160;    std::cout &lt;&lt; prefix &lt;&lt; <span class="stringliteral">&quot;Species die if they does not improve in &quot;</span> &lt;&lt; threshGensSinceImproved &lt;&lt; <span class="stringliteral">&quot; generations&quot;</span> &lt;&lt; std::endl;</div>
+<div class="line"><a name="l00815"></a><span class="lineno">  815</span>&#160;    std::cout &lt;&lt; prefix &lt;&lt; <span class="stringliteral">&quot;When creating a new Genome: &quot;</span> &lt;&lt; std::endl;</div>
+<div class="line"><a name="l00816"></a><span class="lineno">  816</span>&#160;    std::cout &lt;&lt; prefix &lt;&lt; <span class="stringliteral">&quot;   Bias Nodes Initialisation [TypeID (Number of Bias Node)]: &quot;</span>;</div>
+<div class="line"><a name="l00817"></a><span class="lineno">  817</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; bias_sch.size (); i++) {</div>
+<div class="line"><a name="l00818"></a><span class="lineno">  818</span>&#160;        std::cout &lt;&lt; i &lt;&lt; <span class="stringliteral">&quot; (&quot;</span> &lt;&lt; bias_sch [i] &lt;&lt; <span class="stringliteral">&quot;), &quot;</span>;</div>
+<div class="line"><a name="l00819"></a><span class="lineno">  819</span>&#160;    }</div>
+<div class="line"><a name="l00820"></a><span class="lineno">  820</span>&#160;    std::cout &lt;&lt; std::endl;</div>
+<div class="line"><a name="l00821"></a><span class="lineno">  821</span>&#160;    std::cout &lt;&lt; prefix &lt;&lt; <span class="stringliteral">&quot;   Input Nodes Initialisation [TypeID (Number of Input Node)]: &quot;</span>;</div>
+<div class="line"><a name="l00822"></a><span class="lineno">  822</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; inputs_sch.size (); i++) {</div>
+<div class="line"><a name="l00823"></a><span class="lineno">  823</span>&#160;        std::cout &lt;&lt; i &lt;&lt; <span class="stringliteral">&quot; (&quot;</span> &lt;&lt; inputs_sch [i] &lt;&lt; <span class="stringliteral">&quot;), &quot;</span>;</div>
+<div class="line"><a name="l00824"></a><span class="lineno">  824</span>&#160;    }</div>
+<div class="line"><a name="l00825"></a><span class="lineno">  825</span>&#160;    std::cout &lt;&lt; std::endl;</div>
+<div class="line"><a name="l00826"></a><span class="lineno">  826</span>&#160;    std::cout &lt;&lt; prefix &lt;&lt; <span class="stringliteral">&quot;   Output Nodes Initialisation [TypeID (Number of Output Node)]: &quot;</span>;</div>
+<div class="line"><a name="l00827"></a><span class="lineno">  827</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; outputs_sch.size (); i++) {</div>
+<div class="line"><a name="l00828"></a><span class="lineno">  828</span>&#160;        std::cout &lt;&lt; i &lt;&lt; <span class="stringliteral">&quot; (&quot;</span> &lt;&lt; outputs_sch [i] &lt;&lt; <span class="stringliteral">&quot;), &quot;</span>;</div>
+<div class="line"><a name="l00829"></a><span class="lineno">  829</span>&#160;    }</div>
+<div class="line"><a name="l00830"></a><span class="lineno">  830</span>&#160;    std::cout &lt;&lt; std::endl;</div>
+<div class="line"><a name="l00831"></a><span class="lineno">  831</span>&#160;    std::cout &lt;&lt; prefix &lt;&lt; <span class="stringliteral">&quot;   Hidden Nodes Initialisation [Input TypeID to Output TypeID2 (Number of Hidden Node)]: &quot;</span>;</div>
+<div class="line"><a name="l00832"></a><span class="lineno">  832</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; hiddens_sch_init.size (); i++) {</div>
+<div class="line"><a name="l00833"></a><span class="lineno">  833</span>&#160;        <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> j = 0; j &lt; hiddens_sch_init [i].size (); j++) {</div>
+<div class="line"><a name="l00834"></a><span class="lineno">  834</span>&#160;            std::cout &lt;&lt; i  &lt;&lt; <span class="stringliteral">&quot; to &quot;</span> &lt;&lt; j &lt;&lt; <span class="stringliteral">&quot; (&quot;</span> &lt;&lt; hiddens_sch_init [i][j] &lt;&lt; <span class="stringliteral">&quot;), &quot;</span>;</div>
+<div class="line"><a name="l00835"></a><span class="lineno">  835</span>&#160;        }</div>
+<div class="line"><a name="l00836"></a><span class="lineno">  836</span>&#160;    }</div>
+<div class="line"><a name="l00837"></a><span class="lineno">  837</span>&#160;    std::cout &lt;&lt; std::endl;</div>
+<div class="line"><a name="l00838"></a><span class="lineno">  838</span>&#160;    std::cout &lt;&lt; prefix &lt;&lt; <span class="stringliteral">&quot;   Number of connections at initialization: &quot;</span> &lt;&lt; N_ConnInit &lt;&lt; std::endl;</div>
+<div class="line"><a name="l00839"></a><span class="lineno">  839</span>&#160;    std::cout &lt;&lt; prefix &lt;&lt; <span class="stringliteral">&quot;   Probability of adding recurrency: &quot;</span> &lt;&lt; probRecuInit &lt;&lt; std::endl;</div>
+<div class="line"><a name="l00840"></a><span class="lineno">  840</span>&#160;    std::cout &lt;&lt; prefix &lt;&lt; <span class="stringliteral">&quot;   Maximum recurrency at initialization: &quot;</span> &lt;&lt; maxRecuInit &lt;&lt; std::endl;</div>
+<div class="line"><a name="l00841"></a><span class="lineno">  841</span>&#160;    std::cout &lt;&lt; prefix &lt;&lt; <span class="stringliteral">&quot;   Weight&#39;s range at intialization: [&quot;</span> &lt;&lt; -1.0 * weightExtremumInit &lt;&lt; <span class="stringliteral">&quot;, &quot;</span> &lt;&lt; weightExtremumInit &lt;&lt; <span class="stringliteral">&quot;]&quot;</span> &lt;&lt; std::endl;</div>
+<div class="line"><a name="l00842"></a><span class="lineno">  842</span>&#160;    std::cout &lt;&lt; prefix &lt;&lt; <span class="stringliteral">&quot;Current More Fit Genome ID: &quot;</span> &lt;&lt; fittergenome_id &lt;&lt; std::endl;</div>
+<div class="line"><a name="l00843"></a><span class="lineno">  843</span>&#160;    std::cout &lt;&lt; prefix &lt;&lt; <span class="stringliteral">&quot;Number of Activation Functions [Input TypeID to Output TypeID (Number of functions)]: &quot;</span>;</div>
+<div class="line"><a name="l00844"></a><span class="lineno">  844</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; activationFns.size (); i++) {</div>
+<div class="line"><a name="l00845"></a><span class="lineno">  845</span>&#160;        <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> j = 0; j &lt; activationFns [i].size (); j++) {</div>
+<div class="line"><a name="l00846"></a><span class="lineno">  846</span>&#160;            std::cout &lt;&lt; i &lt;&lt; <span class="stringliteral">&quot; to &quot;</span> &lt;&lt; j &lt;&lt; <span class="stringliteral">&quot; (&quot;</span> &lt;&lt; activationFns [i][j].size () &lt;&lt; <span class="stringliteral">&quot;), &quot;</span>;</div>
+<div class="line"><a name="l00847"></a><span class="lineno">  847</span>&#160;        }</div>
+<div class="line"><a name="l00848"></a><span class="lineno">  848</span>&#160;    }</div>
+<div class="line"><a name="l00849"></a><span class="lineno">  849</span>&#160;    std::cout &lt;&lt; std::endl;</div>
+<div class="line"><a name="l00850"></a><span class="lineno">  850</span>&#160;    std::cout &lt;&lt; prefix &lt;&lt; <span class="stringliteral">&quot;Connections Innovations:&quot;</span> &lt;&lt; std::endl;</div>
+<div class="line"><a name="l00851"></a><span class="lineno">  851</span>&#160;    conn_innov.print (prefix + <span class="stringliteral">&quot;   &quot;</span>);</div>
+<div class="line"><a name="l00852"></a><span class="lineno">  852</span>&#160;    std::cout &lt;&lt; prefix &lt;&lt; <span class="stringliteral">&quot;Nodes Innovations:&quot;</span> &lt;&lt; std::endl;</div>
+<div class="line"><a name="l00853"></a><span class="lineno">  853</span>&#160;    node_innov.print (prefix + <span class="stringliteral">&quot;   &quot;</span>);</div>
+<div class="line"><a name="l00854"></a><span class="lineno">  854</span>&#160;    std::cout &lt;&lt; prefix &lt;&lt; <span class="stringliteral">&quot;Genomes: &quot;</span> &lt;&lt; std::endl;</div>
+<div class="line"><a name="l00855"></a><span class="lineno">  855</span>&#160;    <span class="keywordflow">for</span> (<span class="keyword">const</span> std::pair&lt;<span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span>, std::unique_ptr&lt;<a class="code" href="classpneatm_1_1Genome.html">Genome&lt;Args...&gt;</a>&gt;&gt;&amp; genome : genomes) {</div>
+<div class="line"><a name="l00856"></a><span class="lineno">  856</span>&#160;        genome.second-&gt;print (prefix + <span class="stringliteral">&quot;   &quot;</span>);</div>
+<div class="line"><a name="l00857"></a><span class="lineno">  857</span>&#160;        std::cout &lt;&lt; std::endl;</div>
+<div class="line"><a name="l00858"></a><span class="lineno">  858</span>&#160;    }</div>
+<div class="line"><a name="l00859"></a><span class="lineno">  859</span>&#160;    std::cout &lt;&lt; prefix &lt;&lt; <span class="stringliteral">&quot;Species: &quot;</span> &lt;&lt; std::endl;</div>
+<div class="line"><a name="l00860"></a><span class="lineno">  860</span>&#160;    <span class="keywordflow">for</span> (<span class="keyword">const</span> <a class="code" href="classpneatm_1_1Species.html">Species&lt;Args...&gt;</a>&amp; spe : species) {</div>
+<div class="line"><a name="l00861"></a><span class="lineno">  861</span>&#160;        spe.print (prefix + <span class="stringliteral">&quot;   &quot;</span>);</div>
+<div class="line"><a name="l00862"></a><span class="lineno">  862</span>&#160;        std::cout &lt;&lt; std::endl;</div>
+<div class="line"><a name="l00863"></a><span class="lineno">  863</span>&#160;    }</div>
+<div class="line"><a name="l00864"></a><span class="lineno">  864</span>&#160;}</div>
+<div class="line"><a name="l00865"></a><span class="lineno">  865</span>&#160; </div>
+<div class="line"><a name="l00866"></a><span class="lineno">  866</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span>... Args&gt;</div>
+<div class="line"><a name="l00867"></a><span class="lineno"><a class="line" href="classpneatm_1_1Population.html#a39df3f66e09e07d578206a615dbdfa24">  867</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="classpneatm_1_1Population.html#a39df3f66e09e07d578206a615dbdfa24">Population&lt;Args...&gt;::drawGenome</a> (<span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> genome_id, <span class="keyword">const</span> std::string&amp; font_path, <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> windowWidth, <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> windowHeight, <span class="keywordtype">float</span> dotsRadius) {</div>
+<div class="line"><a name="l00868"></a><span class="lineno">  868</span>&#160;    logger-&gt;info (<span class="stringliteral">&quot;Drawing genome{}&#39;s network&quot;</span>, genome_id);</div>
+<div class="line"><a name="l00869"></a><span class="lineno">  869</span>&#160;    genomes [genome_id]-&gt;draw (font_path, windowWidth, windowHeight, dotsRadius);</div>
+<div class="line"><a name="l00870"></a><span class="lineno">  870</span>&#160;}</div>
+<div class="line"><a name="l00871"></a><span class="lineno">  871</span>&#160; </div>
+<div class="line"><a name="l00872"></a><span class="lineno">  872</span>&#160; </div>
+<div class="line"><a name="l00873"></a><span class="lineno">  873</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span>... Args&gt;</div>
+<div class="line"><a name="l00874"></a><span class="lineno"><a class="line" href="classpneatm_1_1Population.html#a5dd848337fef8512f1e89dcf844a9027">  874</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="classpneatm_1_1Population.html#a5dd848337fef8512f1e89dcf844a9027">Population&lt;Args...&gt;::serialize</a> (std::ofstream&amp; outFile) {</div>
+<div class="line"><a name="l00875"></a><span class="lineno">  875</span>&#160;    Serialize (generation, outFile);</div>
+<div class="line"><a name="l00876"></a><span class="lineno">  876</span>&#160;    Serialize (avgFitness, outFile);</div>
+<div class="line"><a name="l00877"></a><span class="lineno">  877</span>&#160;    Serialize (avgFitnessAdjusted, outFile);</div>
+<div class="line"><a name="l00878"></a><span class="lineno">  878</span>&#160;    Serialize (popSize, outFile);</div>
+<div class="line"><a name="l00879"></a><span class="lineno">  879</span>&#160;    Serialize (speciationThresh, outFile);</div>
+<div class="line"><a name="l00880"></a><span class="lineno">  880</span>&#160;    Serialize (threshGensSinceImproved, outFile);</div>
+<div class="line"><a name="l00881"></a><span class="lineno">  881</span>&#160;    Serialize (bias_sch, outFile);</div>
+<div class="line"><a name="l00882"></a><span class="lineno">  882</span>&#160;    Serialize (inputs_sch, outFile);</div>
+<div class="line"><a name="l00883"></a><span class="lineno">  883</span>&#160;    Serialize (outputs_sch, outFile);</div>
+<div class="line"><a name="l00884"></a><span class="lineno">  884</span>&#160;    Serialize (hiddens_sch_init, outFile);</div>
+<div class="line"><a name="l00885"></a><span class="lineno">  885</span>&#160;    Serialize (N_ConnInit, outFile);</div>
+<div class="line"><a name="l00886"></a><span class="lineno">  886</span>&#160;    Serialize (probRecuInit, outFile);</div>
+<div class="line"><a name="l00887"></a><span class="lineno">  887</span>&#160;    Serialize (weightExtremumInit, outFile);</div>
+<div class="line"><a name="l00888"></a><span class="lineno">  888</span>&#160;    Serialize (maxRecuInit, outFile);</div>
+<div class="line"><a name="l00889"></a><span class="lineno">  889</span>&#160;    Serialize (dstType, outFile);</div>
+<div class="line"><a name="l00890"></a><span class="lineno">  890</span>&#160;    Serialize (fittergenome_id, outFile);</div>
 <div class="line"><a name="l00891"></a><span class="lineno">  891</span>&#160; </div>
-<div class="line"><a name="l00892"></a><span class="lineno">  892</span>&#160;    conn_innov.serialize (outFile);</div>
-<div class="line"><a name="l00893"></a><span class="lineno">  893</span>&#160;    node_innov.serialize (outFile);</div>
-<div class="line"><a name="l00894"></a><span class="lineno">  894</span>&#160;}</div>
-<div class="line"><a name="l00895"></a><span class="lineno">  895</span>&#160; </div>
-<div class="line"><a name="l00896"></a><span class="lineno">  896</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span>... Args&gt;</div>
-<div class="line"><a name="l00897"></a><span class="lineno"><a class="line" href="classpneatm_1_1Population.html#ac228c108dd87402819b0216ccc47103f">  897</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="classpneatm_1_1Population.html#ac228c108dd87402819b0216ccc47103f">Population&lt;Args...&gt;::deserialize</a> (std::ifstream&amp; inFile) {</div>
-<div class="line"><a name="l00898"></a><span class="lineno">  898</span>&#160;    Deserialize (generation, inFile);</div>
-<div class="line"><a name="l00899"></a><span class="lineno">  899</span>&#160;    Deserialize (avgFitness, inFile);</div>
-<div class="line"><a name="l00900"></a><span class="lineno">  900</span>&#160;    Deserialize (avgFitnessAdjusted, inFile);</div>
-<div class="line"><a name="l00901"></a><span class="lineno">  901</span>&#160;    Deserialize (popSize, inFile);</div>
-<div class="line"><a name="l00902"></a><span class="lineno">  902</span>&#160;    Deserialize (speciationThresh, inFile);</div>
-<div class="line"><a name="l00903"></a><span class="lineno">  903</span>&#160;    Deserialize (threshGensSinceImproved, inFile);</div>
-<div class="line"><a name="l00904"></a><span class="lineno">  904</span>&#160;    Deserialize (bias_sch, inFile);</div>
-<div class="line"><a name="l00905"></a><span class="lineno">  905</span>&#160;    Deserialize (inputs_sch, inFile);</div>
-<div class="line"><a name="l00906"></a><span class="lineno">  906</span>&#160;    Deserialize (outputs_sch, inFile);</div>
-<div class="line"><a name="l00907"></a><span class="lineno">  907</span>&#160;    Deserialize (hiddens_sch_init, inFile);</div>
-<div class="line"><a name="l00908"></a><span class="lineno">  908</span>&#160;    Deserialize (N_ConnInit, inFile);</div>
-<div class="line"><a name="l00909"></a><span class="lineno">  909</span>&#160;    Deserialize (probRecuInit, inFile);</div>
-<div class="line"><a name="l00910"></a><span class="lineno">  910</span>&#160;    Deserialize (weightExtremumInit, inFile);</div>
-<div class="line"><a name="l00911"></a><span class="lineno">  911</span>&#160;    Deserialize (maxRecuInit, inFile);</div>
-<div class="line"><a name="l00912"></a><span class="lineno">  912</span>&#160;    Deserialize (dstType, inFile);</div>
-<div class="line"><a name="l00913"></a><span class="lineno">  913</span>&#160;    Deserialize (fittergenome_id, inFile);</div>
-<div class="line"><a name="l00914"></a><span class="lineno">  914</span>&#160; </div>
-<div class="line"><a name="l00915"></a><span class="lineno">  915</span>&#160;    <span class="keywordtype">size_t</span> sz;</div>
-<div class="line"><a name="l00916"></a><span class="lineno">  916</span>&#160; </div>
-<div class="line"><a name="l00917"></a><span class="lineno">  917</span>&#160;    Deserialize (sz, inFile);</div>
-<div class="line"><a name="l00918"></a><span class="lineno">  918</span>&#160;    genomes.clear ();</div>
-<div class="line"><a name="l00919"></a><span class="lineno">  919</span>&#160;    genomes.reserve (sz);</div>
-<div class="line"><a name="l00920"></a><span class="lineno">  920</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; sz; i++) {</div>
-<div class="line"><a name="l00921"></a><span class="lineno">  921</span>&#160;        genomes.push_back (std::make_unique&lt;<a class="code" href="classpneatm_1_1Genome.html">Genome&lt;Args...&gt;</a>&gt; (inFile, resetValues, activationFns, logger));</div>
-<div class="line"><a name="l00922"></a><span class="lineno">  922</span>&#160;    }</div>
-<div class="line"><a name="l00923"></a><span class="lineno">  923</span>&#160; </div>
-<div class="line"><a name="l00924"></a><span class="lineno">  924</span>&#160;    Deserialize (sz, inFile);</div>
-<div class="line"><a name="l00925"></a><span class="lineno">  925</span>&#160;    species.clear ();</div>
-<div class="line"><a name="l00926"></a><span class="lineno">  926</span>&#160;    species.reserve (sz);</div>
-<div class="line"><a name="l00927"></a><span class="lineno">  927</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; sz; i++) {</div>
-<div class="line"><a name="l00928"></a><span class="lineno">  928</span>&#160;        species.push_back (<a class="code" href="classpneatm_1_1Species.html">Species&lt;Args...&gt;</a> (inFile));</div>
-<div class="line"><a name="l00929"></a><span class="lineno">  929</span>&#160;    }</div>
-<div class="line"><a name="l00930"></a><span class="lineno">  930</span>&#160; </div>
-<div class="line"><a name="l00931"></a><span class="lineno">  931</span>&#160;    conn_innov.deserialize (inFile);</div>
-<div class="line"><a name="l00932"></a><span class="lineno">  932</span>&#160;    node_innov.deserialize (inFile);</div>
-<div class="line"><a name="l00933"></a><span class="lineno">  933</span>&#160;}</div>
+<div class="line"><a name="l00892"></a><span class="lineno">  892</span>&#160;    Serialize (genomes.size (), outFile);</div>
+<div class="line"><a name="l00893"></a><span class="lineno">  893</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> k = 0; k &lt; (<span class="keywordtype">unsigned</span> int) genomes.size (); k++) {</div>
+<div class="line"><a name="l00894"></a><span class="lineno">  894</span>&#160;        <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> iGenome = 0;</div>
+<div class="line"><a name="l00895"></a><span class="lineno">  895</span>&#160;        <span class="keywordflow">while</span> (iGenome &lt; (<span class="keywordtype">unsigned</span> <span class="keywordtype">int</span>) genomes.size () &amp;&amp; genomes [iGenome]-&gt;id != k) {</div>
+<div class="line"><a name="l00896"></a><span class="lineno">  896</span>&#160;            iGenome++;</div>
+<div class="line"><a name="l00897"></a><span class="lineno">  897</span>&#160;        }</div>
+<div class="line"><a name="l00898"></a><span class="lineno">  898</span>&#160;        <span class="keywordflow">if</span> (iGenome &lt; (<span class="keywordtype">unsigned</span> <span class="keywordtype">int</span>) genomes.size ()) {</div>
+<div class="line"><a name="l00899"></a><span class="lineno">  899</span>&#160;            genomes [iGenome]-&gt;serialize (outFile);</div>
+<div class="line"><a name="l00900"></a><span class="lineno">  900</span>&#160;        } <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l00901"></a><span class="lineno">  901</span>&#160;            <span class="comment">// impossible state</span></div>
+<div class="line"><a name="l00902"></a><span class="lineno">  902</span>&#160;        }</div>
+<div class="line"><a name="l00903"></a><span class="lineno">  903</span>&#160;    }</div>
+<div class="line"><a name="l00904"></a><span class="lineno">  904</span>&#160; </div>
+<div class="line"><a name="l00905"></a><span class="lineno">  905</span>&#160;    Serialize (species.size (), outFile);</div>
+<div class="line"><a name="l00906"></a><span class="lineno">  906</span>&#160;    <span class="keywordflow">for</span> (<span class="keyword">const</span> <a class="code" href="classpneatm_1_1Species.html">Species&lt;Args...&gt;</a>&amp; spe : species) {</div>
+<div class="line"><a name="l00907"></a><span class="lineno">  907</span>&#160;        spe.serialize (outFile);</div>
+<div class="line"><a name="l00908"></a><span class="lineno">  908</span>&#160;    }</div>
+<div class="line"><a name="l00909"></a><span class="lineno">  909</span>&#160; </div>
+<div class="line"><a name="l00910"></a><span class="lineno">  910</span>&#160;    conn_innov.serialize (outFile);</div>
+<div class="line"><a name="l00911"></a><span class="lineno">  911</span>&#160;    node_innov.serialize (outFile);</div>
+<div class="line"><a name="l00912"></a><span class="lineno">  912</span>&#160;}</div>
+<div class="line"><a name="l00913"></a><span class="lineno">  913</span>&#160; </div>
+<div class="line"><a name="l00914"></a><span class="lineno">  914</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span>... Args&gt;</div>
+<div class="line"><a name="l00915"></a><span class="lineno"><a class="line" href="classpneatm_1_1Population.html#ac228c108dd87402819b0216ccc47103f">  915</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="classpneatm_1_1Population.html#ac228c108dd87402819b0216ccc47103f">Population&lt;Args...&gt;::deserialize</a> (std::ifstream&amp; inFile) {</div>
+<div class="line"><a name="l00916"></a><span class="lineno">  916</span>&#160;    Deserialize (generation, inFile);</div>
+<div class="line"><a name="l00917"></a><span class="lineno">  917</span>&#160;    Deserialize (avgFitness, inFile);</div>
+<div class="line"><a name="l00918"></a><span class="lineno">  918</span>&#160;    Deserialize (avgFitnessAdjusted, inFile);</div>
+<div class="line"><a name="l00919"></a><span class="lineno">  919</span>&#160;    Deserialize (popSize, inFile);</div>
+<div class="line"><a name="l00920"></a><span class="lineno">  920</span>&#160;    Deserialize (speciationThresh, inFile);</div>
+<div class="line"><a name="l00921"></a><span class="lineno">  921</span>&#160;    Deserialize (threshGensSinceImproved, inFile);</div>
+<div class="line"><a name="l00922"></a><span class="lineno">  922</span>&#160;    Deserialize (bias_sch, inFile);</div>
+<div class="line"><a name="l00923"></a><span class="lineno">  923</span>&#160;    Deserialize (inputs_sch, inFile);</div>
+<div class="line"><a name="l00924"></a><span class="lineno">  924</span>&#160;    Deserialize (outputs_sch, inFile);</div>
+<div class="line"><a name="l00925"></a><span class="lineno">  925</span>&#160;    Deserialize (hiddens_sch_init, inFile);</div>
+<div class="line"><a name="l00926"></a><span class="lineno">  926</span>&#160;    Deserialize (N_ConnInit, inFile);</div>
+<div class="line"><a name="l00927"></a><span class="lineno">  927</span>&#160;    Deserialize (probRecuInit, inFile);</div>
+<div class="line"><a name="l00928"></a><span class="lineno">  928</span>&#160;    Deserialize (weightExtremumInit, inFile);</div>
+<div class="line"><a name="l00929"></a><span class="lineno">  929</span>&#160;    Deserialize (maxRecuInit, inFile);</div>
+<div class="line"><a name="l00930"></a><span class="lineno">  930</span>&#160;    Deserialize (dstType, inFile);</div>
+<div class="line"><a name="l00931"></a><span class="lineno">  931</span>&#160;    Deserialize (fittergenome_id, inFile);</div>
+<div class="line"><a name="l00932"></a><span class="lineno">  932</span>&#160; </div>
+<div class="line"><a name="l00933"></a><span class="lineno">  933</span>&#160;    <span class="keywordtype">size_t</span> sz;</div>
 <div class="line"><a name="l00934"></a><span class="lineno">  934</span>&#160; </div>
-<div class="line"><a name="l00935"></a><span class="lineno">  935</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span>... Args&gt;</div>
-<div class="line"><a name="l00936"></a><span class="lineno"><a class="line" href="classpneatm_1_1Population.html#a5cef5022e7ceb0c56be6242ece7e013f">  936</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="classpneatm_1_1Population.html#a5cef5022e7ceb0c56be6242ece7e013f">Population&lt;Args...&gt;::save</a> (<span class="keyword">const</span> std::string&amp; filename) {</div>
-<div class="line"><a name="l00937"></a><span class="lineno">  937</span>&#160;    std::ofstream outFile(filename, std::ios::binary);</div>
-<div class="line"><a name="l00938"></a><span class="lineno">  938</span>&#160;    <span class="keywordflow">if</span> (!outFile) {</div>
-<div class="line"><a name="l00939"></a><span class="lineno">  939</span>&#160;        logger-&gt;error (<span class="stringliteral">&quot;Cannot open file {} for writing.&quot;</span>, filename);</div>
-<div class="line"><a name="l00940"></a><span class="lineno">  940</span>&#160;        <span class="keywordflow">return</span>;</div>
-<div class="line"><a name="l00941"></a><span class="lineno">  941</span>&#160;    }</div>
-<div class="line"><a name="l00942"></a><span class="lineno">  942</span>&#160; </div>
-<div class="line"><a name="l00943"></a><span class="lineno">  943</span>&#160;    serialize (outFile);</div>
-<div class="line"><a name="l00944"></a><span class="lineno">  944</span>&#160; </div>
-<div class="line"><a name="l00945"></a><span class="lineno">  945</span>&#160;    outFile.close ();</div>
-<div class="line"><a name="l00946"></a><span class="lineno">  946</span>&#160;}</div>
-<div class="line"><a name="l00947"></a><span class="lineno">  947</span>&#160; </div>
-<div class="line"><a name="l00948"></a><span class="lineno">  948</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span>... Args&gt;</div>
-<div class="line"><a name="l00949"></a><span class="lineno"><a class="line" href="classpneatm_1_1Population.html#ad87fd6a2852ce12504a3fdcd851b7b61">  949</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="classpneatm_1_1Population.html#ad87fd6a2852ce12504a3fdcd851b7b61">Population&lt;Args...&gt;::load</a> (<span class="keyword">const</span> std::string&amp; filename) {</div>
-<div class="line"><a name="l00950"></a><span class="lineno">  950</span>&#160;    std::ifstream inFile(filename, std::ios::binary);</div>
-<div class="line"><a name="l00951"></a><span class="lineno">  951</span>&#160;    <span class="keywordflow">if</span> (!inFile) {</div>
-<div class="line"><a name="l00952"></a><span class="lineno">  952</span>&#160;        logger-&gt;error (<span class="stringliteral">&quot;Cannot open file {} for reading.&quot;</span>, filename);</div>
-<div class="line"><a name="l00953"></a><span class="lineno">  953</span>&#160;        <span class="keywordflow">return</span>;</div>
-<div class="line"><a name="l00954"></a><span class="lineno">  954</span>&#160;    }</div>
-<div class="line"><a name="l00955"></a><span class="lineno">  955</span>&#160; </div>
-<div class="line"><a name="l00956"></a><span class="lineno">  956</span>&#160;    deserialize (inFile);</div>
-<div class="line"><a name="l00957"></a><span class="lineno">  957</span>&#160; </div>
-<div class="line"><a name="l00958"></a><span class="lineno">  958</span>&#160;    inFile.close ();</div>
-<div class="line"><a name="l00959"></a><span class="lineno">  959</span>&#160;}</div>
+<div class="line"><a name="l00935"></a><span class="lineno">  935</span>&#160;    Deserialize (sz, inFile);</div>
+<div class="line"><a name="l00936"></a><span class="lineno">  936</span>&#160;    genomes.clear ();</div>
+<div class="line"><a name="l00937"></a><span class="lineno">  937</span>&#160;    genomes.reserve (sz);</div>
+<div class="line"><a name="l00938"></a><span class="lineno">  938</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> i = 0; i &lt; (<span class="keywordtype">unsigned</span> int) sz; i++) {</div>
+<div class="line"><a name="l00939"></a><span class="lineno">  939</span>&#160;        genomes.insert (std::make_pair (i, std::make_unique&lt;<a class="code" href="classpneatm_1_1Genome.html">Genome&lt;Args...&gt;</a>&gt; (inFile, resetValues, activationFns, logger)));</div>
+<div class="line"><a name="l00940"></a><span class="lineno">  940</span>&#160;    }</div>
+<div class="line"><a name="l00941"></a><span class="lineno">  941</span>&#160; </div>
+<div class="line"><a name="l00942"></a><span class="lineno">  942</span>&#160;    Deserialize (sz, inFile);</div>
+<div class="line"><a name="l00943"></a><span class="lineno">  943</span>&#160;    species.clear ();</div>
+<div class="line"><a name="l00944"></a><span class="lineno">  944</span>&#160;    species.reserve (sz);</div>
+<div class="line"><a name="l00945"></a><span class="lineno">  945</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; sz; i++) {</div>
+<div class="line"><a name="l00946"></a><span class="lineno">  946</span>&#160;        species.push_back (<a class="code" href="classpneatm_1_1Species.html">Species&lt;Args...&gt;</a> (inFile));</div>
+<div class="line"><a name="l00947"></a><span class="lineno">  947</span>&#160;    }</div>
+<div class="line"><a name="l00948"></a><span class="lineno">  948</span>&#160; </div>
+<div class="line"><a name="l00949"></a><span class="lineno">  949</span>&#160;    conn_innov.deserialize (inFile);</div>
+<div class="line"><a name="l00950"></a><span class="lineno">  950</span>&#160;    node_innov.deserialize (inFile);</div>
+<div class="line"><a name="l00951"></a><span class="lineno">  951</span>&#160;}</div>
+<div class="line"><a name="l00952"></a><span class="lineno">  952</span>&#160; </div>
+<div class="line"><a name="l00953"></a><span class="lineno">  953</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span>... Args&gt;</div>
+<div class="line"><a name="l00954"></a><span class="lineno"><a class="line" href="classpneatm_1_1Population.html#a5cef5022e7ceb0c56be6242ece7e013f">  954</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="classpneatm_1_1Population.html#a5cef5022e7ceb0c56be6242ece7e013f">Population&lt;Args...&gt;::save</a> (<span class="keyword">const</span> std::string&amp; filename) {</div>
+<div class="line"><a name="l00955"></a><span class="lineno">  955</span>&#160;    std::ofstream outFile(filename, std::ios::binary);</div>
+<div class="line"><a name="l00956"></a><span class="lineno">  956</span>&#160;    <span class="keywordflow">if</span> (!outFile) {</div>
+<div class="line"><a name="l00957"></a><span class="lineno">  957</span>&#160;        logger-&gt;error (<span class="stringliteral">&quot;Cannot open file {} for writing.&quot;</span>, filename);</div>
+<div class="line"><a name="l00958"></a><span class="lineno">  958</span>&#160;        <span class="keywordflow">return</span>;</div>
+<div class="line"><a name="l00959"></a><span class="lineno">  959</span>&#160;    }</div>
 <div class="line"><a name="l00960"></a><span class="lineno">  960</span>&#160; </div>
-<div class="line"><a name="l00961"></a><span class="lineno">  961</span>&#160;<span class="preprocessor">#endif  </span><span class="comment">// POPULATION_HPP</span></div>
+<div class="line"><a name="l00961"></a><span class="lineno">  961</span>&#160;    serialize (outFile);</div>
+<div class="line"><a name="l00962"></a><span class="lineno">  962</span>&#160; </div>
+<div class="line"><a name="l00963"></a><span class="lineno">  963</span>&#160;    outFile.close ();</div>
+<div class="line"><a name="l00964"></a><span class="lineno">  964</span>&#160;}</div>
+<div class="line"><a name="l00965"></a><span class="lineno">  965</span>&#160; </div>
+<div class="line"><a name="l00966"></a><span class="lineno">  966</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span>... Args&gt;</div>
+<div class="line"><a name="l00967"></a><span class="lineno"><a class="line" href="classpneatm_1_1Population.html#ad87fd6a2852ce12504a3fdcd851b7b61">  967</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="classpneatm_1_1Population.html#ad87fd6a2852ce12504a3fdcd851b7b61">Population&lt;Args...&gt;::load</a> (<span class="keyword">const</span> std::string&amp; filename) {</div>
+<div class="line"><a name="l00968"></a><span class="lineno">  968</span>&#160;    std::ifstream inFile(filename, std::ios::binary);</div>
+<div class="line"><a name="l00969"></a><span class="lineno">  969</span>&#160;    <span class="keywordflow">if</span> (!inFile) {</div>
+<div class="line"><a name="l00970"></a><span class="lineno">  970</span>&#160;        logger-&gt;error (<span class="stringliteral">&quot;Cannot open file {} for reading.&quot;</span>, filename);</div>
+<div class="line"><a name="l00971"></a><span class="lineno">  971</span>&#160;        <span class="keywordflow">return</span>;</div>
+<div class="line"><a name="l00972"></a><span class="lineno">  972</span>&#160;    }</div>
+<div class="line"><a name="l00973"></a><span class="lineno">  973</span>&#160; </div>
+<div class="line"><a name="l00974"></a><span class="lineno">  974</span>&#160;    deserialize (inFile);</div>
+<div class="line"><a name="l00975"></a><span class="lineno">  975</span>&#160; </div>
+<div class="line"><a name="l00976"></a><span class="lineno">  976</span>&#160;    inFile.close ();</div>
+<div class="line"><a name="l00977"></a><span class="lineno">  977</span>&#160;}</div>
+<div class="line"><a name="l00978"></a><span class="lineno">  978</span>&#160; </div>
+<div class="line"><a name="l00979"></a><span class="lineno">  979</span>&#160;<span class="preprocessor">#endif  </span><span class="comment">// POPULATION_HPP</span></div>
 <div class="ttc" id="aclasspneatm_1_1Connection_html"><div class="ttname"><a href="classpneatm_1_1Connection.html">pneatm::Connection</a></div><div class="ttdoc">Class representing a connection between nodes in a neural network.</div><div class="ttdef"><b>Definition:</b> connection.hpp:19</div></div>
 <div class="ttc" id="aclasspneatm_1_1Genome_html"><div class="ttname"><a href="classpneatm_1_1Genome.html">pneatm::Genome</a></div><div class="ttdoc">A template class representing a genome.</div><div class="ttdef"><b>Definition:</b> genome.hpp:196</div></div>
 <div class="ttc" id="aclasspneatm_1_1Population_html"><div class="ttname"><a href="classpneatm_1_1Population.html">pneatm::Population</a></div><div class="ttdoc">A template class representing a population.</div><div class="ttdef"><b>Definition:</b> population.hpp:32</div></div>
 <div class="ttc" id="aclasspneatm_1_1Population_html_a0c62ac7e97482bf0550d090a35dcebea"><div class="ttname"><a href="classpneatm_1_1Population.html#a0c62ac7e97482bf0550d090a35dcebea">pneatm::Population::getGeneration</a></div><div class="ttdeci">unsigned int getGeneration()</div><div class="ttdoc">Get the current generation number.</div><div class="ttdef"><b>Definition:</b> population.hpp:78</div></div>
 <div class="ttc" id="aclasspneatm_1_1Population_html_a25746633efc7080538fb23d0a9b71c14"><div class="ttname"><a href="classpneatm_1_1Population.html#a25746633efc7080538fb23d0a9b71c14">pneatm::Population::getGenome</a></div><div class="ttdeci">Genome&lt; Args... &gt; &amp; getGenome(int id=-1)</div><div class="ttdoc">Get a reference to the Genome with the specified ID.</div><div class="ttdef"><b>Definition:</b> population.hpp:364</div></div>
-<div class="ttc" id="aclasspneatm_1_1Population_html_a39df3f66e09e07d578206a615dbdfa24"><div class="ttname"><a href="classpneatm_1_1Population.html#a39df3f66e09e07d578206a615dbdfa24">pneatm::Population::drawGenome</a></div><div class="ttdeci">void drawGenome(unsigned int genome_id, const std::string &amp;font_path, unsigned int windowWidth=1300, unsigned int windowHeight=800, float dotsRadius=6.5f)</div><div class="ttdoc">Draw a graphical representation of the specified genome's network.</div><div class="ttdef"><b>Definition:</b> population.hpp:857</div></div>
+<div class="ttc" id="aclasspneatm_1_1Population_html_a39df3f66e09e07d578206a615dbdfa24"><div class="ttname"><a href="classpneatm_1_1Population.html#a39df3f66e09e07d578206a615dbdfa24">pneatm::Population::drawGenome</a></div><div class="ttdeci">void drawGenome(unsigned int genome_id, const std::string &amp;font_path, unsigned int windowWidth=1300, unsigned int windowHeight=800, float dotsRadius=6.5f)</div><div class="ttdoc">Draw a graphical representation of the specified genome's network.</div><div class="ttdef"><b>Definition:</b> population.hpp:867</div></div>
 <div class="ttc" id="aclasspneatm_1_1Population_html_a47afebc2d61ba3821f7aff4724314608"><div class="ttname"><a href="classpneatm_1_1Population.html#a47afebc2d61ba3821f7aff4724314608">pneatm::Population::resetMemory</a></div><div class="ttdeci">void resetMemory()</div><div class="ttdoc">Reset the memory of the entire population.</div><div class="ttdef"><b>Definition:</b> population.hpp:405</div></div>
 <div class="ttc" id="aclasspneatm_1_1Population_html_a4c8cedd0f038e41746fb6084639f5616"><div class="ttname"><a href="classpneatm_1_1Population.html#a4c8cedd0f038e41746fb6084639f5616">pneatm::Population::~Population</a></div><div class="ttdeci">~Population()</div><div class="ttdoc">Destructor for the Population class.</div><div class="ttdef"><b>Definition:</b> population.hpp:358</div></div>
-<div class="ttc" id="aclasspneatm_1_1Population_html_a4de9b65fe4c94f199eae400bc35164fe"><div class="ttname"><a href="classpneatm_1_1Population.html#a4de9b65fe4c94f199eae400bc35164fe">pneatm::Population::print</a></div><div class="ttdeci">void print(const std::string &amp;prefix=&quot;&quot;)</div><div class="ttdoc">Print information on the population.</div><div class="ttdef"><b>Definition:</b> population.hpp:799</div></div>
+<div class="ttc" id="aclasspneatm_1_1Population_html_a4de9b65fe4c94f199eae400bc35164fe"><div class="ttname"><a href="classpneatm_1_1Population.html#a4de9b65fe4c94f199eae400bc35164fe">pneatm::Population::print</a></div><div class="ttdeci">void print(const std::string &amp;prefix=&quot;&quot;)</div><div class="ttdoc">Print information on the population.</div><div class="ttdef"><b>Definition:</b> population.hpp:808</div></div>
 <div class="ttc" id="aclasspneatm_1_1Population_html_a50c6c468fb5a49483ac8e072a6591125"><div class="ttname"><a href="classpneatm_1_1Population.html#a50c6c468fb5a49483ac8e072a6591125">pneatm::Population::runNetwork</a></div><div class="ttdeci">void runNetwork()</div><div class="ttdoc">Run the network of the entire population.</div><div class="ttdef"><b>Definition:</b> population.hpp:418</div></div>
 <div class="ttc" id="aclasspneatm_1_1Population_html_a530738fa0217256f7b0d43ea5bd473b6"><div class="ttname"><a href="classpneatm_1_1Population.html#a530738fa0217256f7b0d43ea5bd473b6">pneatm::Population::Population</a></div><div class="ttdeci">Population(unsigned int popSize, const std::vector&lt; size_t &gt; &amp;bias_sch, const std::vector&lt; size_t &gt; &amp;inputs_sch, const std::vector&lt; size_t &gt; &amp;outputs_sch, const std::vector&lt; std::vector&lt; size_t &gt;&gt; &amp;hiddens_sch_init, const std::vector&lt; void * &gt; &amp;bias_values, const std::vector&lt; void * &gt; &amp;resetValues, const std::vector&lt; std::vector&lt; std::vector&lt; ActivationFnBase * &gt;&gt;&gt; &amp;activationFns, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger *logger, distanceFn dstType=CONVENTIONAL, double speciationThreshInit=20.0, unsigned int threshGensSinceImproved=15, const std::string &amp;stats_filename=&quot;&quot;)</div><div class="ttdoc">Constructor for the Population class.</div><div class="ttdef"><b>Definition:</b> population.hpp:306</div></div>
-<div class="ttc" id="aclasspneatm_1_1Population_html_a5cef5022e7ceb0c56be6242ece7e013f"><div class="ttname"><a href="classpneatm_1_1Population.html#a5cef5022e7ceb0c56be6242ece7e013f">pneatm::Population::save</a></div><div class="ttdeci">void save(const std::string &amp;filename)</div><div class="ttdoc">Save the Population instance to a file.</div><div class="ttdef"><b>Definition:</b> population.hpp:936</div></div>
-<div class="ttc" id="aclasspneatm_1_1Population_html_a5dd848337fef8512f1e89dcf844a9027"><div class="ttname"><a href="classpneatm_1_1Population.html#a5dd848337fef8512f1e89dcf844a9027">pneatm::Population::serialize</a></div><div class="ttdeci">void serialize(std::ofstream &amp;outFile)</div><div class="ttdoc">Serialize the Population instance to an output file stream.</div><div class="ttdef"><b>Definition:</b> population.hpp:864</div></div>
+<div class="ttc" id="aclasspneatm_1_1Population_html_a5cef5022e7ceb0c56be6242ece7e013f"><div class="ttname"><a href="classpneatm_1_1Population.html#a5cef5022e7ceb0c56be6242ece7e013f">pneatm::Population::save</a></div><div class="ttdeci">void save(const std::string &amp;filename)</div><div class="ttdoc">Save the Population instance to a file.</div><div class="ttdef"><b>Definition:</b> population.hpp:954</div></div>
+<div class="ttc" id="aclasspneatm_1_1Population_html_a5dd848337fef8512f1e89dcf844a9027"><div class="ttname"><a href="classpneatm_1_1Population.html#a5dd848337fef8512f1e89dcf844a9027">pneatm::Population::serialize</a></div><div class="ttdeci">void serialize(std::ofstream &amp;outFile)</div><div class="ttdoc">Serialize the Population instance to an output file stream.</div><div class="ttdef"><b>Definition:</b> population.hpp:874</div></div>
 <div class="ttc" id="aclasspneatm_1_1Population_html_a61e3576083e7213e88a6e796625784ff"><div class="ttname"><a href="classpneatm_1_1Population.html#a61e3576083e7213e88a6e796625784ff">pneatm::Population::getOutput</a></div><div class="ttdeci">T_out getOutput(unsigned int output_id, unsigned int genome_id)</div><div class="ttdoc">Get a specific output of a specific genome.</div><div class="ttdef"><b>Definition:</b> population.hpp:452</div></div>
 <div class="ttc" id="aclasspneatm_1_1Population_html_a782103d236ae7419f6000ab94f204463"><div class="ttname"><a href="classpneatm_1_1Population.html#a782103d236ae7419f6000ab94f204463">pneatm::Population::setFitness</a></div><div class="ttdeci">void setFitness(double fitness, unsigned int genome_id)</div><div class="ttdoc">Set the fitness of a specific genome.</div><div class="ttdef"><b>Definition:</b> population.hpp:457</div></div>
 <div class="ttc" id="aclasspneatm_1_1Population_html_a82911e4075c134221ccf305750ae205a"><div class="ttname"><a href="classpneatm_1_1Population.html#a82911e4075c134221ccf305750ae205a">pneatm::Population::crossover</a></div><div class="ttdeci">void crossover(bool elitism=false, double crossover_rate=0.9)</div><div class="ttdoc">Perform crossover operation to create the new generation.</div><div class="ttdef"><b>Definition:</b> population.hpp:675</div></div>
 <div class="ttc" id="aclasspneatm_1_1Population_html_a9f8cd8d6167c476df8ca554f48203ac4"><div class="ttname"><a href="classpneatm_1_1Population.html#a9f8cd8d6167c476df8ca554f48203ac4">pneatm::Population::speciate</a></div><div class="ttdeci">void speciate(unsigned int target=5, unsigned int maxIterationsReachTarget=100, double stepThresh=0.3, double a=1.0, double b=1.0, double c=0.4, double speciesSizeEvolutionLimit=3.0)</div><div class="ttdoc">Assign genomes to species based on their similarity.</div><div class="ttdef"><b>Definition:</b> population.hpp:462</div></div>
 <div class="ttc" id="aclasspneatm_1_1Population_html_aa70f85a81078bf143a89f431b56b0c0b"><div class="ttname"><a href="classpneatm_1_1Population.html#aa70f85a81078bf143a89f431b56b0c0b">pneatm::Population::getOutputs</a></div><div class="ttdeci">std::vector&lt; T_out &gt; getOutputs(unsigned int genome_id)</div><div class="ttdoc">Get the outputs of a specific genome.</div><div class="ttdef"><b>Definition:</b> population.hpp:446</div></div>
 <div class="ttc" id="aclasspneatm_1_1Population_html_ab909f5d506517a42b26b1ccfbd148674"><div class="ttname"><a href="classpneatm_1_1Population.html#ab909f5d506517a42b26b1ccfbd148674">pneatm::Population::loadInput</a></div><div class="ttdeci">void loadInput(T_in &amp;input, unsigned int input_id)</div><div class="ttdoc">Load a single input for the entire population.</div><div class="ttdef"><b>Definition:</b> population.hpp:392</div></div>
-<div class="ttc" id="aclasspneatm_1_1Population_html_ac12909d7b1023793908a145ac5fc4d4c"><div class="ttname"><a href="classpneatm_1_1Population.html#ac12909d7b1023793908a145ac5fc4d4c">pneatm::Population::mutate</a></div><div class="ttdeci">void mutate(const mutationParams_t &amp;params)</div><div class="ttdoc">Perform mutation operations over the entire population.</div><div class="ttdef"><b>Definition:</b> population.hpp:783</div></div>
-<div class="ttc" id="aclasspneatm_1_1Population_html_ac228c108dd87402819b0216ccc47103f"><div class="ttname"><a href="classpneatm_1_1Population.html#ac228c108dd87402819b0216ccc47103f">pneatm::Population::deserialize</a></div><div class="ttdeci">void deserialize(std::ifstream &amp;inFile)</div><div class="ttdoc">Deserialize a Population instance from an input file stream.</div><div class="ttdef"><b>Definition:</b> population.hpp:897</div></div>
+<div class="ttc" id="aclasspneatm_1_1Population_html_ac12909d7b1023793908a145ac5fc4d4c"><div class="ttname"><a href="classpneatm_1_1Population.html#ac12909d7b1023793908a145ac5fc4d4c">pneatm::Population::mutate</a></div><div class="ttdeci">void mutate(const mutationParams_t &amp;params)</div><div class="ttdoc">Perform mutation operations over the entire population.</div><div class="ttdef"><b>Definition:</b> population.hpp:792</div></div>
+<div class="ttc" id="aclasspneatm_1_1Population_html_ac228c108dd87402819b0216ccc47103f"><div class="ttname"><a href="classpneatm_1_1Population.html#ac228c108dd87402819b0216ccc47103f">pneatm::Population::deserialize</a></div><div class="ttdeci">void deserialize(std::ifstream &amp;inFile)</div><div class="ttdoc">Deserialize a Population instance from an input file stream.</div><div class="ttdef"><b>Definition:</b> population.hpp:915</div></div>
 <div class="ttc" id="aclasspneatm_1_1Population_html_ad58aab93e3228352ea2fe4dc7fa0914c"><div class="ttname"><a href="classpneatm_1_1Population.html#ad58aab93e3228352ea2fe4dc7fa0914c">pneatm::Population::getAvgFitness</a></div><div class="ttdeci">double getAvgFitness()</div><div class="ttdoc">Get the average fitness.</div><div class="ttdef"><b>Definition:</b> population.hpp:84</div></div>
 <div class="ttc" id="aclasspneatm_1_1Population_html_ad6abbd4b7f8f63d7abf5482edcbec89c"><div class="ttname"><a href="classpneatm_1_1Population.html#ad6abbd4b7f8f63d7abf5482edcbec89c">pneatm::Population::loadInputs</a></div><div class="ttdeci">void loadInputs(const std::vector&lt; T_in &gt; &amp;inputs)</div><div class="ttdoc">Load the inputs for the entire population.</div><div class="ttdef"><b>Definition:</b> population.hpp:378</div></div>
-<div class="ttc" id="aclasspneatm_1_1Population_html_ad87fd6a2852ce12504a3fdcd851b7b61"><div class="ttname"><a href="classpneatm_1_1Population.html#ad87fd6a2852ce12504a3fdcd851b7b61">pneatm::Population::load</a></div><div class="ttdeci">void load(const std::string &amp;filename)</div><div class="ttdoc">Load a Population instance from a file.</div><div class="ttdef"><b>Definition:</b> population.hpp:949</div></div>
+<div class="ttc" id="aclasspneatm_1_1Population_html_ad87fd6a2852ce12504a3fdcd851b7b61"><div class="ttname"><a href="classpneatm_1_1Population.html#ad87fd6a2852ce12504a3fdcd851b7b61">pneatm::Population::load</a></div><div class="ttdeci">void load(const std::string &amp;filename)</div><div class="ttdoc">Load a Population instance from a file.</div><div class="ttdef"><b>Definition:</b> population.hpp:967</div></div>
 <div class="ttc" id="aclasspneatm_1_1Population_html_ade3362c843e26a4ea04f32a4fec68ddb"><div class="ttname"><a href="classpneatm_1_1Population.html#ade3362c843e26a4ea04f32a4fec68ddb">pneatm::Population::getAvgFitnessAdjusted</a></div><div class="ttdeci">double getAvgFitnessAdjusted()</div><div class="ttdoc">Get the adjusted average fitness.</div><div class="ttdef"><b>Definition:</b> population.hpp:90</div></div>
 <div class="ttc" id="aclasspneatm_1_1Species_html"><div class="ttname"><a href="classpneatm_1_1Species.html">pneatm::Species</a></div><div class="ttdoc">A template class representing a species.</div><div class="ttdef"><b>Definition:</b> species.hpp:28</div></div>
 <div class="ttc" id="astructpneatm_1_1innovationConn_html"><div class="ttname"><a href="structpneatm_1_1innovationConn.html">pneatm::innovationConn</a></div><div class="ttdoc">Structure representing the innovation tracker for connections.</div><div class="ttdef"><b>Definition:</b> innovation_connection.hpp:20</div></div>
-<div class="ttc" id="astructpneatm_1_1innovationNode_html"><div class="ttname"><a href="structpneatm_1_1innovationNode.html">pneatm::innovationNode</a></div><div class="ttdoc">Structure representing the innovation tracker for nodes.</div><div class="ttdef"><b>Definition:</b> innovation_node.hpp:20</div></div>
+<div class="ttc" id="astructpneatm_1_1innovationNode_html"><div class="ttname"><a href="structpneatm_1_1innovationNode.html">pneatm::innovationNode</a></div><div class="ttdoc">Structure representing the innovation tracker for nodes.</div><div class="ttdef"><b>Definition:</b> innovation_node.hpp:21</div></div>
 <div class="ttc" id="astructpneatm_1_1mutationParams_html"><div class="ttname"><a href="structpneatm_1_1mutationParams.html">pneatm::mutationParams</a></div><div class="ttdoc">Mutation parameters used to control mutations.</div><div class="ttdef"><b>Definition:</b> genome.hpp:29</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
