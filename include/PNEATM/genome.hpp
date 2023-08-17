@@ -634,13 +634,11 @@ void Genome<Args...>::runNetwork () {
 
 	// reset input
 	for (NodeBase* node : optimize_nodes_reset) {
-		std::cout << node->id << std::endl;
 		node->reset (false);
 	}
 
 	// process output of input/bias nodes as we already know their input
 	for (NodeBase* node : optimize_nodes_process [0]) {
-		std::cout << node->id << std::endl;
 		node->process ();
 	}
 
@@ -1269,7 +1267,8 @@ void Genome<Args...>::draw (const std::string& font_path, unsigned int windowWid
     // ### NODES ###
 	sf::Font font;
 	if (!font.loadFromFile(font_path)) {
-		std::cout << "Error while loading font in 'Genome<Args...>::draw'." << std::endl;
+		logger->error ("Error while loading font in 'Genome<Args...>::draw'.");
+		return;
 	}
 
 	for (size_t i = 0; i < nodes.size (); i++) {
