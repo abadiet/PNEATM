@@ -11,8 +11,8 @@ int main () {
 
     // init population
     unsigned int popSize = 100;
-    //pneatm::Population<myInt, myFloat> pop = SetupPopulation (popSize, logger.get ());
-    pneatm::Population<myInt, myFloat> pop = LoadPopulation ("snakePneatm_save", logger.get (), "stats_new.csv");
+    pneatm::Population<myInt, myFloat> pop = SetupPopulation (popSize, logger.get ());
+    //pneatm::Population<myInt, myFloat> pop = LoadPopulation ("snakePneatm_save", logger.get (), "stats_new.csv");
 
     // init snake
     Snake snake (8);
@@ -78,7 +78,7 @@ int main () {
         // mutation step
         pop.mutate (paramsMap);
     }
-/*
+
     pop.save ("snakePneatm_save");
 
     // we have to run once again the network to do a speciation to get the last fitter genome
@@ -121,7 +121,7 @@ int main () {
         pop.setFitness (score / (float) nbGame, genomeId);
     }
     pop.speciate (5, 100, 0.3);
-*/
+
     // print info and draw genome's network
     pop.getGenome (-1).print ();
     pop.getGenome (-1).draw ("/usr/share/fonts/OTF/SF-Pro-Rounded-Light.otf");

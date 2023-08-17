@@ -115,7 +115,6 @@ class Node : public NodeBase {
 	private:
 		T_in input;
 		std::vector<T_out> outputs;
-		unsigned int N_outputs;
 		std::unique_ptr<ActivationFn<T_in, T_out>> activation_fn;
 
 		T_in resetValue;
@@ -130,7 +129,6 @@ using namespace pneatm;
 
 template <typename T_in, typename T_out>
 Node<T_in, T_out>::Node () :
-	N_outputs (0),
 	activation_fn (std::make_unique<ActivationFn<T_in, T_out>> ())
 {
 	is_useful = false;
@@ -158,21 +156,12 @@ void Node<T_in, T_out>::AddToInput (void* value, double scalar) {
 
 template <typename T_in, typename T_out>
 void* Node<T_in, T_out>::getOutput (unsigned int depth) {
-	for (unsigned int k = (unsigned int) outputs.size (); k <= depth; k++) {
-		// the depth is too high for the number of outputs: we create empty outputs to be able to return the pointer to the upcoming output
-		outputs.push_back (T_out ());
-	}
 	return static_cast<void*> (&outputs [(unsigned int) outputs.size () - 1 - depth]);
 }
 
 template <typename T_in, typename T_out>
 void Node<T_in, T_out>::process () {
-	if ((unsigned int) outputs.size () <= N_outputs) {	// equivalent to == as < is impossible
-		outputs.push_back (activation_fn->process (input));
-	} else {
-		outputs [N_outputs] = activation_fn->process (input);
-	}
-	N_outputs ++;
+	outputs.push_back (activation_fn->process (input));
 }
 
 template <typename T_in, typename T_out>
@@ -184,7 +173,6 @@ template <typename T_in, typename T_out>
 void Node<T_in, T_out>::reset (bool resetMemory) {
 	input = resetValue;
 	if (resetMemory) {
-		N_outputs = 0;
 		outputs.clear ();
 	}
 }
@@ -217,9 +205,9 @@ void Node<T_in, T_out>::print (const std::string& prefix) const {
 	std::cout << prefix << "Is Useful in the Network: " << is_useful << std::endl;
 	std::cout << prefix << "Current Input Value: " << input << std::endl;
 	std::cout << prefix << "Outputs Values (younger first): ";
-	for (unsigned int i = 0; i < N_outputs; i++) {
+	for (unsigned int i = 0; i < outputs.size (); i++) {
 		std::cout << outputs [i];
-		if (i < N_outputs - 1) {
+		if (i < outputs.size () - 1) {
 			std::cout << " ~ ";
 		} else {
 			std::cout << std::endl;
@@ -243,7 +231,6 @@ void Node<T_in, T_out>::serialize (std::ofstream& outFile) const {
 	activation_fn->serialize (outFile);
 	Serialize (input, outFile);
 	Serialize (outputs, outFile);
-	Serialize (N_outputs, outFile);
 	Serialize (resetValue, outFile);
 }
 
@@ -260,7 +247,6 @@ void Node<T_in, T_out>::deserialize (std::ifstream& inFile, const std::vector<st
 	activation_fn->deserialize (inFile);	// overwrite parameters
 	Deserialize (input, inFile);
 	Deserialize (outputs, inFile);
-	Deserialize (N_outputs, inFile);
 	Deserialize (resetValue, inFile);
 }
 
