@@ -352,6 +352,10 @@ class Genome {
 
 		std::unordered_map <unsigned int, std::unique_ptr<NodeBase>> nodes;
 		std::unordered_map <unsigned int, Connection> connections;
+		std::vector<std::vector<NodeBase*>> optimize_nodes_process;	// TODO pointers or ids
+		std::vector<NodeBase*> optimize_nodes_reset;	// TODO pointers or ids
+		std::vector<std::vector<Connection*>> optimize_conn_nonrecu;	// TODO pointers or ids
+		std::vector<Connection*> optimize_conn_recu;	// TODO pointers or ids
 
 		double fitness;
 		int speciesId;
@@ -369,6 +373,8 @@ class Genome {
 		bool AddBitypedNode (innovationConn_t* conn_innov, innovationNode_t* node_innov, unsigned int maxRecurrency, unsigned int maxIterationsFindNodeThresh);
 		void UpdateLayers (int nodeId);
 		void UpdateLayers_Recursive (unsigned int nodeId);
+		void OptimizeNetwork ();
+		void SetUsefulNodes_Recursive (const unsigned int nodeId);
 
 	template <typename... Args2>
 	friend class Population;
@@ -620,78 +626,151 @@ void Genome<Args...>::resetMemory () {
 
 template <typename... Args>
 void Genome<Args...>::runNetwork () {
-	/* Process all input and output. For that, it "scans" each layer from the inputs to the last hidden's layer to calculate input with already known value. */ 
+	// prepare the connections and nodes by sorting which ones are useful
+	if (optimize_nodes_process.size () <= 0) {
+		// the function population::OptimizeNetwork has not been run
+		OptimizeNetwork ();
+	}
 
 	// reset input
-	for (unsigned int i = nbBias + nbInput; i < (unsigned int) nodes.size (); i++) {
-		nodes [i]->reset (false);
+	for (NodeBase* node : optimize_nodes_reset) {
+		std::cout << node->id << std::endl;
+		node->reset (false);
 	}
 
-	// process nodes[*]->output for input/bias nodes
-	for (unsigned int i = 0; i < (unsigned int) nbBias + nbInput; i++) {
-		nodes [i]->process ();
+	// process output of input/bias nodes as we already know their input
+	for (NodeBase* node : optimize_nodes_process [0]) {
+		std::cout << node->id << std::endl;
+		node->process ();
 	}
 
-	// To help the optimizer to optimize our code, we prepare the data to be processed in a loop
-
-	// the "basic" arrays
-	std::vector<std::vector<NodeBase*>> nodes_addToInput;
-	std::vector<std::vector<void*>> outputs;
-	std::vector<std::vector<double>> weights;
-	std::vector<std::vector<NodeBase*>> nodes_process;
-
-	// prepare the arrays
-	int lastLayer = nodes [nbBias + nbInput]->layer;
-	for (int ilayer = 1; ilayer <= lastLayer; ilayer++) {
-		nodes_addToInput.push_back ({});
-		outputs.push_back ({});
-		weights.push_back ({});
-		nodes_process.push_back ({});
-
-		// process nodes[*]->input
-		for (const std::pair<const unsigned int, Connection>& conn : connections) {
-			if (conn.second.enabled && nodes [conn.second.outNodeId]->layer == ilayer) {	// if the connection still exist and is pointing to the current layer
-				if (conn.second.inNodeRecu <= N_runNetwork) {
-
-					unsigned int depth = conn.second.inNodeRecu;
-					// if the connection's input node is further in the network it has not been processed and so its previous output is the current one for it!
-					if (nodes [conn.second.inNodeId]->layer >= nodes [conn.second.outNodeId]->layer) depth--;
-
-					nodes_addToInput.back ().push_back (nodes [conn.second.outNodeId].get ());
-					outputs.back ().push_back (nodes [conn.second.inNodeId]->getOutput (depth));
-					weights.back ().push_back (conn.second.weight);
-
-				} else {
-					// the input of the connection isn't existing yet!
-					// we consider that the connection isn't existing
-				}
-			}
-		}
-
-		// process nodes[*]->output & store outputs
-		for (std::pair<const unsigned int, std::unique_ptr<NodeBase>>& node : nodes) {
-			if (node.second->layer == ilayer) {
-				nodes_process.back ().push_back (node.second.get ());
-			}
+	// recurent connections: we already know every input, so we don't care of layers
+	for (const Connection* conn : optimize_conn_recu) {
+		if (conn->inNodeRecu <= N_runNetwork) {
+			nodes [conn->outNodeId]->AddToInput (
+				nodes [conn->inNodeId]->getOutput (conn->inNodeRecu - 1),
+				conn->weight
+			);
+		} else {
+			// the input of the connection isn't existing yet!
+			// we consider that the connection isn't existing
 		}
 	}
 
-	// Actually run the networks: this part might be optimized
-	for (size_t i = 0; i < nodes_addToInput.size (); i++) {
-		for (size_t j = 0; j < nodes_addToInput [i].size (); j++) {
-			nodes_addToInput [i][j]->AddToInput (
-				outputs [i][j],
-				weights [i][j]
+	unsigned int lastLayer = nodes [nbBias + nbInput]->layer;
+	for (unsigned int ilayer = 0; ilayer <= lastLayer - 2; ilayer++) {
+		// non-recurrent connections: can depend on layers and so we processed them sequentially, layer per layer
+		for (const Connection* conn : optimize_conn_nonrecu [ilayer]) {
+			nodes [conn->outNodeId]->AddToInput (
+				nodes [conn->inNodeId]->getOutput (0),
+				conn->weight
 			);
 		}
 
-		for (size_t j = 0; j < nodes_process [i].size (); j++) {
-			nodes_process [i][j]->process ();
+		// process nodes's output
+		for (NodeBase* node : optimize_nodes_process [ilayer + 1]) {
+			node->process ();
 		}
+	}
+
+	// we process the two last layer and then process the output layer 
+	for (unsigned int ilayer = lastLayer - 1; ilayer <= lastLayer; ilayer++) {
+		// non-recurrent connections
+		for (const Connection* conn : optimize_conn_nonrecu [ilayer]) {
+			nodes [conn->outNodeId]->AddToInput (
+				nodes [conn->inNodeId]->getOutput (0),
+				conn->weight
+			);
+		}
+	}
+	// process nodes's output
+	for (NodeBase* node : optimize_nodes_process.back ()) {
+		node->process ();
 	}
 
 	N_runNetwork++;
 }
+
+template <typename... Args>
+void Genome<Args...>::OptimizeNetwork () {
+	// check wich nodes are playing a role in the network
+	for (std::pair<const unsigned int, std::unique_ptr<NodeBase>>& node : nodes) {
+		// reset state
+		node.second->is_useful = false;
+	}
+	for (unsigned int i = nbBias + nbInput; i < nbBias + nbInput + nbOutput; i++) {
+		// for each output nodes
+		nodes [i]->is_useful = true;	// output nodes are obviously useful
+
+		// set to useful all the nodes link to this output
+		SetUsefulNodes_Recursive (i);
+	}
+
+	optimize_nodes_process.clear ();
+	optimize_nodes_reset.clear ();
+	optimize_conn_recu.clear ();
+	optimize_conn_nonrecu.clear ();
+	const int lastLayer = nodes [nbBias + nbInput]->layer;
+
+	// non-recurrent connections
+	for (int ilayer = 0; ilayer <= lastLayer; ilayer++) {
+		optimize_conn_nonrecu.push_back ({});
+
+		for (std::pair<const unsigned int, Connection>& conn : connections) {
+			if (
+				conn.second.enabled
+				&& nodes [conn.second.outNodeId]->is_useful
+				&& nodes [conn.second.inNodeId]->layer == ilayer
+				&& conn.second.inNodeRecu <= 0
+			) {	// if the connection still exist, is useful, start from the current layer and is not recurrent
+				optimize_conn_nonrecu.back ().push_back (&conn.second);
+			}
+		}
+	}
+
+	// recurrent connections
+	for (std::pair<const unsigned int, Connection>& conn : connections) {
+		if (
+			conn.second.enabled
+			&& nodes [conn.second.outNodeId]->is_useful
+			&& conn.second.inNodeRecu > 0
+		) {	// if the connection still exist, is useful and is recurrent
+			optimize_conn_recu.push_back (&conn.second);
+		}
+	}
+
+	// nodes
+	for (unsigned int i = nbBias + nbInput; i < (unsigned int) nodes.size (); i++) {
+		if (nodes [i]->is_useful) {
+			optimize_nodes_reset.push_back (nodes [i].get ());
+		}
+	}
+	for (int ilayer = 0; ilayer <= lastLayer; ilayer++) {
+		optimize_nodes_process.push_back ({});
+
+		for (std::pair<const unsigned int, std::unique_ptr<NodeBase>>& node : nodes) {
+			if (node.second->is_useful && node.second->layer == ilayer) {
+				optimize_nodes_process.back ().push_back (node.second.get ());
+			}
+		}
+	}
+}
+
+template <typename... Args>
+void Genome<Args...>::SetUsefulNodes_Recursive (const unsigned int nodeId) {
+	for (const std::pair<const unsigned int, Connection>& conn : connections) {
+		if (
+			conn.second.enabled
+			&& conn.second.outNodeId == nodeId
+			&& !nodes [conn.second.inNodeId]->is_useful
+		) {
+			// this new node is useful but has not been processed, we processed it now
+			nodes [conn.second.inNodeId]->is_useful = true;
+			SetUsefulNodes_Recursive (conn.second.inNodeId);
+		}
+	}
+}
+
 
 template <typename... Args>
 template <typename T_out>
@@ -730,6 +809,12 @@ void Genome<Args...>::mutate (innovationConn_t* conn_innov, innovationNode_t* no
 	if (Random_Double (0.0f, 1.0f, true, false) < params.connections.rate) {
 		AddConnection (conn_innov, params.connections.maxRecurrency, params.connections.maxIterationsFindNode, params.connections.reactivateRate);
 	}
+
+	// reset optimizer as the network may have changed
+	optimize_conn_nonrecu.clear ();
+	optimize_conn_recu.clear ();
+	optimize_nodes_process.clear ();
+	optimize_nodes_reset.clear ();
 }
 
 template <typename... Args>
@@ -1087,7 +1172,7 @@ template <typename... Args>
 void Genome<Args...>::UpdateLayers_Recursive (unsigned int nodeId) {
 	for (const std::pair<const unsigned int, Connection>& conn : connections) {
 		if (
-			!(conn.second.inNodeRecu > 0)
+			conn.second.inNodeRecu <= 0
 			&& conn.second.enabled
 			&& conn.second.inNodeId == nodeId
 		) {
@@ -1145,6 +1230,7 @@ std::unique_ptr<Genome<Args...>> Genome<Args...>::clone () {
 
 template <typename... Args>
 void Genome<Args...>::print (const std::string& prefix) {
+	std::cout << prefix << "ID: " << id << std::endl;
 	std::cout << prefix << "Number of Bias Node: " << nbBias << std::endl;
 	std::cout << prefix << "Number of Input Node: " << nbInput << std::endl;
 	std::cout << prefix << "Number of Output Node: " << nbOutput << std::endl;

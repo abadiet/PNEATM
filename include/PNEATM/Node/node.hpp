@@ -212,6 +212,7 @@ void Node<T_in, T_out>::print (const std::string& prefix) const {
 	std::cout << prefix << "Input Type ID: " << index_T_in << std::endl;
 	std::cout << prefix << "Output Type ID: " << index_T_out << std::endl;
 	std::cout << prefix << "Activation Function ID: " << index_activation_fn << std::endl;
+	std::cout << prefix << "Is Useful in the Network: " << is_useful << std::endl;
 	std::cout << prefix << "Current Input Value: " << input << std::endl;
 	std::cout << prefix << "Outputs Values (younger first): ";
 	for (unsigned int i = 0; i < N_outputs; i++) {
@@ -232,6 +233,7 @@ template <typename T_in, typename T_out>
 void Node<T_in, T_out>::serialize (std::ofstream& outFile) const {
 	Serialize (id, outFile);
 	Serialize (innovId, outFile);
+	Serialize (is_useful, outFile);
 	Serialize (layer, outFile);
 	Serialize (index_T_in, outFile);
 	Serialize (index_T_out, outFile);
@@ -247,6 +249,7 @@ template <typename T_in, typename T_out>
 void Node<T_in, T_out>::deserialize (std::ifstream& inFile, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns) {
 	Deserialize (id, inFile);
 	Deserialize (innovId, inFile);
+	Deserialize (is_useful, inFile);
 	Deserialize (layer, inFile);
 	Deserialize (index_T_in, inFile);
 	Deserialize (index_T_out, inFile);

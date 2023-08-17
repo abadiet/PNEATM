@@ -125,6 +125,11 @@ class NodeBase{
 		 */
 		unsigned int index_activation_fn;
 
+		/**
+		 * @brief `true` if the node play a role in the network, else `false`.
+		 */
+		bool is_useful;
+
 	template <typename... Args>
 	friend class Genome;
 	template <typename T_in, typename T_out>
