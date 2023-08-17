@@ -127,9 +127,9 @@ void Deserialize (std::vector<T>& var, std::ifstream& inFile) {
     size_t size;
     inFile.read (reinterpret_cast<char*> (&size), sizeof (size));
     var.clear ();
-    var.reserve (size);
+    var.resize (size);
     for (size_t i = 0; i < size; i++) {
-        Deserialize (var [i], inFile);
+        Deserialize (var[i], inFile);
     }
 }
 
