@@ -174,16 +174,23 @@ class Population {
 		/**
 		 * @brief Run multiple times the networks over the inputs without taking care of the outputs. The inputs are shared among the genomes. 
 		 * @param inputs The inputs.
-		 * @param outputs The outputs. (default is nullptr which doesn't track any output)
+		 * @param outputs Pointer to the outputs. (default is nullptr which doesn't track any output)
 		 */
 		void run (const std::vector<std::vector<void*>>& inputs, std::vector<std::vector<std::vector<void*>>>* outputs = nullptr);
 
 		/**
 		 * @brief Run multiple times the networks over the inputs. The inputs are different for each genomes.
 		 * @param inputs The inputs.
-		 * @param outputs The outputs. (default is nullptr which doesn't track any output)
+		 * @param outputs Pointer to the outputs. (default is nullptr which doesn't track any output)
 		 */
 		void run (const std::vector<std::vector<std::vector<void*>>>& inputs, std::vector<std::vector<std::vector<void*>>>* outputs = nullptr);
+
+		/**
+		 * @brief Run multiple times the networks by looping the outputs and inputs e.g. the n-th outputs is the n+1-th inputs.
+		 * @param N_runs The number of networks's runs e.g. the number of loop.
+		 * @param outputs Pointer to the outputs. (default is nullptr which doesn't track any output)
+		 */
+		void run (const unsigned int N_runs, std::vector<std::vector<std::vector<void*>>>* outputs = nullptr);
 
 		/**
 		 * @brief Run the network of the entire population.
@@ -588,6 +595,64 @@ void Population<Args...>::run (const std::vector<std::vector<std::vector<void*>>
 					func,
 					genome.second.get (),
 					inputs
+				)
+			);
+		}
+	}
+
+	for (std::thread& t : threads) {
+		// wait for its end
+		t.join ();
+	}
+}
+
+template <typename... Args>
+void Population<Args...>::run (const unsigned int N_runs, std::vector<std::vector<std::vector<void*>>>* outputs) {
+	std::vector<std::thread> threads;
+
+	if (outputs != nullptr) {
+		// we do care of outputs
+
+		std::function<void (Genome<Args...>*, std::vector<std::vector<void*>>*)> func = [&] (Genome<Args...>* genome, std::vector<std::vector<void*>>* outputs) -> void {
+			std::vector<void*> outputs_cur = genome->getOutputs ();
+			for (unsigned int k = 0; k < N_runs; k++) {
+				genome->loadInputs (outputs_cur);
+				genome->runNetwork ();
+				outputs_cur = genome->getOutputs ();
+				outputs->push_back (outputs_cur);
+			}
+		};
+
+		// reset outputs
+		(*outputs) = std::vector<std::vector<std::vector<void*>>> (popSize, std::vector<std::vector<void*>> (0, std::vector<void*> {}));
+
+		for (std::pair<const unsigned int, std::unique_ptr<Genome<Args...>>>& genome : genomes) {
+			// add the task to a specific thread
+			threads.push_back (
+				std::thread (
+					func,
+					genome.second.get (),
+					&(*outputs) [genome.second->id]
+				)
+			);
+		}
+	} else {
+		// we don't care of outputs
+		UNUSED (outputs);
+
+		std::function<void (Genome<Args...>*)> func = [&] (Genome<Args...>* genome) -> void {
+			for (unsigned int k = 0; k < N_runs; k++) {
+				genome->loadInputs (genome->getOutputs ());
+				genome->runNetwork ();
+			}
+		};
+
+		for (std::pair<const unsigned int, std::unique_ptr<Genome<Args...>>>& genome : genomes) {
+			// add the task to a specific thread
+			threads.push_back (
+				std::thread (
+					func,
+					genome.second.get ()
 				)
 			);
 		}
