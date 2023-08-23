@@ -1,9 +1,8 @@
 var searchData=
 [
-  ['_7eactivationfn_158',['~ActivationFn',['../classpneatm_1_1ActivationFn.html#a7d0bf65ef02f9e34e87783177c9c306c',1,'pneatm::ActivationFn']]],
-  ['_7eactivationfnbase_159',['~ActivationFnBase',['../classpneatm_1_1ActivationFnBase.html#aaf134cc339aac1074d535288bf59a687',1,'pneatm::ActivationFnBase']]],
-  ['_7egenome_160',['~Genome',['../classpneatm_1_1Genome.html#ab162fd64ae6cb15dd4fe4af14bebeb21',1,'pneatm::Genome']]],
-  ['_7enode_161',['~Node',['../classpneatm_1_1Node.html#a66c757657e2c6f87aeaae8d7fd969aac',1,'pneatm::Node']]],
-  ['_7epopulation_162',['~Population',['../classpneatm_1_1Population.html#a4c8cedd0f038e41746fb6084639f5616',1,'pneatm::Population']]],
-  ['_7especies_163',['~Species',['../classpneatm_1_1Species.html#af9f023703b76ebb93451d805f2eac647',1,'pneatm::Species']]]
+  ['reset_154',['reset',['../classpneatm_1_1Node.html#a8f473031ec4bca38862ebf133b350ae4',1,'pneatm::Node::reset()'],['../classpneatm_1_1NodeBase.html#a1956dbcdd9c6139c8d2aa125bcd3427c',1,'pneatm::NodeBase::reset()']]],
+  ['resetmemory_155',['resetMemory',['../classpneatm_1_1Genome.html#afbaa5f3197181331ebb29bc787b7cd4f',1,'pneatm::Genome::resetMemory()'],['../classpneatm_1_1Population.html#a47afebc2d61ba3821f7aff4724314608',1,'pneatm::Population::resetMemory()'],['../classpneatm_1_1Population.html#a7543d0fff7e28470adfddabe19de58c9',1,'pneatm::Population::resetMemory(unsigned int genome_id)']]],
+  ['run_156',['run',['../classpneatm_1_1Population.html#ad2ca532b7a98ca544c1d0fb8bbd3da80',1,'pneatm::Population::run(const std::vector&lt; std::vector&lt; void * &gt;&gt; &amp;inputs, std::vector&lt; std::vector&lt; std::vector&lt; void * &gt;&gt;&gt; *outputs=nullptr, unsigned int maxThreads=0)'],['../classpneatm_1_1Population.html#a53540a35a39a11ae5d4eccf731be8181',1,'pneatm::Population::run(const std::vector&lt; std::vector&lt; std::vector&lt; void * &gt;&gt;&gt; &amp;inputs, std::vector&lt; std::vector&lt; std::vector&lt; void * &gt;&gt;&gt; *outputs=nullptr, unsigned int maxThreads=0)'],['../classpneatm_1_1Population.html#afa2afd1b56b5a4bcf35dbbae0860b7d6',1,'pneatm::Population::run(const unsigned int N_runs, std::vector&lt; std::vector&lt; std::vector&lt; void * &gt;&gt;&gt; *outputs=nullptr, unsigned int maxThreads=0)']]],
+  ['runnetwork_157',['runNetwork',['../classpneatm_1_1Genome.html#a0b2bc53588d61816b20eeec761101e8b',1,'pneatm::Genome::runNetwork()'],['../classpneatm_1_1Population.html#aa5dc939fd766d037019baffcc0899b39',1,'pneatm::Population::runNetwork(unsigned int genome_id)']]],
+  ['runnetworks_158',['runNetworks',['../classpneatm_1_1Population.html#a657651b93fa6be33035958565edbe339',1,'pneatm::Population']]]
 ];

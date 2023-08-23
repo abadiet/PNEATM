@@ -176,6 +176,7 @@ class Population {
 		 * @brief Run multiple times the networks over the inputs without taking care of the outputs. The inputs are shared among the genomes. 
 		 * @param inputs The inputs.
 		 * @param outputs Pointer to the outputs. (default is nullptr which doesn't track any output)
+		 * @param maxThreads Maximum number of threads. (default is 0 which default to the number of cores)
 		 */
 		void run (const std::vector<std::vector<void*>>& inputs, std::vector<std::vector<std::vector<void*>>>* outputs = nullptr, unsigned int maxThreads = 0);
 
@@ -183,6 +184,7 @@ class Population {
 		 * @brief Run multiple times the networks over the inputs. The inputs are different for each genomes.
 		 * @param inputs The inputs.
 		 * @param outputs Pointer to the outputs. (default is nullptr which doesn't track any output)
+		 * @param maxThreads Maximum number of threads. (default is 0 which default to the number of cores)
 		 */
 		void run (const std::vector<std::vector<std::vector<void*>>>& inputs, std::vector<std::vector<std::vector<void*>>>* outputs = nullptr, unsigned int maxThreads = 0);
 
@@ -190,11 +192,13 @@ class Population {
 		 * @brief Run multiple times the networks by looping the outputs and inputs e.g. the n-th outputs is the n+1-th inputs.
 		 * @param N_runs The number of networks's runs e.g. the number of loop.
 		 * @param outputs Pointer to the outputs. (default is nullptr which doesn't track any output)
+		 * @param maxThreads Maximum number of threads. (default is 0 which default to the number of cores)
 		 */
 		void run (const unsigned int N_runs, std::vector<std::vector<std::vector<void*>>>* outputs = nullptr, unsigned int maxThreads = 0);
 
 		/**
 		 * @brief Run the network of the entire population.
+		 * @param maxThreads Maximum number of threads. (default is 0 which default to the number of cores)
 		 *
 		 * Run the network of every genomes of the population. This means computing each node's input and output of each population's genome.
 		 * This function use multithreading and should be preffered relatively to `runNetwork (unsigned int genome_id)`.

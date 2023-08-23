@@ -11,14 +11,34 @@
 
 namespace pneatm {
 
+/**
+ * @brief A template class representing a thread pool.
+ * @tparam T_Return Template typename of the functions's return type, assuming they all return the same type.
+ */
 template <typename T_Return>
 class ThreadPool {
 public:
+    /**
+     * @brief Constructor for the ThreadPool class.
+     * @param numThreads The number of threads. (default is 0 which default to the number of cores)
+     */
     ThreadPool (unsigned int numThreads = 0);
+
+    /**
+     * @brief Destructor for the ThreadPool class.
+     */
     ~ThreadPool ();
 
+    /**
+     * @brief Add a task to the queue.
+     * @tparam Func The function type.
+     * @tparam Args Variadic template for the function's arguments types.
+     * @param func The function to be added to the queue.
+     * @param args The function's arguments.
+     * @return The std::future object of the function's return.
+     */
     template <typename Func, typename... Args>
-    std::future<T_Return> enqueue(Func&& func, Args&&... args);
+    std::future<T_Return> enqueue (Func&& func, Args&&... args);
 
 private:
     std::vector<std::thread> workers;
