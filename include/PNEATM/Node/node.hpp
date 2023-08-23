@@ -156,6 +156,7 @@ void Node<T_in, T_out>::AddToInput (void* value, double scalar) {
 
 template <typename T_in, typename T_out>
 void* Node<T_in, T_out>::getOutput (unsigned int depth) {
+	// TODO optimize depth == 0 => using .back ()
 	return static_cast<void*> (&outputs [(unsigned int) outputs.size () - 1 - depth]);
 }
 
