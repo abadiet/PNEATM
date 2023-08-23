@@ -321,6 +321,18 @@ class Population {
 		 */
 		void deserialize (std::ifstream& inFile);
 
+		/**
+		 * @brief Iterator pointing to the beginning of the genomes.
+		 * @return The begin of genomes.
+		 */
+		auto begin () {return genomes.begin ();}
+
+		/**
+		 * @brief Iterator pointing to the end of the genomes.
+		 * @return The end of genomes.
+		 */
+		auto end () {return genomes.end ();}
+
 	private:
 		unsigned int generation;
 		double avgFitness;
