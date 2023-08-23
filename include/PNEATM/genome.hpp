@@ -190,9 +190,9 @@ typedef struct mutationParams {
 
 /**
  * @brief A template class representing a genome.
- * @tparam Args Variadic template arguments that contains all the manipulated types.
+ * @tparam Types Variadic template arguments that contains all the manipulated types.
  */
-template <typename... Args>
+template <typename... Types>
 class Genome {
 	public:
 		/**
@@ -221,7 +221,7 @@ class Genome {
 		 * @param nbBias The number of bias node.
 		 * @param nbInput The number of input node.
 		 * @param nbOutput The number of output node.
-		 * @param N_types The number of types involved in the network (the number of types in the variadic template Args).
+		 * @param N_types The number of types involved in the network (the number of types in the variadic template Types).
 		 * @param resetValues The biases reset values (e.g., k-th bias can be resetted to resetValues[k]).
 		 * @param activationFns The activation functions (e.g., activationFns[i][j] is a pointer to an activation function that takes an input of type of index i and return a type of index j output).
 		 * @param weightExtremumInit The initial weight extremum.
@@ -349,7 +349,7 @@ class Genome {
 		 * @brief Get a clone of the genome.
 		 * @return A unique pointer to the created clone of the genome.
 		 */
-		std::unique_ptr<Genome<Args...>> clone ();
+		std::unique_ptr<Genome<Types...>> clone ();
 
 		/**
 		 * @brief Print information on the genome.
@@ -429,9 +429,9 @@ class Genome {
 		void OptimizeNetwork ();
 		void SetUsefulNodes_Recursive (const unsigned int nodeId);
 
-	template <typename... Args2>
+	template <typename... Types2>
 	friend class Population;
-	template <typename... Args2>
+	template <typename... Types2>
 	friend class Species;
 };
 
@@ -442,8 +442,8 @@ class Genome {
 
 using namespace pneatm;
 
-template <typename... Args>
-Genome<Args...>::Genome (const unsigned int id, const std::vector<size_t>& bias_sch, const std::vector<size_t>& inputs_sch, const std::vector<size_t>& outputs_sch, const std::vector<std::vector<size_t>>& hiddens_sch_init, const std::vector<void*>& bias_values, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, innovationConn_t* conn_innov, innovationNode_t* node_innov, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger) :
+template <typename... Types>
+Genome<Types...>::Genome (const unsigned int id, const std::vector<size_t>& bias_sch, const std::vector<size_t>& inputs_sch, const std::vector<size_t>& outputs_sch, const std::vector<std::vector<size_t>>& hiddens_sch_init, const std::vector<void*>& bias_values, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, innovationConn_t* conn_innov, innovationNode_t* node_innov, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger) :
 	id (id),
 	weightExtremumInit (weightExtremumInit),
 	activationFns (activationFns),
@@ -464,7 +464,7 @@ Genome<Args...>::Genome (const unsigned int id, const std::vector<size_t>& bias_
 	for (size_t i = 0; i < bias_sch.size (); i++) {
 		for (size_t k = 0; k < bias_sch [i]; k++) {
 			// get Node<T_in, T_out>
-			nodes.insert (std::make_pair (nbBias, CreateNode::get<Args...> (i, i)));
+			nodes.insert (std::make_pair (nbBias, CreateNode::get<Types...> (i, i)));
 
 			std::unique_ptr<NodeBase>& node = nodes [nbBias];
 
@@ -494,7 +494,7 @@ Genome<Args...>::Genome (const unsigned int id, const std::vector<size_t>& bias_
 	for (size_t i = 0; i < inputs_sch.size (); i++) {
 		for (size_t k = 0; k < inputs_sch [i]; k++) {
 			// get Node<T_in, T_out>
-			nodes.insert (std::make_pair (nbBias + nbInput, CreateNode::get<Args...> (i, i)));
+			nodes.insert (std::make_pair (nbBias + nbInput, CreateNode::get<Types...> (i, i)));
 
 			std::unique_ptr<NodeBase>& node = nodes [nbBias + nbInput];
 
@@ -529,7 +529,7 @@ Genome<Args...>::Genome (const unsigned int id, const std::vector<size_t>& bias_
 	for (size_t i = 0; i < outputs_sch.size (); i++) {
 		for (size_t k = 0; k < outputs_sch [i]; k++) {
 			// get Node<T_in, T_out>
-			nodes.insert (std::make_pair (nbBias + nbInput + nbOutput, CreateNode::get<Args...> (i, i)));
+			nodes.insert (std::make_pair (nbBias + nbInput + nbOutput, CreateNode::get<Types...> (i, i)));
 
 			std::unique_ptr<NodeBase>& node = nodes [nbBias + nbInput + nbOutput];
 
@@ -559,7 +559,7 @@ Genome<Args...>::Genome (const unsigned int id, const std::vector<size_t>& bias_
 		for (size_t j = 0; j < hiddens_sch_init [i].size (); j++) {
 			for (size_t k = 0; k < hiddens_sch_init [i][j]; k++) {
 				// get Node<T_in, T_out>
-				nodes.insert (std::make_pair (nbBias + nbInput + nbOutput + nbHidden, CreateNode::get<Args...> (i, j)));
+				nodes.insert (std::make_pair (nbBias + nbInput + nbOutput + nbHidden, CreateNode::get<Types...> (i, j)));
 
 				std::unique_ptr<NodeBase>& node = nodes [nbBias + nbInput + nbOutput + nbHidden];
 
@@ -621,8 +621,8 @@ Genome<Args...>::Genome (const unsigned int id, const std::vector<size_t>& bias_
 	}
 }
 
-template <typename... Args>
-Genome<Args...>::Genome (const unsigned int id, unsigned int nbBias, unsigned int nbInput, unsigned int nbOutput, unsigned int N_types, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, double weightExtremumInit, spdlog::logger* logger) :
+template <typename... Types>
+Genome<Types...>::Genome (const unsigned int id, unsigned int nbBias, unsigned int nbInput, unsigned int nbOutput, unsigned int N_types, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, double weightExtremumInit, spdlog::logger* logger) :
 	id (id),
 	nbBias (nbBias),
 	nbInput (nbInput),
@@ -640,8 +640,8 @@ Genome<Args...>::Genome (const unsigned int id, unsigned int nbBias, unsigned in
 	network_is_optimized = false;
 }
 
-template <typename... Args>
-Genome<Args...>::Genome (std::ifstream& inFile, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, spdlog::logger* logger) :
+template <typename... Types>
+Genome<Types...>::Genome (std::ifstream& inFile, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, spdlog::logger* logger) :
 	activationFns (activationFns),
 	resetValues (resetValues),
 	logger (logger)
@@ -653,47 +653,47 @@ Genome<Args...>::Genome (std::ifstream& inFile, const std::vector<void*>& resetV
 }
 
 
-template <typename... Args>
-Genome<Args...>::~Genome () {
+template <typename... Types>
+Genome<Types...>::~Genome () {
 	logger->trace ("Genome destruction");
 }
 
-template <typename... Args>
+template <typename... Types>
 template <typename T_in>
-void Genome<Args...>::loadInputs (const std::vector<T_in>& inputs) {
+void Genome<Types...>::loadInputs (const std::vector<T_in>& inputs) {
 	for (unsigned int i = 0; i < nbInput; i++) {
 		nodes [i + nbBias]->loadInput (static_cast<void*> (&inputs [i]));
 	}
 }
 
-template <typename... Args>
+template <typename... Types>
 template <typename T_in>
-void Genome<Args...>::loadInput (T_in& input, int input_id) {
+void Genome<Types...>::loadInput (T_in& input, int input_id) {
 	nodes [input_id + nbBias]->loadInput (static_cast<void*> (&input));
 }
 
-template <typename... Args>
-void Genome<Args...>::loadInputs (const std::vector<void*>& inputs) {
+template <typename... Types>
+void Genome<Types...>::loadInputs (const std::vector<void*>& inputs) {
 	for (unsigned int i = 0; i < nbInput; i++) {
 		nodes [i + nbBias]->loadInput (inputs [i]);
 	}
 }
 
-template <typename... Args>
-void Genome<Args...>::loadInput (void* input, int input_id) {
+template <typename... Types>
+void Genome<Types...>::loadInput (void* input, int input_id) {
 	nodes [input_id + nbBias]->loadInput (input);
 }
 
-template <typename... Args>
-void Genome<Args...>::resetMemory () {
+template <typename... Types>
+void Genome<Types...>::resetMemory () {
 	N_runNetwork = 0;
 	for (std::pair<const unsigned int, std::unique_ptr<NodeBase>>& node : nodes) {
 		node.second->reset (true);
 	}
 }
 
-template <typename... Args>
-void Genome<Args...>::runNetwork () {
+template <typename... Types>
+void Genome<Types...>::runNetwork () {
 	// optimize the network by sorting connections and dissociate useless nodes from useful ones
 	if (!network_is_optimized) {
 		// the function population::OptimizeNetwork has not been run
@@ -757,8 +757,8 @@ void Genome<Args...>::runNetwork () {
 	N_runNetwork++;
 }
 
-template <typename... Args>
-void Genome<Args...>::OptimizeNetwork () {
+template <typename... Types>
+void Genome<Types...>::OptimizeNetwork () {
 	// check wich nodes are playing a role in the network
 	for (std::pair<const unsigned int, std::unique_ptr<NodeBase>>& node : nodes) {
 		// reset state
@@ -824,8 +824,8 @@ void Genome<Args...>::OptimizeNetwork () {
 	network_is_optimized = true;
 }
 
-template <typename... Args>
-void Genome<Args...>::SetUsefulNodes_Recursive (const unsigned int nodeId) {
+template <typename... Types>
+void Genome<Types...>::SetUsefulNodes_Recursive (const unsigned int nodeId) {
 	for (const std::pair<const unsigned int, Connection>& conn : connections) {
 		if (
 			conn.second.enabled
@@ -839,9 +839,9 @@ void Genome<Args...>::SetUsefulNodes_Recursive (const unsigned int nodeId) {
 	}
 }
 
-template <typename... Args>
+template <typename... Types>
 template <typename T_out>
-std::vector<T_out> Genome<Args...>::getOutputs () {
+std::vector<T_out> Genome<Types...>::getOutputs () {
 	std::vector<T_out> outputs;
 	for (unsigned int i = 0; i < nbOutput; i++) {
 		outputs.push_back (*static_cast<T_out*> (nodes [nbBias + nbInput + i]->getOutput ()));
@@ -849,14 +849,14 @@ std::vector<T_out> Genome<Args...>::getOutputs () {
 	return outputs;
 }
 
-template <typename... Args>
+template <typename... Types>
 template <typename T_out>
-T_out Genome<Args...>::getOutput (int output_id) {
+T_out Genome<Types...>::getOutput (int output_id) {
 	return *static_cast<T_out*> (nodes [nbBias + nbInput + output_id]->getOutput ());
 }
 
-template <typename... Args>
-std::vector<void*> Genome<Args...>::getOutputs () {
+template <typename... Types>
+std::vector<void*> Genome<Types...>::getOutputs () {
 	std::vector<void*> outputs;
 	for (unsigned int i = 0; i < nbOutput; i++) {
 		outputs.push_back (nodes [nbBias + nbInput + i]->getOutput ());
@@ -864,13 +864,13 @@ std::vector<void*> Genome<Args...>::getOutputs () {
 	return outputs;
 }
 
-template <typename... Args>
-void* Genome<Args...>::getOutput (int output_id) {
+template <typename... Types>
+void* Genome<Types...>::getOutput (int output_id) {
 	return nodes [nbBias + nbInput + output_id]->getOutput ();
 }
 
-template <typename... Args>
-void Genome<Args...>::mutate (innovationConn_t* conn_innov, innovationNode_t* node_innov, const mutationParams_t& params) {
+template <typename... Types>
+void Genome<Types...>::mutate (innovationConn_t* conn_innov, innovationNode_t* node_innov, const mutationParams_t& params) {
 	// WEIGHTS
 	MutateWeights (params.weights.rate, params.weights.fullChangeRate, params.weights.perturbationFactor);
 
@@ -895,8 +895,8 @@ void Genome<Args...>::mutate (innovationConn_t* conn_innov, innovationNode_t* no
 	network_is_optimized = false;
 }
 
-template <typename... Args>
-unsigned int Genome<Args...>::RepetitionNodeCheck (unsigned int index_T_in, unsigned int index_T_out, unsigned int index_activation_fn) {
+template <typename... Types>
+unsigned int Genome<Types...>::RepetitionNodeCheck (unsigned int index_T_in, unsigned int index_T_out, unsigned int index_activation_fn) {
 	unsigned int c = 0;
 	for (const std::pair<const unsigned int, std::unique_ptr<NodeBase>>& node : nodes) {
 		if (node.second->index_T_in == index_T_in && node.second->index_T_out == index_T_out && node.second->index_activation_fn == index_activation_fn) {
@@ -908,8 +908,8 @@ unsigned int Genome<Args...>::RepetitionNodeCheck (unsigned int index_T_in, unsi
 }
 
 
-template <typename... Args>
-bool Genome<Args...>::CheckNewConnectionValidity (unsigned int inNodeId, unsigned int outNodeId, unsigned int inNodeRecu, int* disabled_conn_id) {
+template <typename... Types>
+bool Genome<Types...>::CheckNewConnectionValidity (unsigned int inNodeId, unsigned int outNodeId, unsigned int inNodeRecu, int* disabled_conn_id) {
 	if (nodes [inNodeId]->index_T_out != nodes [outNodeId]->index_T_in) return false;	// connections must link two same objects
 	if (outNodeId < nbBias + nbInput) return false;	// connections cannot point to an input node
 
@@ -949,8 +949,8 @@ bool Genome<Args...>::CheckNewConnectionValidity (unsigned int inNodeId, unsigne
 	return true;	// test passed well: it is a valid connection!
 }
 
-template <typename... Args>
-bool Genome<Args...>::CheckNewConnectionCircle (unsigned int inNodeId, unsigned int outNodeId) {
+template <typename... Types>
+bool Genome<Types...>::CheckNewConnectionCircle (unsigned int inNodeId, unsigned int outNodeId) {
 	if (inNodeId == outNodeId) {
 		return true;
 	}
@@ -965,8 +965,8 @@ bool Genome<Args...>::CheckNewConnectionCircle (unsigned int inNodeId, unsigned 
 
 }
 
-template <typename... Args>
-void Genome<Args...>::MutateWeights (double mutateWeightThresh, double mutateWeightFullChangeThresh, double mutateWeightFactor) {
+template <typename... Types>
+void Genome<Types...>::MutateWeights (double mutateWeightThresh, double mutateWeightFullChangeThresh, double mutateWeightFactor) {
 	logger->trace ("mutation of weights");
 	for (std::pair<const unsigned int, Connection>& conn : connections) {
 		if (conn.second.enabled && Random_Double (0.0f, 1.0f, true, false) < mutateWeightThresh) {
@@ -981,8 +981,8 @@ void Genome<Args...>::MutateWeights (double mutateWeightThresh, double mutateWei
 	}
 }
 
-template <typename... Args>
-void Genome<Args...>::MutateActivationFn (double rate) {
+template <typename... Types>
+void Genome<Types...>::MutateActivationFn (double rate) {
 	logger->trace ("mutation of activation functions");
 	for (std::pair<const unsigned int, std::unique_ptr<NodeBase>>& node : nodes) {
 		if (Random_Double (0.0f, 1.0f, true, false) < rate) {
@@ -991,8 +991,8 @@ void Genome<Args...>::MutateActivationFn (double rate) {
 	}
 }
 
-template <typename... Args>
-bool Genome<Args...>::AddConnection (innovationConn_t* conn_innov, unsigned int maxRecurrency, unsigned int maxIterationsFindConnectionThresh, double reactivateConnectionThresh) {
+template <typename... Types>
+bool Genome<Types...>::AddConnection (innovationConn_t* conn_innov, unsigned int maxRecurrency, unsigned int maxIterationsFindConnectionThresh, double reactivateConnectionThresh) {
 	logger->trace ("adding a new connection");
 
 	// find valid node pair
@@ -1018,7 +1018,7 @@ bool Genome<Args...>::AddConnection (innovationConn_t* conn_innov, unsigned int 
 				connections [disabled_conn_id].enabled = true;	// former connection is reactivated
 				return true;
 			} else {
-				logger->warn ("process ended well but no connection has been added during Genome<Args...>::AddConnection");
+				logger->warn ("process ended well but no connection has been added during Genome<Types...>::AddConnection");
 				return true;	// return true even no connection has been change because process ended well
 			}
 		} else {
@@ -1046,13 +1046,13 @@ bool Genome<Args...>::AddConnection (innovationConn_t* conn_innov, unsigned int 
 			return true;
 		}
 	} else {
-		logger->warn ("maximum iteration threshold to find a valid connection has been reached in Genome<Args...>::AddConnection: no connection is added");
+		logger->warn ("maximum iteration threshold to find a valid connection has been reached in Genome<Types...>::AddConnection: no connection is added");
 		return false;	// cannot find a valid connection
 	}
 }
 
-template <typename... Args>
-bool Genome<Args...>::AddMonotypedNode (innovationConn_t* conn_innov, innovationNode_t* node_innov, unsigned int maxIterationsFindConnectionThresh) {
+template <typename... Types>
+bool Genome<Types...>::AddMonotypedNode (innovationConn_t* conn_innov, innovationNode_t* node_innov, unsigned int maxIterationsFindConnectionThresh) {
 	logger->trace ("adding a node");
 	// choose at random an enabled connection
 	if (connections.size () > 0) {	// if there is no connection, we cannot add a node!
@@ -1072,7 +1072,7 @@ bool Genome<Args...>::AddMonotypedNode (innovationConn_t* conn_innov, innovation
 			const unsigned int iT_out = nodes [conn.outNodeId]->index_T_out;
 
 			// get Node<T_in, T_out>
-			nodes.insert (std::make_pair (newNodeId, CreateNode::get<Args...> (iT_in, iT_out)));
+			nodes.insert (std::make_pair (newNodeId, CreateNode::get<Types...> (iT_in, iT_out)));
 
 			std::unique_ptr<NodeBase>& node = nodes [newNodeId];
 
@@ -1132,17 +1132,17 @@ bool Genome<Args...>::AddMonotypedNode (innovationConn_t* conn_innov, innovation
 			}
 			return true;
 		} else {
-			logger->warn ("maximum iteration threshold to find an active connection has been reached in Genome<Args...>::AddMonotypedNode: no node is added");
+			logger->warn ("maximum iteration threshold to find an active connection has been reached in Genome<Types...>::AddMonotypedNode: no node is added");
 			return false;	// no active connection found
 		}
 	} else {
-		logger->warn ("there is no connection, no node is added in Genome<Args...>::AddMonotypedNode");
+		logger->warn ("there is no connection, no node is added in Genome<Types...>::AddMonotypedNode");
 		return false;	// there is no connection, cannot add a node
 	}
 }
 
-template <typename... Args>
-bool Genome<Args...>::AddBitypedNode (innovationConn_t* conn_innov, innovationNode_t* node_innov, unsigned int maxRecurrency, unsigned int maxIterationsFindNodeThresh) {
+template <typename... Types>
+bool Genome<Types...>::AddBitypedNode (innovationConn_t* conn_innov, innovationNode_t* node_innov, unsigned int maxRecurrency, unsigned int maxIterationsFindNodeThresh) {
 	logger->trace ("adding a bi-typed node");
 	if (N_types > 1) {	// if there is only one type, we cannot add a bi-typed node!
 		// Add bi-typed node
@@ -1154,7 +1154,7 @@ bool Genome<Args...>::AddBitypedNode (innovationConn_t* conn_innov, innovationNo
 		}
 
 		// get Node<T_in, T_out>
-		nodes.insert (std::make_pair (newNodeId, CreateNode::get<Args...> (iT_in, iT_out)));
+		nodes.insert (std::make_pair (newNodeId, CreateNode::get<Types...> (iT_in, iT_out)));
 
 		std::unique_ptr<NodeBase>& node = nodes [newNodeId];
 
@@ -1195,7 +1195,7 @@ bool Genome<Args...>::AddBitypedNode (innovationConn_t* conn_innov, innovationNo
 			iterationNb ++;
 		}
 		if (iterationNb == maxIterationsFindNodeThresh) {
-			logger->warn ("maximum iteration threshold to find a valid connection has been reached in Genome<Args...>::AddBitypedNode: a bi-typed node has been added, but no connection point or start to it");
+			logger->warn ("maximum iteration threshold to find a valid connection has been reached in Genome<Types...>::AddBitypedNode: a bi-typed node has been added, but no connection point or start to it");
 			return false;
 		}
 
@@ -1224,7 +1224,7 @@ bool Genome<Args...>::AddBitypedNode (innovationConn_t* conn_innov, innovationNo
 			iterationNb ++;
 		}
 		if (iterationNb == maxIterationsFindNodeThresh) {
-			logger->warn ("maximum iteration threshold to find a valid connection has been reached in Genome<Args...>::AddBitypedNode: a bi-typed node has been added, but only one connection point or start to it");
+			logger->warn ("maximum iteration threshold to find a valid connection has been reached in Genome<Types...>::AddBitypedNode: a bi-typed node has been added, but only one connection point or start to it");
 			return false;
 		}
 
@@ -1241,13 +1241,13 @@ bool Genome<Args...>::AddBitypedNode (innovationConn_t* conn_innov, innovationNo
 
 		return true;
 	} else {
-		logger->warn ("the genome is processing one type of object: cannot add a bi-typed node in Genome<Args...>::AddBitypedNode");
+		logger->warn ("the genome is processing one type of object: cannot add a bi-typed node in Genome<Types...>::AddBitypedNode");
 		return false;	// there is only one type of object
 	}
 }
 
-template <typename... Args>
-void Genome<Args...>::UpdateLayers_Recursive (unsigned int nodeId) {
+template <typename... Types>
+void Genome<Types...>::UpdateLayers_Recursive (unsigned int nodeId) {
 	for (const std::pair<const unsigned int, Connection>& conn : connections) {
 		if (
 			conn.second.inNodeRecu <= 0
@@ -1265,8 +1265,8 @@ void Genome<Args...>::UpdateLayers_Recursive (unsigned int nodeId) {
 	}
 }
 
-template <typename... Args>
-void Genome<Args...>::UpdateLayers (int nodeId) {
+template <typename... Types>
+void Genome<Types...>::UpdateLayers (int nodeId) {
 	// Update layers
 	UpdateLayers_Recursive (nodeId);
 
@@ -1290,9 +1290,9 @@ void Genome<Args...>::UpdateLayers (int nodeId) {
 	}
 }
 
-template <typename... Args>
-std::unique_ptr<Genome<Args...>> Genome<Args...>::clone () {
-	std::unique_ptr<Genome<Args...>> genome =  std::make_unique<Genome<Args...>> (id, nbBias, nbInput, nbOutput, N_types, resetValues, activationFns, weightExtremumInit, logger);
+template <typename... Types>
+std::unique_ptr<Genome<Types...>> Genome<Types...>::clone () {
+	std::unique_ptr<Genome<Types...>> genome =  std::make_unique<Genome<Types...>> (id, nbBias, nbInput, nbOutput, N_types, resetValues, activationFns, weightExtremumInit, logger);
 
 	genome->nodes.reserve (nodes.size ());
 	for (std::pair<const unsigned int, std::unique_ptr<NodeBase>>& node : nodes) {
@@ -1306,8 +1306,8 @@ std::unique_ptr<Genome<Args...>> Genome<Args...>::clone () {
 	return genome;
 }
 
-template <typename... Args>
-void Genome<Args...>::print (const std::string& prefix) {
+template <typename... Types>
+void Genome<Types...>::print (const std::string& prefix) {
 	std::cout << prefix << "ID: " << id << std::endl;
 	std::cout << prefix << "Number of Bias Node: " << nbBias << std::endl;
 	std::cout << prefix << "Number of Input Node: " << nbInput << std::endl;
@@ -1335,8 +1335,8 @@ void Genome<Args...>::print (const std::string& prefix) {
 	}
 }
 
-template <typename... Args>
-void Genome<Args...>::draw (const std::string& font_path, unsigned int windowWidth, unsigned int windowHeight, float dotsRadius) {
+template <typename... Types>
+void Genome<Types...>::draw (const std::string& font_path, unsigned int windowWidth, unsigned int windowHeight, float dotsRadius) {
 	sf::RenderWindow window (sf::VideoMode (windowWidth, windowHeight), "PNEATM - https://github.com/titofra");
 
     std::vector<sf::CircleShape> dots;
@@ -1347,7 +1347,7 @@ void Genome<Args...>::draw (const std::string& font_path, unsigned int windowWid
     // ### NODES ###
 	sf::Font font;
 	if (!font.loadFromFile(font_path)) {
-		logger->error ("Error while loading font in 'Genome<Args...>::draw'.");
+		logger->error ("Error while loading font in 'Genome<Types...>::draw'.");
 		return;
 	}
 
@@ -1495,8 +1495,8 @@ void Genome<Args...>::draw (const std::string& font_path, unsigned int windowWid
     }
 }
 
-template <typename... Args>
-void Genome<Args...>::serialize (std::ofstream& outFile) {
+template <typename... Types>
+void Genome<Types...>::serialize (std::ofstream& outFile) {
 	Serialize (id, outFile);
 	Serialize (nbBias, outFile);
 	Serialize (nbInput, outFile);
@@ -1538,8 +1538,8 @@ void Genome<Args...>::serialize (std::ofstream& outFile) {
 	Serialize (N_runNetwork, outFile);
 }
 
-template <typename... Args>
-void Genome<Args...>:: deserialize (std::ifstream& inFile) {
+template <typename... Types>
+void Genome<Types...>:: deserialize (std::ifstream& inFile) {
 	Deserialize (id, inFile);
 	Deserialize (nbBias, inFile);
 	Deserialize (nbInput, inFile);
@@ -1557,7 +1557,7 @@ void Genome<Args...>:: deserialize (std::ifstream& inFile) {
 		unsigned int iT_in, iT_out;
 		Deserialize (iT_in, inFile);
 		Deserialize (iT_out, inFile);
-		nodes.insert (std::make_pair (k, CreateNode::get<Args...> (iT_in, iT_out)));
+		nodes.insert (std::make_pair (k, CreateNode::get<Types...> (iT_in, iT_out)));
 		nodes [k]->deserialize (inFile, activationFns);
 	}
 

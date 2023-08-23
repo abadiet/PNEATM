@@ -19,14 +19,14 @@ struct CreateNode {
      * @brief Create a node with specified input and output types.
      * @tparam T1 The first type.
      * @tparam T2 The second type.
-     * @tparam Args Variadic template arguments that represent the remaining types.
+     * @tparam Others Variadic template arguments that represent the remaining types.
      * @param iT_in The index of the input type (used for recursive template calls).
      * @param iT_out The index of the output type (used for recursive template calls).
      * @param mono_type Set to true for mono-type nodes, false for bi-type nodes. (default is true)
      * @param T2_is_first Set to true if T2 is the input type. (default is false)
      * @return A unique pointer to the created NodeBase instance.
      */
-    template <typename T1, typename T2, typename... Args>
+    template <typename T1, typename T2, typename... Others>
     static std::unique_ptr<NodeBase> get (size_t iT_in, size_t iT_out, bool mono_type = true, bool T2_is_first = false) {
         if (iT_in == 0 && iT_out == 0) {
             if (mono_type) {
@@ -45,19 +45,19 @@ struct CreateNode {
             if (new_iT_out > 0) {
                 new_iT_out --;
                 // both T_in and T_out are not found
-                // Note that if T2 is the last type (aka Args is nothing), the next line will call template <typename T> static CreateNode::NodeBase* get(size_t iT_in, size_t iT_out) which is what we expect as T_in = T_out
-                return CreateNode::get<T2, Args...>(new_iT_in, new_iT_out);
+                // Note that if T2 is the last type (aka Others is nothing), the next line will call template <typename T> static CreateNode::NodeBase* get(size_t iT_in, size_t iT_out) which is what we expect as T_in = T_out
+                return CreateNode::get<T2, Others...>(new_iT_in, new_iT_out);
             } else {
                 // T_out is found and is T1, we keep it
                 // It is not a mono type node
-                return CreateNode::get<T1, T2, Args...>(new_iT_in, new_iT_out, false, true);
+                return CreateNode::get<T1, T2, Others...>(new_iT_in, new_iT_out, false, true);
             }
         } else {
             new_iT_out --;
             // T_out is not found, because we would return something if both were found
             // However, T_in is found and is T1, we keep it in first place
             // It is not a mono type node
-            return CreateNode::get<T1, T2, Args...>(new_iT_in, new_iT_out, false, false);
+            return CreateNode::get<T1, T2, Others...>(new_iT_in, new_iT_out, false, false);
         }
     }
 

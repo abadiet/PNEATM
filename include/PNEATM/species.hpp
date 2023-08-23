@@ -22,9 +22,9 @@ enum distanceFn {
 
 /**
  * @brief A template class representing a species.
- * @tparam Args Variadic template arguments that contains all the manipulated types.
+ * @tparam Types Variadic template arguments that contains all the manipulated types.
  */
-template <typename... Args>
+template <typename... Types>
 class Species {
 	public:
 		/**
@@ -54,7 +54,7 @@ class Species {
 		 * @param c Coefficient for computing the average weight difference contribution to the distance [for CONVENTIONAL distance only]. (default is 0.4)
 		 * @return The distance between a given genome and the species
 		 */
-		double distanceWith (const std::unique_ptr<Genome<Args...>>& genome, double a = 1.0, double b = 1.0, double c = 0.4);
+		double distanceWith (const std::unique_ptr<Genome<Types...>>& genome, double a = 1.0, double b = 1.0, double c = 0.4);
 
 		/**
 		 * @brief Print information on the species.
@@ -87,10 +87,10 @@ class Species {
 		std::vector<unsigned int> members;
 
 		// distance functions
-		double ConventionalNEAT (const std::unique_ptr<Genome<Args...>>& genome, double a, double b, double c);
-		double Euclidian (const std::unique_ptr<Genome<Args...>>& genome);
+		double ConventionalNEAT (const std::unique_ptr<Genome<Types...>>& genome, double a, double b, double c);
+		double Euclidian (const std::unique_ptr<Genome<Types...>>& genome);
 
-	template <typename... Args2>
+	template <typename... Types2>
 	friend class Population;
 };
 
@@ -101,8 +101,8 @@ class Species {
 
 using namespace pneatm;
 
-template <typename... Args>
-Species<Args...>::Species(unsigned int id, const std::unordered_map<unsigned int, Connection>& connections, distanceFn dstType): 
+template <typename... Types>
+Species<Types...>::Species(unsigned int id, const std::unordered_map<unsigned int, Connection>& connections, distanceFn dstType): 
 	id (id),
 	dstType (dstType),
 	connections (connections),
@@ -114,14 +114,14 @@ Species<Args...>::Species(unsigned int id, const std::unordered_map<unsigned int
 	isDead (false) {
 }
 
-template <typename... Args>
-Species<Args...>::Species (std::ifstream& inFile) {
+template <typename... Types>
+Species<Types...>::Species (std::ifstream& inFile) {
 	deserialize (inFile);
 }
 
 
-template <typename... Args>
-double Species<Args...>::distanceWith (const std::unique_ptr<Genome<Args...>>& genome, double a, double b, double c) {
+template <typename... Types>
+double Species<Types...>::distanceWith (const std::unique_ptr<Genome<Types...>>& genome, double a, double b, double c) {
 	switch (dstType) {
 		case CONVENTIONAL:
 			return ConventionalNEAT (genome, a, b, c);
@@ -134,8 +134,8 @@ double Species<Args...>::distanceWith (const std::unique_ptr<Genome<Args...>>& g
 }
 
 
-template <typename... Args>
-double Species<Args...>::ConventionalNEAT (const std::unique_ptr<Genome<Args...>>& genome, double a, double b, double c) {
+template <typename... Types>
+double Species<Types...>::ConventionalNEAT (const std::unique_ptr<Genome<Types...>>& genome, double a, double b, double c) {
 	// get enabled connections and maxInnovId for genome 1
 	unsigned int maxInnovId1 = 0;
 	std::vector<unsigned int> connEnabled1;
@@ -225,8 +225,8 @@ double Species<Args...>::ConventionalNEAT (const std::unique_ptr<Genome<Args...>
 	}
 }
 
-template <typename... Args>
-double Species<Args...>::Euclidian (const std::unique_ptr<Genome<Args...>>& genome) {
+template <typename... Types>
+double Species<Types...>::Euclidian (const std::unique_ptr<Genome<Types...>>& genome) {
 	double result = 0.0;
 
 	std::vector<size_t> usedId;
@@ -259,8 +259,8 @@ double Species<Args...>::Euclidian (const std::unique_ptr<Genome<Args...>>& geno
 	return result;	// actualy the euclidian distance is equal to the squared root of result: but this has no effect as we are comparing values
 }
 
-template <typename... Args>
-void Species<Args...>::print (const std::string& prefix) const {
+template <typename... Types>
+void Species<Types...>::print (const std::string& prefix) const {
 	std::cout << prefix << "ID: " << id << std::endl;
 	std::cout << prefix << "Current Average Fitness: " << avgFitness << std::endl;
 	std::cout << prefix << "Current Average Fitness Adjusted: " << avgFitnessAdjusted << std::endl;
@@ -275,8 +275,8 @@ void Species<Args...>::print (const std::string& prefix) const {
 	std::cout << std::endl;
 }
 
-template <typename... Args>
-void Species<Args...>::serialize (std::ofstream& outFile) const {
+template <typename... Types>
+void Species<Types...>::serialize (std::ofstream& outFile) const {
 	Serialize (id, outFile);
 	Serialize (dstType, outFile);
 
@@ -294,8 +294,8 @@ void Species<Args...>::serialize (std::ofstream& outFile) const {
 	Serialize (members, outFile);
 }
 
-template <typename... Args>
-void Species<Args...>::deserialize (std::ifstream& inFile) {
+template <typename... Types>
+void Species<Types...>::deserialize (std::ifstream& inFile) {
 	Deserialize (id, inFile);
 	Deserialize (dstType, inFile);
 

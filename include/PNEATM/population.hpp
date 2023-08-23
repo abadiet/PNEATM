@@ -27,9 +27,9 @@ namespace pneatm {
 
 /**
  * @brief A template class representing a population.
- * @tparam Args Variadic template arguments that contains all the manipulated types.
+ * @tparam Types Variadic template arguments that contains all the manipulated types.
  */
-template <typename... Args>
+template <typename... Types>
 class Population {
 	public:
 		/**
@@ -95,7 +95,7 @@ class Population {
 		 * @param id The ID of the Genome to retrieve. If set to any negative number, the fitter genome will be returned. (default is -1)
 		 * @return A reference to the Genome with the specified ID.
 		 */
-		Genome<Args...>& getGenome (int id = -1);
+		Genome<Types...>& getGenome (int id = -1);
 
 		/**
 		 * @brief Load the inputs for the entire population.
@@ -357,8 +357,8 @@ class Population {
 		distanceFn dstType;
 
 		int fittergenome_id;
-		std::unordered_map <unsigned int, std::unique_ptr<Genome<Args...>>> genomes;
-		std::vector<Species<Args...>> species;
+		std::unordered_map <unsigned int, std::unique_ptr<Genome<Types...>>> genomes;
+		std::vector<Species<Types...>> species;
 		std::vector<std::vector<std::vector<ActivationFnBase*>>> activationFns;
 		innovationConn_t conn_innov;
 		innovationNode_t node_innov;	// node's innovation id is more like a global id to decerne two different nodes than something to track innovation
@@ -379,8 +379,8 @@ class Population {
 
 using namespace pneatm;
 
-template <typename... Args>
-Population<Args...>::Population(unsigned int popSize, const std::vector<size_t>& bias_sch, const std::vector<size_t>& inputs_sch, const std::vector<size_t>& outputs_sch, const std::vector<std::vector<size_t>>& hiddens_sch_init, const std::vector<void*>& bias_values, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger, distanceFn dstType, double speciationThreshInit, unsigned int threshGensSinceImproved, const std::string& stats_filename) :
+template <typename... Types>
+Population<Types...>::Population(unsigned int popSize, const std::vector<size_t>& bias_sch, const std::vector<size_t>& inputs_sch, const std::vector<size_t>& outputs_sch, const std::vector<std::vector<size_t>>& hiddens_sch_init, const std::vector<void*>& bias_values, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger, distanceFn dstType, double speciationThreshInit, unsigned int threshGensSinceImproved, const std::string& stats_filename) :
 	popSize (popSize),
 	speciationThresh (speciationThreshInit),
 	threshGensSinceImproved (threshGensSinceImproved),
@@ -411,12 +411,12 @@ Population<Args...>::Population(unsigned int popSize, const std::vector<size_t>&
 
 	genomes.reserve (popSize);
 	for (unsigned int i = 0; i < popSize; i++) {
-		genomes.insert (std::make_pair (i, std::make_unique<Genome<Args...>> (i, bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_values, resetValues, activationFns, &conn_innov, &node_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger)));
+		genomes.insert (std::make_pair (i, std::make_unique<Genome<Types...>> (i, bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_values, resetValues, activationFns, &conn_innov, &node_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger)));
 	}
 }
 
-template <typename... Args>
-Population<Args...>::Population (const std::string& filename, const std::vector<void*>& bias_values, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, spdlog::logger* logger, const std::string& stats_filename) :
+template <typename... Types>
+Population<Types...>::Population (const std::string& filename, const std::vector<void*>& bias_values, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, spdlog::logger* logger, const std::string& stats_filename) :
 	bias_values (bias_values),
 	resetValues (resetValues),
 	activationFns (activationFns),
@@ -431,18 +431,18 @@ Population<Args...>::Population (const std::string& filename, const std::vector<
 	load (filename);
 }
 
-template <typename... Args>
-Population<Args...>::~Population () {
+template <typename... Types>
+Population<Types...>::~Population () {
 	logger->info ("Population destruction");
 	if (statsFile.is_open ()) statsFile.close ();
 }
 
-template <typename... Args>
-Genome<Args...>& Population<Args...>::getGenome (int id) {
+template <typename... Types>
+Genome<Types...>& Population<Types...>::getGenome (int id) {
 	if (id < 0 || id >= (int) popSize) {
 		if (fittergenome_id < 0) {
 			// fitter genome cannot be found
-			logger->warn ("Calling Population<Args...>::getGenome cannot determine which is the more fit genome: in order to know it, call Population<Args...>::speciate first. Returning the first genome.");
+			logger->warn ("Calling Population<Types...>::getGenome cannot determine which is the more fit genome: in order to know it, call Population<Types...>::speciate first. Returning the first genome.");
 			return *genomes [0];
 		}
 		return *genomes [fittergenome_id];
@@ -450,67 +450,67 @@ Genome<Args...>& Population<Args...>::getGenome (int id) {
 	return *genomes [id];
 }
 
-template <typename... Args>
+template <typename... Types>
 template <typename T_in>
-void Population<Args...>::loadInputs (const std::vector<T_in>& inputs) {
+void Population<Types...>::loadInputs (const std::vector<T_in>& inputs) {
 	for (int i = 0; i < popSize; i++) {
 		genomes [i]->template loadInputs<T_in> (inputs);
 	}
 }
 
-template <typename... Args>
+template <typename... Types>
 template <typename T_in>
-void Population<Args...>::loadInputs (const std::vector<T_in>& inputs, unsigned int genome_id) {
+void Population<Types...>::loadInputs (const std::vector<T_in>& inputs, unsigned int genome_id) {
 	genomes [genome_id]->template loadInputs<T_in> (inputs);
 }
 
-template <typename... Args>
+template <typename... Types>
 template <typename T_in>
-void Population<Args...>::loadInput (T_in& input, unsigned int input_id) {
-	for (std::pair<const unsigned int, std::unique_ptr<Genome<Args...>>>& genome : genomes) {
+void Population<Types...>::loadInput (T_in& input, unsigned int input_id) {
+	for (std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
 		genome.second->template loadInput<T_in> (input, input_id);
 	}
 }
 
-template <typename... Args>
+template <typename... Types>
 template <typename T_in>
-void Population<Args...>::loadInput (T_in& input, unsigned int input_id, unsigned int genome_id) {
+void Population<Types...>::loadInput (T_in& input, unsigned int input_id, unsigned int genome_id) {
 	genomes [genome_id]->template loadInput<T_in> (input, input_id);
 }
 
 
-template <typename... Args>
-void Population<Args...>::loadInputs (const std::vector<void*>& inputs) {
+template <typename... Types>
+void Population<Types...>::loadInputs (const std::vector<void*>& inputs) {
 	for (int i = 0; i < popSize; i++) {
 		genomes [i]->loadInputs (inputs);
 	}
 }
 
-template <typename... Args>
-void Population<Args...>::loadInputs (const std::vector<void*>& inputs, unsigned int genome_id) {
+template <typename... Types>
+void Population<Types...>::loadInputs (const std::vector<void*>& inputs, unsigned int genome_id) {
 	genomes [genome_id]->loadInputs (inputs);
 }
 
-template <typename... Args>
-void Population<Args...>::loadInput (void* input, unsigned int input_id) {
-	for (std::pair<const unsigned int, std::unique_ptr<Genome<Args...>>>& genome : genomes) {
+template <typename... Types>
+void Population<Types...>::loadInput (void* input, unsigned int input_id) {
+	for (std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
 		genome.second->loadInput (input, input_id);
 	}
 }
 
-template <typename... Args>
-void Population<Args...>::loadInput (void* input, unsigned int input_id, unsigned int genome_id) {
+template <typename... Types>
+void Population<Types...>::loadInput (void* input, unsigned int input_id, unsigned int genome_id) {
 	genomes [genome_id]->loadInput (input, input_id);
 }
 
-template <typename... Args>
-void Population<Args...>::run (const std::vector<std::vector<void*>>& inputs, std::vector<std::vector<std::vector<void*>>>* outputs, unsigned int maxThreads) {
+template <typename... Types>
+void Population<Types...>::run (const std::vector<std::vector<void*>>& inputs, std::vector<std::vector<std::vector<void*>>>* outputs, unsigned int maxThreads) {
 	ThreadPool<void> pool (maxThreads);
 
 	if (outputs != nullptr) {
 		// we do care of outputs
 
-		std::function<void (Genome<Args...>*, const std::vector<std::vector<void*>>&, std::vector<std::vector<void*>>*)> func = [&] (Genome<Args...>* genome, const std::vector<std::vector<void*>>& inputs, std::vector<std::vector<void*>>* outputs) -> void {
+		std::function<void (Genome<Types...>*, const std::vector<std::vector<void*>>&, std::vector<std::vector<void*>>*)> func = [&] (Genome<Types...>* genome, const std::vector<std::vector<void*>>& inputs, std::vector<std::vector<void*>>* outputs) -> void {
 			for (const std::vector<void*>& inputs_cur : inputs) {
 				genome->loadInputs (inputs_cur);
 				genome->runNetwork ();
@@ -521,7 +521,7 @@ void Population<Args...>::run (const std::vector<std::vector<void*>>& inputs, st
 		// reset outputs
 		(*outputs) = std::vector<std::vector<std::vector<void*>>> (popSize, std::vector<std::vector<void*>> (0, std::vector<void*> {}));
 
-		for (std::pair<const unsigned int, std::unique_ptr<Genome<Args...>>>& genome : genomes) {
+		for (std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
 			// add the task to the pool
 			pool.enqueue (
 				func,
@@ -534,14 +534,14 @@ void Population<Args...>::run (const std::vector<std::vector<void*>>& inputs, st
 		// we don't care of outputs
 		UNUSED (outputs);
 
-		std::function<void (Genome<Args...>*, const std::vector<std::vector<void*>>&)> func = [&] (Genome<Args...>* genome, const std::vector<std::vector<void*>>& inputs) -> void {
+		std::function<void (Genome<Types...>*, const std::vector<std::vector<void*>>&)> func = [&] (Genome<Types...>* genome, const std::vector<std::vector<void*>>& inputs) -> void {
 			for (const std::vector<void*>& inputs_cur : inputs) {
 				genome->loadInputs (inputs_cur);
 				genome->runNetwork ();
 			}
 		};
 
-		for (std::pair<const unsigned int, std::unique_ptr<Genome<Args...>>>& genome : genomes) {
+		for (std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
 			// add the task to the pool
 			pool.enqueue (
 				func,
@@ -554,14 +554,14 @@ void Population<Args...>::run (const std::vector<std::vector<void*>>& inputs, st
 	// wait for the end of all tasks as ~ThreadPool () is called
 }
 
-template <typename... Args>
-void Population<Args...>::run (const std::vector<std::vector<std::vector<void*>>>& inputs, std::vector<std::vector<std::vector<void*>>>* outputs, unsigned int maxThreads) {
+template <typename... Types>
+void Population<Types...>::run (const std::vector<std::vector<std::vector<void*>>>& inputs, std::vector<std::vector<std::vector<void*>>>* outputs, unsigned int maxThreads) {
 	ThreadPool<void> pool (maxThreads);
 
 	if (outputs != nullptr) {
 		// we do care of outputs
 
-		std::function<void (Genome<Args...>*, const std::vector<std::vector<void*>>&, std::vector<std::vector<void*>>*)> func = [&] (Genome<Args...>* genome, const std::vector<std::vector<void*>>& inputs, std::vector<std::vector<void*>>* outputs) -> void {
+		std::function<void (Genome<Types...>*, const std::vector<std::vector<void*>>&, std::vector<std::vector<void*>>*)> func = [&] (Genome<Types...>* genome, const std::vector<std::vector<void*>>& inputs, std::vector<std::vector<void*>>* outputs) -> void {
 			for (const std::vector<void*>& inputs_cur : inputs) {
 				genome->loadInputs (inputs_cur);
 				genome->runNetwork ();
@@ -572,7 +572,7 @@ void Population<Args...>::run (const std::vector<std::vector<std::vector<void*>>
 		// reset outputs
 		(*outputs) = std::vector<std::vector<std::vector<void*>>> (popSize, std::vector<std::vector<void*>> (0, std::vector<void*> {}));
 
-		for (std::pair<const unsigned int, std::unique_ptr<Genome<Args...>>>& genome : genomes) {
+		for (std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
 			// add the task to the pool
 			pool.enqueue (
 				func,
@@ -585,14 +585,14 @@ void Population<Args...>::run (const std::vector<std::vector<std::vector<void*>>
 		// we don't care of outputs
 		UNUSED (outputs);
 
-		std::function<void (Genome<Args...>*, const std::vector<std::vector<void*>>&)> func = [&] (Genome<Args...>* genome, const std::vector<std::vector<void*>>& inputs) -> void {
+		std::function<void (Genome<Types...>*, const std::vector<std::vector<void*>>&)> func = [&] (Genome<Types...>* genome, const std::vector<std::vector<void*>>& inputs) -> void {
 			for (const std::vector<void*>& inputs_cur : inputs) {
 				genome->loadInputs (inputs_cur);
 				genome->runNetwork ();
 			}
 		};
 
-		for (std::pair<const unsigned int, std::unique_ptr<Genome<Args...>>>& genome : genomes) {
+		for (std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
 			// add the task to the pool
 			pool.enqueue (
 				func,
@@ -605,14 +605,14 @@ void Population<Args...>::run (const std::vector<std::vector<std::vector<void*>>
 	// wait for the end of all tasks as ~ThreadPool () is called
 }
 
-template <typename... Args>
-void Population<Args...>::run (const unsigned int N_runs, std::vector<std::vector<std::vector<void*>>>* outputs, unsigned int maxThreads) {
+template <typename... Types>
+void Population<Types...>::run (const unsigned int N_runs, std::vector<std::vector<std::vector<void*>>>* outputs, unsigned int maxThreads) {
 	ThreadPool<void> pool (maxThreads);
 
 	if (outputs != nullptr) {
 		// we do care of outputs
 
-		std::function<void (Genome<Args...>*, std::vector<std::vector<void*>>*)> func = [&] (Genome<Args...>* genome, std::vector<std::vector<void*>>* outputs) -> void {
+		std::function<void (Genome<Types...>*, std::vector<std::vector<void*>>*)> func = [&] (Genome<Types...>* genome, std::vector<std::vector<void*>>* outputs) -> void {
 			std::vector<void*> outputs_cur = genome->getOutputs ();
 			for (unsigned int k = 0; k < N_runs; k++) {
 				genome->loadInputs (outputs_cur);
@@ -625,7 +625,7 @@ void Population<Args...>::run (const unsigned int N_runs, std::vector<std::vecto
 		// reset outputs
 		(*outputs) = std::vector<std::vector<std::vector<void*>>> (popSize, std::vector<std::vector<void*>> (N_runs, std::vector<void*> {}));
 
-		for (std::pair<const unsigned int, std::unique_ptr<Genome<Args...>>>& genome : genomes) {
+		for (std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
 			// add the task to the pool
 			pool.enqueue (
 				func,
@@ -637,14 +637,14 @@ void Population<Args...>::run (const unsigned int N_runs, std::vector<std::vecto
 		// we don't care of outputs
 		UNUSED (outputs);
 
-		std::function<void (Genome<Args...>*)> func = [&] (Genome<Args...>* genome) -> void {
+		std::function<void (Genome<Types...>*)> func = [&] (Genome<Types...>* genome) -> void {
 			for (unsigned int k = 0; k < N_runs; k++) {
 				genome->loadInputs (genome->getOutputs ());
 				genome->runNetwork ();
 			}
 		};
 
-		for (std::pair<const unsigned int, std::unique_ptr<Genome<Args...>>>& genome : genomes) {
+		for (std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
 			// add the task to the pool
 			pool.enqueue (
 				func,
@@ -656,23 +656,23 @@ void Population<Args...>::run (const unsigned int N_runs, std::vector<std::vecto
 	// wait for the end of all tasks as ~ThreadPool () is called
 }
 
-template <typename... Args>
-void Population<Args...>::resetMemory () {
-	for (std::pair<const unsigned int, std::unique_ptr<Genome<Args...>>>& genome : genomes) {
+template <typename... Types>
+void Population<Types...>::resetMemory () {
+	for (std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
 		genome.second->resetMemory ();
 	}
 }
 
-template <typename... Args>
-void Population<Args...>::resetMemory (unsigned int genome_id) {
+template <typename... Types>
+void Population<Types...>::resetMemory (unsigned int genome_id) {
 	genomes [genome_id]->resetMemory ();
 }
 
-template <typename... Args>
-void Population<Args...>::runNetworks (unsigned int maxThreads) {
+template <typename... Types>
+void Population<Types...>::runNetworks (unsigned int maxThreads) {
 	ThreadPool pool (maxThreads);
 
-	for (std::pair<const unsigned int, std::unique_ptr<Genome<Args...>>>& genome : genomes) {
+	for (std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
 		// add the task to the pool
 		pool.enqueue (
 			[&] () -> void {
@@ -684,43 +684,43 @@ void Population<Args...>::runNetworks (unsigned int maxThreads) {
 	// wait for the end of all tasks as ~ThreadPool () is called
 }
 
-template <typename... Args>
-void Population<Args...>::runNetwork(unsigned int genome_id) {
+template <typename... Types>
+void Population<Types...>::runNetwork(unsigned int genome_id) {
 	genomes [genome_id]->runNetwork ();
 }
 
-template <typename... Args>
+template <typename... Types>
 template <typename T_out>
-std::vector<T_out> Population<Args...>::getOutputs (unsigned int genome_id) {
+std::vector<T_out> Population<Types...>::getOutputs (unsigned int genome_id) {
 	return genomes [genome_id]->template getOutputs<T_out> ();
 }
 
-template <typename... Args>
+template <typename... Types>
 template <typename T_out>
-T_out Population<Args...>::getOutput (unsigned int output_id, unsigned int genome_id) {
+T_out Population<Types...>::getOutput (unsigned int output_id, unsigned int genome_id) {
 	return genomes [genome_id]->template getOutput<T_out> (output_id);
 }
 
-template <typename... Args>
-std::vector<void*> Population<Args...>::getOutputs (unsigned int genome_id) {
+template <typename... Types>
+std::vector<void*> Population<Types...>::getOutputs (unsigned int genome_id) {
 	return genomes [genome_id]->getOutputs ();
 }
 
-template <typename... Args>
-void* Population<Args...>::getOutput (unsigned int output_id, unsigned int genome_id) {
+template <typename... Types>
+void* Population<Types...>::getOutput (unsigned int output_id, unsigned int genome_id) {
 	return genomes [genome_id]->getOutput (output_id);
 }
 
-template <typename... Args>
-void Population<Args...>::setFitness (double fitness, unsigned int genome_id) {
+template <typename... Types>
+void Population<Types...>::setFitness (double fitness, unsigned int genome_id) {
 	genomes [genome_id]->setFitness (fitness);
 }
 
-template <typename... Args>
-void Population<Args...>::speciate (unsigned int target, unsigned int maxIterationsReachTarget, double stepThresh, double a, double b, double c, double speciesSizeEvolutionLimit) {
+template <typename... Types>
+void Population<Types...>::speciate (unsigned int target, unsigned int maxIterationsReachTarget, double stepThresh, double a, double b, double c, double speciesSizeEvolutionLimit) {
 	logger->info ("Speciation");
 
-	std::vector<Species<Args...>> tmpspecies;
+	std::vector<Species<Types...>> tmpspecies;
 	unsigned int nbSpeciesAlive = 0;
 	unsigned int ite = 0;
 
@@ -758,7 +758,7 @@ void Population<Args...>::speciate (unsigned int target, unsigned int maxIterati
 			if (dstBest >= speciationThresh) {
 				// the closest species is too far or there is no species: we create a new one
 				itmpspeciesBest = tmpspecies.size ();
-				tmpspecies.push_back (Species<Args...> ((unsigned int) itmpspeciesBest, genomes [genome_id]->connections, dstType));
+				tmpspecies.push_back (Species<Types...> ((unsigned int) itmpspeciesBest, genomes [genome_id]->connections, dstType));
 			}
 
 			tmpspecies [itmpspeciesBest].members.push_back (genome_id);
@@ -818,8 +818,8 @@ void Population<Args...>::speciate (unsigned int target, unsigned int maxIterati
 	UpdateFitnesses (speciesSizeEvolutionLimit);
 }
 
-template <typename... Args>
-std::unordered_map <unsigned int, Connection> Population<Args...>::GetWeightedCentroid (unsigned int speciesId) {
+template <typename... Types>
+std::unordered_map <unsigned int, Connection> Population<Types...>::GetWeightedCentroid (unsigned int speciesId) {
 	std::unordered_map <unsigned int, Connection> result;
 
 	double sumFitness = 0.0;
@@ -860,14 +860,14 @@ std::unordered_map <unsigned int, Connection> Population<Args...>::GetWeightedCe
 	return result;
 }
 
-template <typename... Args>
-void Population<Args...>::UpdateFitnesses (double speciesSizeEvolutionLimit) {
+template <typename... Types>
+void Population<Types...>::UpdateFitnesses (double speciesSizeEvolutionLimit) {
 	fittergenome_id = 0;
 	avgFitness = 0;
 	avgFitnessAdjusted = 0;
 
 	// process avgFitness and found fittergenome_id
-	for (const std::pair<const unsigned int, std::unique_ptr<Genome<Args...>>>& genome : genomes) {
+	for (const std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
 		avgFitness += genome.second->fitness;
 
 		if (genome.second->fitness > genomes [fittergenome_id]->fitness) {
@@ -929,10 +929,10 @@ void Population<Args...>::UpdateFitnesses (double speciesSizeEvolutionLimit) {
 	}
 }
 
-template <typename... Args>
-void Population<Args...>::crossover (bool elitism, double crossover_rate) {
+template <typename... Types>
+void Population<Types...>::crossover (bool elitism, double crossover_rate) {
 	logger->info ("Crossover");
-	std::unordered_map<unsigned int, std::unique_ptr<Genome<Args...>>> newGenomes;
+	std::unordered_map<unsigned int, std::unique_ptr<Genome<Types...>>> newGenomes;
 	newGenomes.reserve (popSize);
 
 	unsigned int genomeId = 0;
@@ -966,7 +966,7 @@ void Population<Args...>::crossover (bool elitism, double crossover_rate) {
 					}
 
 					newGenomes.insert (std::make_pair (genomeId, genomes [iMainParent]->clone ()));
-					std::unique_ptr<Genome<Args...>>& genome = newGenomes [genomeId];
+					std::unique_ptr<Genome<Types...>>& genome = newGenomes [genomeId];
 					genome->id = genomeId;
 					genomeId++;
 
@@ -993,7 +993,7 @@ void Population<Args...>::crossover (bool elitism, double crossover_rate) {
 	unsigned int previousSize = (unsigned int) newGenomes.size();
 	// add genomes if some are missing
 	for (unsigned int k = previousSize; k < popSize; k++) {
-		newGenomes.insert (std::make_pair (k, std::make_unique<Genome<Args...>> (k, bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_values, resetValues, activationFns, &conn_innov, &node_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger)));
+		newGenomes.insert (std::make_pair (k, std::make_unique<Genome<Types...>> (k, bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_values, resetValues, activationFns, &conn_innov, &node_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger)));
 	}
 	// or remove some genomes if there is too many genomes
 	for (unsigned int k = previousSize - 1; k >= popSize; k--) {
@@ -1009,7 +1009,7 @@ void Population<Args...>::crossover (bool elitism, double crossover_rate) {
 		species [i].members.clear ();
 		species [i].isDead = true;
 	}
-	for (const std::pair<const unsigned int, std::unique_ptr<Genome<Args...>>>& genome : genomes) {
+	for (const std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
 		if (genome.second->speciesId > -1) {
 			species [genome.second->speciesId].members.push_back (genome.second->id);
 			species [genome.second->speciesId].isDead = false;	// empty species will stay to isDead = true
@@ -1021,8 +1021,8 @@ void Population<Args...>::crossover (bool elitism, double crossover_rate) {
 	generation ++;
 }
 
-template <typename... Args>
-int Population<Args...>::SelectParent (unsigned int iSpe) {
+template <typename... Types>
+int Population<Types...>::SelectParent (unsigned int iSpe) {
 	/* Chooses player from the population to return randomly(considering fitness).
 	This works by randomly choosing a value between 0 and the sum of all the fitnesses then go through all the genomes
 	and add their fitness to a running sum and if that sum is greater than the random value generated,
@@ -1046,24 +1046,24 @@ int Population<Args...>::SelectParent (unsigned int iSpe) {
 	return -1;	// impossible
 }
 
-template <typename... Args>
-void Population<Args...>::mutate (const mutationParams_t& params) {
+template <typename... Types>
+void Population<Types...>::mutate (const mutationParams_t& params) {
 	logger->info ("Mutations");
-	for (std::pair<const unsigned int, std::unique_ptr<Genome<Args...>>>& genome : genomes) {
+	for (std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
 		genome.second->mutate (&conn_innov, &node_innov, params);
 	}
 }
 
-template <typename... Args>
-void Population<Args...>::mutate (const std::function<mutationParams_t (double)>& paramsMap) {
+template <typename... Types>
+void Population<Types...>::mutate (const std::function<mutationParams_t (double)>& paramsMap) {
 	logger->info ("Mutations");
-	for (std::pair<const unsigned int, std::unique_ptr<Genome<Args...>>>& genome : genomes) {
+	for (std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
 		genome.second->mutate (&conn_innov, &node_innov, paramsMap (genome.second->fitness));
 	}
 }
 
-template <typename... Args>
-void Population<Args...>::print (const std::string& prefix) {
+template <typename... Types>
+void Population<Types...>::print (const std::string& prefix) {
 	std::cout << prefix << "Generation Number: " << generation << std::endl;
 	std::cout << prefix << "Population Size: " << popSize << std::endl;
 	std::cout << prefix << "Current Average Fitness: " << avgFitness << std::endl;
@@ -1110,26 +1110,26 @@ void Population<Args...>::print (const std::string& prefix) {
 	std::cout << prefix << "Nodes Innovations:" << std::endl;
 	node_innov.print (prefix + "   ");
 	std::cout << prefix << "Genomes: " << std::endl;
-	for (const std::pair<const unsigned int, std::unique_ptr<Genome<Args...>>>& genome : genomes) {
+	for (const std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
 		genome.second->print (prefix + "   ");
 		std::cout << std::endl;
 	}
 	std::cout << prefix << "Species: " << std::endl;
-	for (const Species<Args...>& spe : species) {
+	for (const Species<Types...>& spe : species) {
 		spe.print (prefix + "   ");
 		std::cout << std::endl;
 	}
 }
 
-template <typename... Args>
-void Population<Args...>::drawGenome (unsigned int genome_id, const std::string& font_path, unsigned int windowWidth, unsigned int windowHeight, float dotsRadius) {
+template <typename... Types>
+void Population<Types...>::drawGenome (unsigned int genome_id, const std::string& font_path, unsigned int windowWidth, unsigned int windowHeight, float dotsRadius) {
 	logger->info ("Drawing genome{}'s network", genome_id);
 	genomes [genome_id]->draw (font_path, windowWidth, windowHeight, dotsRadius);
 }
 
 
-template <typename... Args>
-void Population<Args...>::serialize (std::ofstream& outFile) {
+template <typename... Types>
+void Population<Types...>::serialize (std::ofstream& outFile) {
 	Serialize (generation, outFile);
     Serialize (avgFitness, outFile);
     Serialize (avgFitnessAdjusted, outFile);
@@ -1161,7 +1161,7 @@ void Population<Args...>::serialize (std::ofstream& outFile) {
 	}
 
     Serialize (species.size (), outFile);
-	for (const Species<Args...>& spe : species) {
+	for (const Species<Types...>& spe : species) {
 		spe.serialize (outFile);
 	}
 
@@ -1169,8 +1169,8 @@ void Population<Args...>::serialize (std::ofstream& outFile) {
 	node_innov.serialize (outFile);
 }
 
-template <typename... Args>
-void Population<Args...>::deserialize (std::ifstream& inFile) {
+template <typename... Types>
+void Population<Types...>::deserialize (std::ifstream& inFile) {
 	Deserialize (generation, inFile);
     Deserialize (avgFitness, inFile);
     Deserialize (avgFitnessAdjusted, inFile);
@@ -1194,22 +1194,22 @@ void Population<Args...>::deserialize (std::ifstream& inFile) {
 	genomes.clear ();
 	genomes.reserve (sz);
 	for (unsigned int i = 0; i < (unsigned int) sz; i++) {
-		genomes.insert (std::make_pair (i, std::make_unique<Genome<Args...>> (inFile, resetValues, activationFns, logger)));
+		genomes.insert (std::make_pair (i, std::make_unique<Genome<Types...>> (inFile, resetValues, activationFns, logger)));
 	}
 
 	Deserialize (sz, inFile);
 	species.clear ();
 	species.reserve (sz);
 	for (size_t i = 0; i < sz; i++) {
-		species.push_back (Species<Args...> (inFile));
+		species.push_back (Species<Types...> (inFile));
 	}
 
 	conn_innov.deserialize (inFile);
 	node_innov.deserialize (inFile);
 }
 
-template <typename... Args>
-void Population<Args...>::save (const std::string& filename) {
+template <typename... Types>
+void Population<Types...>::save (const std::string& filename) {
 	std::ofstream outFile(filename, std::ios::binary);
 	if (!outFile) {
 		logger->error ("Cannot open file {} for writing.", filename);
@@ -1221,8 +1221,8 @@ void Population<Args...>::save (const std::string& filename) {
 	outFile.close ();
 }
 
-template <typename... Args>
-void Population<Args...>::load (const std::string& filename) {
+template <typename... Types>
+void Population<Types...>::load (const std::string& filename) {
 	std::ifstream inFile(filename, std::ios::binary);
 	if (!inFile) {
 		logger->error ("Cannot open file {} for reading.", filename);
