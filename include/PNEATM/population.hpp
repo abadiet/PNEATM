@@ -8,6 +8,7 @@
 #include <PNEATM/Node/innovation_node.hpp>
 #include <PNEATM/Node/Activation_Function/activation_function_base.hpp>
 #include <PNEATM/Node/Activation_Function/create_activation_function.hpp>
+#include <PNEATM/thread_pool.hpp>
 #include <PNEATM/utils.hpp>
 #include <fstream>
 #include <iostream>
@@ -504,7 +505,7 @@ void Population<Args...>::loadInput (void* input, unsigned int input_id, unsigne
 
 template <typename... Args>
 void Population<Args...>::run (const std::vector<std::vector<void*>>& inputs, std::vector<std::vector<std::vector<void*>>>* outputs) {
-	std::vector<std::thread> threads;
+	ThreadPool<void> pool (0);
 
 	if (outputs != nullptr) {
 		// we do care of outputs
@@ -521,14 +522,12 @@ void Population<Args...>::run (const std::vector<std::vector<void*>>& inputs, st
 		(*outputs) = std::vector<std::vector<std::vector<void*>>> (popSize, std::vector<std::vector<void*>> (0, std::vector<void*> {}));
 
 		for (std::pair<const unsigned int, std::unique_ptr<Genome<Args...>>>& genome : genomes) {
-			// add the task to a specific thread
-			threads.push_back (
-				std::thread (
-					func,
-					genome.second.get (),
-					inputs,
-					&(*outputs) [genome.second->id]
-				)
+			// add the task to the pool
+			pool.enqueue (
+				func,
+				genome.second.get (),
+				inputs,
+				&(*outputs) [genome.second->id]
 			);
 		}
 	} else {
@@ -543,26 +542,22 @@ void Population<Args...>::run (const std::vector<std::vector<void*>>& inputs, st
 		};
 
 		for (std::pair<const unsigned int, std::unique_ptr<Genome<Args...>>>& genome : genomes) {
-			// add the task to a specific thread
-			threads.push_back (
-				std::thread (
-					func,
-					genome.second.get (),
-					inputs
-				)
+			// add the task to the pool
+			pool.enqueue (
+				func,
+				genome.second.get (),
+				inputs
 			);
 		}
 	}
 
-	for (std::thread& t : threads) {
-		// wait for its end
-		t.join ();
-	}
+	// wait for the end of all tasks
+	pool.waitAllTasks ();
 }
 
 template <typename... Args>
 void Population<Args...>::run (const std::vector<std::vector<std::vector<void*>>>& inputs, std::vector<std::vector<std::vector<void*>>>* outputs) {
-	std::vector<std::thread> threads;
+	ThreadPool<void> pool (0);
 
 	if (outputs != nullptr) {
 		// we do care of outputs
@@ -579,14 +574,12 @@ void Population<Args...>::run (const std::vector<std::vector<std::vector<void*>>
 		(*outputs) = std::vector<std::vector<std::vector<void*>>> (popSize, std::vector<std::vector<void*>> (0, std::vector<void*> {}));
 
 		for (std::pair<const unsigned int, std::unique_ptr<Genome<Args...>>>& genome : genomes) {
-			// add the task to a specific thread
-			threads.push_back (
-				std::thread (
-					func,
-					genome.second.get (),
-					inputs [genome.second->id],
-					&(*outputs) [genome.second->id]
-				)
+			// add the task to the pool
+			pool.enqueue (
+				func,
+				genome.second.get (),
+				inputs [genome.second->id],
+				&(*outputs) [genome.second->id]
 			);
 		}
 	} else {
@@ -601,26 +594,22 @@ void Population<Args...>::run (const std::vector<std::vector<std::vector<void*>>
 		};
 
 		for (std::pair<const unsigned int, std::unique_ptr<Genome<Args...>>>& genome : genomes) {
-			// add the task to a specific thread
-			threads.push_back (
-				std::thread (
-					func,
-					genome.second.get (),
-					inputs
-				)
+			// add the task to the pool
+			pool.enqueue (
+				func,
+				genome.second.get (),
+				inputs [genome.second->id]
 			);
 		}
 	}
 
-	for (std::thread& t : threads) {
-		// wait for its end
-		t.join ();
-	}
+	// wait for the end of all tasks
+	pool.waitAllTasks ();
 }
 
 template <typename... Args>
 void Population<Args...>::run (const unsigned int N_runs, std::vector<std::vector<std::vector<void*>>>* outputs) {
-	std::vector<std::thread> threads;
+	ThreadPool<void> pool (0);
 
 	if (outputs != nullptr) {
 		// we do care of outputs
@@ -639,13 +628,11 @@ void Population<Args...>::run (const unsigned int N_runs, std::vector<std::vecto
 		(*outputs) = std::vector<std::vector<std::vector<void*>>> (popSize, std::vector<std::vector<void*>> (N_runs, std::vector<void*> {}));
 
 		for (std::pair<const unsigned int, std::unique_ptr<Genome<Args...>>>& genome : genomes) {
-			// add the task to a specific thread
-			threads.push_back (
-				std::thread (
-					func,
-					genome.second.get (),
-					&(*outputs) [genome.second->id]
-				)
+			// add the task to the pool
+			pool.enqueue (
+				func,
+				genome.second.get (),
+				&(*outputs) [genome.second->id]
 			);
 		}
 	} else {
@@ -660,20 +647,16 @@ void Population<Args...>::run (const unsigned int N_runs, std::vector<std::vecto
 		};
 
 		for (std::pair<const unsigned int, std::unique_ptr<Genome<Args...>>>& genome : genomes) {
-			// add the task to a specific thread
-			threads.push_back (
-				std::thread (
-					func,
-					genome.second.get ()
-				)
+			// add the task to the pool
+			pool.enqueue (
+				func,
+				genome.second.get ()
 			);
 		}
 	}
 
-	for (std::thread& t : threads) {
-		// wait for its end
-		t.join ();
-	}
+	// wait for the end of all tasks
+	pool.waitAllTasks ();
 }
 
 template <typename... Args>
@@ -690,24 +673,19 @@ void Population<Args...>::resetMemory (unsigned int genome_id) {
 
 template <typename... Args>
 void Population<Args...>::runNetworks () {
-	std::vector<std::thread> threads;
+	ThreadPool pool (0);
 
-	for (unsigned int i = 0; i < popSize; i++) {
-		// add the task to a specific thread
-		threads.push_back (
-			std::thread (
-				[&] (unsigned int idx) -> void {
-					genomes [idx]->runNetwork ();
-				},
-				i
-			)
+	for (std::pair<const unsigned int, std::unique_ptr<Genome<Args...>>>& genome : genomes) {
+		// add the task to the pool
+		pool.enqueue (
+			[&] () -> void {
+				genome.second->runNetwork ();
+			}
 		);
 	}
 
-	for (std::thread& t : threads) {
-		// wait for its end
-		t.join();
-	}
+	// wait for all the tasks
+	pool.waitAllTasks ();
 }
 
 template <typename... Args>
