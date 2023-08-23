@@ -161,6 +161,18 @@ class Population {
 		void loadInput (void* input, unsigned int input_id, unsigned int genome_id);
 
 		/**
+		 * @brief Run the networks without taking care of the outputs
+		 * @param inputs The inputs of the networks
+		 */
+		void intiateNetworks (const std::vector<std::vector<void*>>& inputs);
+
+		/**
+		 * @brief Run the networks without taking care of the outputs
+		 * @param inputs The different inputs for each networks 
+		 */
+		void intiateNetworks (const std::vector<std::vector<std::vector<void*>>>& inputs);
+
+		/**
 		 * @brief Reset the memory of the entire population.
 		 */
 		void resetMemory ();
@@ -177,7 +189,7 @@ class Population {
 		 * Run the network of every genomes of the population. This means computing each node's input and output of each population's genome.
 		 * This function use multithreading and should be preffered relatively to `runNetwork (unsigned int genome_id)`.
 		 */
-		void runNetwork ();
+		void runNetworks ();
 
 		/**
 		 * @brief Run the network of a specific genome.
@@ -455,6 +467,62 @@ void Population<Args...>::loadInput (void* input, unsigned int input_id, unsigne
 }
 
 template <typename... Args>
+void Population<Args...>::intiateNetworks (const std::vector<std::vector<void*>>& inputs) {
+	std::vector<std::thread> threads;
+
+	std::function<void (Genome<Args...>*, const std::vector<std::vector<void*>>&)> func = [&] (Genome<Args...>* genome, const std::vector<std::vector<void*>>& inputs) -> void {
+		for (const std::vector<void*>& inputs_cur : inputs) {
+			genome->loadInputs (inputs_cur);
+			genome->runNetwork ();
+		}
+	};
+
+	for (std::pair<const unsigned int, std::unique_ptr<Genome<Args...>>>& genome : genomes) {
+		// add the task to a specific thread
+		threads.push_back (
+			std::thread (
+				func,
+				genome.second.get (),
+				inputs
+			)
+		);
+	}
+
+	for (std::thread& t : threads) {
+		// wait for its end
+		t.join ();
+	}
+}
+
+template <typename... Args>
+void Population<Args...>::intiateNetworks (const std::vector<std::vector<std::vector<void*>>>& inputs) {
+	std::vector<std::thread> threads;
+
+	std::function<void (Genome<Args...>*, const std::vector<std::vector<void*>>&)> func = [&] (Genome<Args...>* genome, const std::vector<std::vector<void*>>& inputs) -> void {
+		for (const std::vector<void*>& inputs_cur : inputs) {
+			genome->loadInputs (inputs_cur);
+			genome->runNetwork ();
+		}
+	};
+
+	for (std::pair<const unsigned int, std::unique_ptr<Genome<Args...>>>& genome : genomes) {
+		// add the task to a specific thread
+		threads.push_back (
+			std::thread (
+				func,
+				genome.second.get (),
+				inputs [genome.second->id]
+			)
+		);
+	}
+
+	for (std::thread& t : threads) {
+		// wait for its end
+		t.join ();
+	}
+}
+
+template <typename... Args>
 void Population<Args...>::resetMemory () {
 	for (std::pair<const unsigned int, std::unique_ptr<Genome<Args...>>>& genome : genomes) {
 		genome.second->resetMemory ();
@@ -466,9 +534,8 @@ void Population<Args...>::resetMemory (unsigned int genome_id) {
 	genomes [genome_id]->resetMemory ();
 }
 
-
 template <typename... Args>
-void Population<Args...>::runNetwork () {
+void Population<Args...>::runNetworks () {
 	std::vector<std::thread> threads;
 
 	for (unsigned int i = 0; i < popSize; i++) {
