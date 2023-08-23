@@ -177,21 +177,21 @@ class Population {
 		 * @param inputs The inputs.
 		 * @param outputs Pointer to the outputs. (default is nullptr which doesn't track any output)
 		 */
-		void run (const std::vector<std::vector<void*>>& inputs, std::vector<std::vector<std::vector<void*>>>* outputs = nullptr);
+		void run (const std::vector<std::vector<void*>>& inputs, std::vector<std::vector<std::vector<void*>>>* outputs = nullptr, unsigned int maxThreads = 0);
 
 		/**
 		 * @brief Run multiple times the networks over the inputs. The inputs are different for each genomes.
 		 * @param inputs The inputs.
 		 * @param outputs Pointer to the outputs. (default is nullptr which doesn't track any output)
 		 */
-		void run (const std::vector<std::vector<std::vector<void*>>>& inputs, std::vector<std::vector<std::vector<void*>>>* outputs = nullptr);
+		void run (const std::vector<std::vector<std::vector<void*>>>& inputs, std::vector<std::vector<std::vector<void*>>>* outputs = nullptr, unsigned int maxThreads = 0);
 
 		/**
 		 * @brief Run multiple times the networks by looping the outputs and inputs e.g. the n-th outputs is the n+1-th inputs.
 		 * @param N_runs The number of networks's runs e.g. the number of loop.
 		 * @param outputs Pointer to the outputs. (default is nullptr which doesn't track any output)
 		 */
-		void run (const unsigned int N_runs, std::vector<std::vector<std::vector<void*>>>* outputs = nullptr);
+		void run (const unsigned int N_runs, std::vector<std::vector<std::vector<void*>>>* outputs = nullptr, unsigned int maxThreads = 0);
 
 		/**
 		 * @brief Run the network of the entire population.
@@ -199,7 +199,7 @@ class Population {
 		 * Run the network of every genomes of the population. This means computing each node's input and output of each population's genome.
 		 * This function use multithreading and should be preffered relatively to `runNetwork (unsigned int genome_id)`.
 		 */
-		void runNetworks ();
+		void runNetworks (unsigned int maxThreads = 0);
 
 		/**
 		 * @brief Run the network of a specific genome.
@@ -504,8 +504,8 @@ void Population<Args...>::loadInput (void* input, unsigned int input_id, unsigne
 }
 
 template <typename... Args>
-void Population<Args...>::run (const std::vector<std::vector<void*>>& inputs, std::vector<std::vector<std::vector<void*>>>* outputs) {
-	ThreadPool<void> pool (0);
+void Population<Args...>::run (const std::vector<std::vector<void*>>& inputs, std::vector<std::vector<std::vector<void*>>>* outputs, unsigned int maxThreads) {
+	ThreadPool<void> pool (maxThreads);
 
 	if (outputs != nullptr) {
 		// we do care of outputs
@@ -556,8 +556,8 @@ void Population<Args...>::run (const std::vector<std::vector<void*>>& inputs, st
 }
 
 template <typename... Args>
-void Population<Args...>::run (const std::vector<std::vector<std::vector<void*>>>& inputs, std::vector<std::vector<std::vector<void*>>>* outputs) {
-	ThreadPool<void> pool (0);
+void Population<Args...>::run (const std::vector<std::vector<std::vector<void*>>>& inputs, std::vector<std::vector<std::vector<void*>>>* outputs, unsigned int maxThreads) {
+	ThreadPool<void> pool (maxThreads);
 
 	if (outputs != nullptr) {
 		// we do care of outputs
@@ -608,8 +608,8 @@ void Population<Args...>::run (const std::vector<std::vector<std::vector<void*>>
 }
 
 template <typename... Args>
-void Population<Args...>::run (const unsigned int N_runs, std::vector<std::vector<std::vector<void*>>>* outputs) {
-	ThreadPool<void> pool (0);
+void Population<Args...>::run (const unsigned int N_runs, std::vector<std::vector<std::vector<void*>>>* outputs, unsigned int maxThreads) {
+	ThreadPool<void> pool (maxThreads);
 
 	if (outputs != nullptr) {
 		// we do care of outputs
@@ -672,8 +672,8 @@ void Population<Args...>::resetMemory (unsigned int genome_id) {
 }
 
 template <typename... Args>
-void Population<Args...>::runNetworks () {
-	ThreadPool pool (0);
+void Population<Args...>::runNetworks (unsigned int maxThreads) {
+	ThreadPool pool (maxThreads);
 
 	for (std::pair<const unsigned int, std::unique_ptr<Genome<Args...>>>& genome : genomes) {
 		// add the task to the pool
