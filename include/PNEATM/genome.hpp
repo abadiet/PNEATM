@@ -256,6 +256,12 @@ class Genome {
 		double getFitness () {return fitness;};
 
 		/**
+		 * @brief Set the fitness.
+		 * @param value The value to be set.
+		 */
+		void setFitness (double value) {fitness = value;};
+
+		/**
 		 * @brief Get the species ID which belong the genome.
 		 * @return The species ID which belong the genome.
 		 */

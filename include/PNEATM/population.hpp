@@ -739,7 +739,7 @@ void* Population<Args...>::getOutput (unsigned int output_id, unsigned int genom
 
 template <typename... Args>
 void Population<Args...>::setFitness (double fitness, unsigned int genome_id) {
-	genomes [genome_id]->fitness = fitness;
+	genomes [genome_id]->setFitness (fitness);
 }
 
 template <typename... Args>
