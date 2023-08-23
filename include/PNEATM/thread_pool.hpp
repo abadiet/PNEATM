@@ -37,7 +37,7 @@ ThreadPool<T_Return>::ThreadPool (unsigned int numThreads) {
     }
     for (unsigned int k = 0; k < numThreads; k++) {
         // add a worker
-        workers.emplace_back ([this] () {
+        workers.emplace_back ([&] () {
             // the worker repeatedly checks for tasks in the queue and executes them
             while (true) {
                 std::packaged_task<T_Return ()> task;
