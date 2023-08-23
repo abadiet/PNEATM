@@ -273,6 +273,19 @@ class Genome {
 		void loadInput (T_in& input, int input_id);
 
 		/**
+		 * @brief Load the inputs.
+		 * @param inputs A vector containing inputs to be loaded.
+		 */
+		void loadInputs (const std::vector<void*>& inputs);
+
+		/**
+		 * @brief Load an input.
+		 * @param input The input to be loaded.
+		 * @param input_id The ID of the input to load.
+		 */
+		void loadInput (void* input, int input_id);
+
+		/**
 		 * @brief Reset the memory.
 		 */
 		void resetMemory ();
@@ -632,6 +645,18 @@ template <typename... Args>
 template <typename T_in>
 void Genome<Args...>::loadInput (T_in& input, int input_id) {
 	nodes [input_id + nbBias]->loadInput (static_cast<void*> (&input));
+}
+
+template <typename... Args>
+void Genome<Args...>::loadInputs (const std::vector<void*>& inputs) {
+	for (unsigned int i = 0; i < nbInput; i++) {
+		nodes [i + nbBias]->loadInput (inputs [i]);
+	}
+}
+
+template <typename... Args>
+void Genome<Args...>::loadInput (void* input, int input_id) {
+	nodes [input_id + nbBias]->loadInput (input);
 }
 
 template <typename... Args>

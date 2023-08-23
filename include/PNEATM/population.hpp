@@ -102,7 +102,7 @@ class Population {
 		 * @param inputs A vector containing inputs to be loaded.
 		 */
 		template <typename T_in>
-		void loadInputs(const std::vector<T_in>& inputs);
+		void loadInputs (const std::vector<T_in>& inputs);
 
 		/**
 		 * @brief Load a single input for the entire population.
@@ -111,7 +111,7 @@ class Population {
 		 * @param input_id The ID of the input to load.
 		 */
 		template <typename T_in>
-		void loadInput(T_in& input, unsigned int input_id);
+		void loadInput (T_in& input, unsigned int input_id);
 
 		/**
 		 * @brief Load the inputs for a specific genome.
@@ -120,7 +120,7 @@ class Population {
 		 * @param genome_id The ID of the genome for which to load the inputs.
 		 */
 		template <typename T_in>
-		void loadInputs(const std::vector<T_in>& inputs, unsigned int genome_id);
+		void loadInputs (const std::vector<T_in>& inputs, unsigned int genome_id);
 
 		/**
 		 * @brief Load a single input data for a specific genome.
@@ -130,7 +130,35 @@ class Population {
 		 * @param genome_id The ID of the genome for which to load the input.
 		 */
 		template <typename T_in>
-		void loadInput(T_in& input, unsigned int input_id, unsigned int genome_id);
+		void loadInput (T_in& input, unsigned int input_id, unsigned int genome_id);
+
+		/**
+		 * @brief Load the inputs for the entire population.
+		 * @param inputs A vector containing inputs to be loaded.
+		 */
+		void loadInputs (const std::vector<void*>& inputs);
+
+		/**
+		 * @brief Load a single input for the entire population.
+		 * @param input The input data to be loaded.
+		 * @param input_id The ID of the input to load.
+		 */
+		void loadInput (void* input, unsigned int input_id);
+
+		/**
+		 * @brief Load the inputs for a specific genome.
+		 * @param inputs A vector containing inputs to be loaded.
+		 * @param genome_id The ID of the genome for which to load the inputs.
+		 */
+		void loadInputs (const std::vector<void*>& inputs, unsigned int genome_id);
+
+		/**
+		 * @brief Load a single input data for a specific genome.
+		 * @param input The input data to be loaded.
+		 * @param input_id The ID of the input to load.
+		 * @param genome_id The ID of the genome for which to load the input.
+		 */
+		void loadInput (void* input, unsigned int input_id, unsigned int genome_id);
 
 		/**
 		 * @brief Reset the memory of the entire population.
@@ -375,7 +403,7 @@ Genome<Args...>& Population<Args...>::getGenome (int id) {
 
 template <typename... Args>
 template <typename T_in>
-void Population<Args...>::loadInputs(const std::vector<T_in>& inputs) {
+void Population<Args...>::loadInputs (const std::vector<T_in>& inputs) {
 	for (int i = 0; i < popSize; i++) {
 		genomes [i]->template loadInputs<T_in> (inputs);
 	}
@@ -383,13 +411,13 @@ void Population<Args...>::loadInputs(const std::vector<T_in>& inputs) {
 
 template <typename... Args>
 template <typename T_in>
-void Population<Args...>::loadInputs(const std::vector<T_in>& inputs, unsigned int genome_id) {
+void Population<Args...>::loadInputs (const std::vector<T_in>& inputs, unsigned int genome_id) {
 	genomes [genome_id]->template loadInputs<T_in> (inputs);
 }
 
 template <typename... Args>
 template <typename T_in>
-void Population<Args...>::loadInput(T_in& input, unsigned int input_id) {
+void Population<Args...>::loadInput (T_in& input, unsigned int input_id) {
 	for (std::pair<const unsigned int, std::unique_ptr<Genome<Args...>>>& genome : genomes) {
 		genome.second->template loadInput<T_in> (input, input_id);
 	}
@@ -397,8 +425,33 @@ void Population<Args...>::loadInput(T_in& input, unsigned int input_id) {
 
 template <typename... Args>
 template <typename T_in>
-void Population<Args...>::loadInput(T_in& input, unsigned int input_id, unsigned int genome_id) {
+void Population<Args...>::loadInput (T_in& input, unsigned int input_id, unsigned int genome_id) {
 	genomes [genome_id]->template loadInput<T_in> (input, input_id);
+}
+
+
+template <typename... Args>
+void Population<Args...>::loadInputs (const std::vector<void*>& inputs) {
+	for (int i = 0; i < popSize; i++) {
+		genomes [i]->loadInputs (inputs);
+	}
+}
+
+template <typename... Args>
+void Population<Args...>::loadInputs (const std::vector<void*>& inputs, unsigned int genome_id) {
+	genomes [genome_id]->loadInputs (inputs);
+}
+
+template <typename... Args>
+void Population<Args...>::loadInput (void* input, unsigned int input_id) {
+	for (std::pair<const unsigned int, std::unique_ptr<Genome<Args...>>>& genome : genomes) {
+		genome.second->loadInput (input, input_id);
+	}
+}
+
+template <typename... Args>
+void Population<Args...>::loadInput (void* input, unsigned int input_id, unsigned int genome_id) {
+	genomes [genome_id]->loadInput (input, input_id);
 }
 
 template <typename... Args>
