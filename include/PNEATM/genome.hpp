@@ -244,6 +244,12 @@ class Genome {
 		~Genome ();
 
 		/**
+		 * @brief Get the ID.
+		 * @return The ID.
+		 */
+		unsigned int getID () {return id;};
+
+		/**
 		 * @brief Get the fitness.
 		 * @return The fitness.
 		 */
