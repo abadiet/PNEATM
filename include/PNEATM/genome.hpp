@@ -313,6 +313,19 @@ class Genome {
 		T_out getOutput (int output_id);
 
 		/**
+		 * @brief Get the outputs.
+		 * @return A vector containing void pointer to the outputs.
+		 */
+		std::vector<void*> getOutputs ();
+
+		/**
+		 * @brief Get a specific output.
+		 * @param output_id The ID of the output to get.
+		 * @return A void pointer to the ouput.
+		 */
+		void* getOutput (int output_id);
+
+		/**
 		 * @brief Perform mutation operations.
 		 * @param conn_innov A pointer to the connections innovation tracker.
 		 * @param node_innov A pointer to the nodes innovation tracker.
@@ -814,7 +827,6 @@ void Genome<Args...>::SetUsefulNodes_Recursive (const unsigned int nodeId) {
 	}
 }
 
-
 template <typename... Args>
 template <typename T_out>
 std::vector<T_out> Genome<Args...>::getOutputs () {
@@ -828,7 +840,21 @@ std::vector<T_out> Genome<Args...>::getOutputs () {
 template <typename... Args>
 template <typename T_out>
 T_out Genome<Args...>::getOutput (int output_id) {
-	return *static_cast<T_out*> (nodes[nbBias + nbInput + output_id]->getOutput ());
+	return *static_cast<T_out*> (nodes [nbBias + nbInput + output_id]->getOutput ());
+}
+
+template <typename... Args>
+std::vector<void*> Genome<Args...>::getOutputs () {
+	std::vector<void*> outputs;
+	for (unsigned int i = 0; i < nbOutput; i++) {
+		outputs.push_back (nodes [nbBias + nbInput + i]->getOutput ());
+	}
+	return outputs;
+}
+
+template <typename... Args>
+void* Genome<Args...>::getOutput (int output_id) {
+	return nodes [nbBias + nbInput + output_id]->getOutput ();
 }
 
 template <typename... Args>
