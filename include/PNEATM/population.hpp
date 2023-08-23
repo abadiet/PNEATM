@@ -631,12 +631,12 @@ void Population<Args...>::run (const unsigned int N_runs, std::vector<std::vecto
 				genome->loadInputs (outputs_cur);
 				genome->runNetwork ();
 				outputs_cur = genome->getOutputs ();
-				outputs->push_back (outputs_cur);
+				(*outputs) [k] = outputs_cur;
 			}
 		};
 
 		// reset outputs
-		(*outputs) = std::vector<std::vector<std::vector<void*>>> (popSize, std::vector<std::vector<void*>> (0, std::vector<void*> {}));
+		(*outputs) = std::vector<std::vector<std::vector<void*>>> (popSize, std::vector<std::vector<void*>> (N_runs, std::vector<void*> {}));
 
 		for (std::pair<const unsigned int, std::unique_ptr<Genome<Args...>>>& genome : genomes) {
 			// add the task to a specific thread
