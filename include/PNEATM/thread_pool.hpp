@@ -20,8 +20,6 @@ public:
     template <typename Func, typename... Args>
     std::future<T_Return> enqueue(Func&& func, Args&&... args);
 
-    void waitAllTasks ();
-
 private:
     std::vector<std::thread> workers;
     std::queue<std::packaged_task<T_Return ()>> tasks;
@@ -88,15 +86,9 @@ std::future<T_Return> ThreadPool<T_Return>::enqueue (Func&& func, Args&&... args
     }
 
     // there is a new task
-    condition.notify_one();
+    condition.notify_one ();
 
     return result;
-}
-
-template <typename T_Return>
-void ThreadPool<T_Return>::waitAllTasks () {
-    std::unique_lock<std::mutex> lock (queueMutex);
-    condition.wait (lock, [&] { return tasks.empty (); });
 }
 
 }

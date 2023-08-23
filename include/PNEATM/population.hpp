@@ -551,8 +551,7 @@ void Population<Args...>::run (const std::vector<std::vector<void*>>& inputs, st
 		}
 	}
 
-	// wait for the end of all tasks
-	pool.waitAllTasks ();
+	// wait for the end of all tasks as ~ThreadPool () is called
 }
 
 template <typename... Args>
@@ -602,9 +601,8 @@ void Population<Args...>::run (const std::vector<std::vector<std::vector<void*>>
 			);
 		}
 	}
-
-	// wait for the end of all tasks
-	pool.waitAllTasks ();
+	
+	// wait for the end of all tasks as ~ThreadPool () is called
 }
 
 template <typename... Args>
@@ -655,8 +653,7 @@ void Population<Args...>::run (const unsigned int N_runs, std::vector<std::vecto
 		}
 	}
 
-	// wait for the end of all tasks
-	pool.waitAllTasks ();
+	// wait for the end of all tasks as ~ThreadPool () is called
 }
 
 template <typename... Args>
@@ -684,8 +681,7 @@ void Population<Args...>::runNetworks (unsigned int maxThreads) {
 		);
 	}
 
-	// wait for all the tasks
-	pool.waitAllTasks ();
+	// wait for the end of all tasks as ~ThreadPool () is called
 }
 
 template <typename... Args>
