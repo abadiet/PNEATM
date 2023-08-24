@@ -403,10 +403,12 @@ Population<Types...>::Population(unsigned int popSize, const std::vector<size_t>
 	logger (logger)
 {
 	logger->info ("Population initialization");
-	if (stats_filename != "") {
-		statsFile.open (stats_filename);
+
+	if (stats_filename != "") statsFile.open (stats_filename);
+	if (statsFile.is_open ()) {
 		statsFile << "Generation,Best Fitness,Average Fitness,Average Fitness (Adjusted),Species0,Species1\n";
-	} 
+		statsFile.flush ();
+	}
 
 	generation = 0;
 	fittergenome_id = -1;
@@ -427,9 +429,11 @@ Population<Types...>::Population (const std::string& filename, const std::vector
 	logger (logger)
 {
 	logger->info ("Population loading");
-	if (stats_filename != "") {
-		statsFile.open (stats_filename);
+
+	if (stats_filename != "") statsFile.open (stats_filename);
+	if (statsFile.is_open ()) {
 		statsFile << "Generation,Best Fitness,Average Fitness,Average Fitness (Adjusted),Species0,Species1\n";
+		statsFile.flush ();
 	}
 
 	load (filename);
@@ -930,6 +934,7 @@ void Population<Types...>::UpdateFitnesses (double speciesSizeEvolutionLimit) {
 			statsFile << species [i].members.size () << ",";
 		}
 		statsFile << species.back ().members.size () << "\n";
+		statsFile.flush ();
 	}
 }
 
