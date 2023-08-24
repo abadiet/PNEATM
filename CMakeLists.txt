@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.5)
 
+# Options
+option(BUILD_EXAMPLES "Build Examples" ON)
+
 # Project
 project(pneatm)
 
@@ -25,4 +28,12 @@ find_package(spdlog REQUIRED)
 find_package(SFML COMPONENTS window system graphics REQUIRED)
 
 # Link Libraries
-target_link_libraries(${PROJECT_NAME} PRIVATE spdlog::spdlog sfml-window sfml-system sfml-graphics)
+target_link_libraries(${PROJECT_NAME}
+	PUBLIC spdlog::spdlog
+	PRIVATE sfml-window sfml-system sfml-graphics
+)
+
+if(BUILD_EXAMPLES)
+	# SnakePNEATM
+    add_subdirectory(examples/snake)
+endif()

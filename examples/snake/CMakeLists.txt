@@ -19,8 +19,5 @@ target_compile_options(${PROJECT_NAME} PRIVATE
 	$<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-O3 -Wall -Wextra -Werror -Wfloat-equal -Wundef -Wcast-align -Wwrite-strings -Wunreachable-code -Wconversion -Wno-error=maybe-uninitialized -Wpedantic>
 )
 
-# Add Libraries
-add_subdirectory(../../ ../../build)
-
 # Link Libraries
 target_link_libraries(${PROJECT_NAME} PRIVATE pneatm)
