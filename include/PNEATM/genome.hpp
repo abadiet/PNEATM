@@ -727,7 +727,7 @@ void Genome<Types...>::runNetwork () {
     }
 	for (optimize_network_ope& ope : optimize_operations_recu_active) {
 		ope.node_addToInput->AddToInput (
-			ope.node_getOutput->getOutput (ope.conn_inNodeRecu),
+			ope.node_getOutput->getOutput (ope.conn_inNodeRecu - 1),
 			ope.conn_weight
 		);
 	}
