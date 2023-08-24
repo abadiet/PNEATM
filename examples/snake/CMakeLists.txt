@@ -11,7 +11,7 @@ file(GLOB_RECURSE HEADERS include/*.hpp)
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 
 # Includes
-target_include_directories(${PROJECT_NAME} PUBLIC include)
+target_include_directories(${PROJECT_NAME} PRIVATE include)
 
 # Flags
 target_compile_options(${PROJECT_NAME} PRIVATE
@@ -21,7 +21,7 @@ target_compile_options(${PROJECT_NAME} PRIVATE
 
 # Add Libraries
 add_subdirectory(../../ ../../build)
-target_include_directories(${PROJECT_NAME} PUBLIC ${PNEATM_INCLUDES})
+target_include_directories(${PROJECT_NAME} PRIVATE ${PNEATM_INCLUDES})
 
 # Link Libraries
-target_link_libraries(${PROJECT_NAME} PUBLIC pneatm)
+target_link_libraries(${PROJECT_NAME} PRIVATE pneatm)
