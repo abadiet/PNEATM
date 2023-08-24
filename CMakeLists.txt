@@ -26,4 +26,4 @@ find_package(spdlog REQUIRED)
 find_package(SFML COMPONENTS window system graphics REQUIRED)
 
 # Link Libraries
-target_link_libraries(${PROJECT_NAME} PUBLIC spdlog::spdlog sfml-window sfml-system sfml-graphics)
+target_link_libraries(${PROJECT_NAME} PRIVATE spdlog::spdlog sfml-window sfml-system sfml-graphics)
