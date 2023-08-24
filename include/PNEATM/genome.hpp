@@ -588,15 +588,14 @@ Genome<Types...>::Genome (const unsigned int id, const std::vector<size_t>& bias
 	// CONNECTIONS
 	unsigned int iConn = 0;
 	while (iConn < N_ConnInit) {
-
 		// inNodeId and outNodeId
-		unsigned int inNodeId = Random_UInt (0, (unsigned int) nodes.size() - 1);
-		unsigned int outNodeId = Random_UInt (0, (unsigned int) nodes.size() - 1);
+		unsigned int inNodeId = Random_UInt (0, (unsigned int) nodes.size () - 1);
+		unsigned int outNodeId = Random_UInt (0, (unsigned int) nodes.size () - 1);
 
 		// inNodeRecu
 		unsigned int inNodeRecu = 0;
 		if (Random_Double (0.0, 1.0, true, false) < probRecuInit) {
-			inNodeRecu = Random_UInt (0, maxRecuInit);
+			inNodeRecu = Random_UInt (1, maxRecuInit);
 		}
 		if (CheckNewConnectionValidity (inNodeId, outNodeId, inNodeRecu)) {	// we don't care of former connections as there is no disabled connection for now
 			// id
@@ -923,7 +922,7 @@ bool Genome<Types...>::CheckNewConnectionValidity (unsigned int inNodeId, unsign
 				return false;	// it is already an enabled connection
 			} else {
 				// it is a disabled connection
-				 *disabled_conn_id = (int) conn.second.id;
+				*disabled_conn_id = (int) conn.second.id;
 			}
 		}
 	}
