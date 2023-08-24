@@ -10,6 +10,7 @@
 #include <PNEATM/utils.hpp>
 #include <vector>
 #include <unordered_map>
+#include <set>
 #include <SFML/Graphics.hpp>
 #include <cmath>
 #include <iostream>
@@ -391,6 +392,13 @@ class Genome {
 				conn_inNodeRecu (conn_inNodeRecu),
 				conn_weight (conn_weight)
 			{}
+
+			/**
+			 * @brief Operator< that compare optimize_network_opes relatively to their inNodeId, useful for std::set<optimize_network_ope>
+			 */
+			bool operator< (const optimize_network_ope& other) const {
+				return conn_inNodeRecu < other.conn_inNodeRecu;
+			};
 		};
 
 		unsigned int id;
@@ -407,7 +415,8 @@ class Genome {
 		std::vector<std::vector<NodeBase*>> optimize_nodes_process;	// TODO pointers or ids
 		std::vector<NodeBase*> optimize_nodes_reset;	// TODO pointers or ids
 		std::vector<std::vector<optimize_network_ope>> optimize_operations_nonrecu;	// TODO pointers or ids
-		std::vector<optimize_network_ope> optimize_operations_recu;	// TODO pointers or ids
+		std::set<optimize_network_ope> optimize_operations_recu_waiting;	// TODO pointers or ids
+		std::vector<optimize_network_ope> optimize_operations_recu_active;	// TODO pointers or ids
 		bool network_is_optimized;
 
 		double fitness;
@@ -710,16 +719,17 @@ void Genome<Types...>::runNetwork () {
 	}
 
 	// recurent connections: we already know every input, so we don't care of layers
-	for (optimize_network_ope& ope : optimize_operations_recu) {
-		if (ope.conn_inNodeRecu <= N_runNetwork) {
-			ope.node_addToInput->AddToInput (
-				ope.node_getOutput->getOutput (ope.conn_inNodeRecu - 1),
-				ope.conn_weight
-			);
-		} else {
-			// the input of the connection isn't existing yet!
-			// we consider that the connection isn't existing
-		}
+	typename std::set<pneatm::Genome<Types...>::optimize_network_ope>::iterator it = optimize_operations_recu_waiting.begin ();
+    while (it != optimize_operations_recu_waiting.end () && it->conn_inNodeRecu <= N_runNetwork) {
+		// it is now an active connection
+		optimize_operations_recu_active.push_back (*it);
+        it = optimize_operations_recu_waiting.erase (it);
+    }
+	for (optimize_network_ope& ope : optimize_operations_recu_active) {
+		ope.node_addToInput->AddToInput (
+			ope.node_getOutput->getOutput (ope.conn_inNodeRecu),
+			ope.conn_weight
+		);
 	}
 
 	unsigned int lastLayer = nodes [nbBias + nbInput]->layer;
@@ -773,8 +783,9 @@ void Genome<Types...>::OptimizeNetwork () {
 
 	optimize_nodes_process.clear ();
 	optimize_nodes_reset.clear ();
-	optimize_operations_recu.clear ();
+	optimize_operations_recu_waiting.clear ();
 	optimize_operations_nonrecu.clear ();
+	optimize_operations_recu_active.clear ();
 	const int lastLayer = nodes [nbBias + nbInput]->layer;
 
 	// non-recurrent connections
@@ -793,14 +804,14 @@ void Genome<Types...>::OptimizeNetwork () {
 		}
 	}
 
-	// recurrent connections
+	// recurrent connections: sort them by recurrency level from the lower to the highest
 	for (std::pair<const unsigned int, Connection>& conn : connections) {
 		if (
 			conn.second.enabled
 			&& nodes [conn.second.outNodeId]->is_useful
 			&& conn.second.inNodeRecu > 0
 		) {	// if the connection still exist, is useful and is recurrent
-			optimize_operations_recu.push_back (optimize_network_ope (nodes [conn.second.outNodeId].get (), nodes [conn.second.inNodeId].get (), conn.second.inNodeRecu, conn.second.weight));
+			optimize_operations_recu_waiting.insert (optimize_network_ope (nodes [conn.second.outNodeId].get (), nodes [conn.second.inNodeId].get (), conn.second.inNodeRecu, conn.second.weight));
 		}
 	}
 
