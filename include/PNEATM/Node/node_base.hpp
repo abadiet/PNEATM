@@ -53,6 +53,11 @@ class NodeBase{
 		virtual void* getOutput (unsigned int depth = 0) = 0;
 
 		/**
+		 * @brief Reset the map's outputs.
+		 */
+		virtual void resetOutputs () = 0;
+
+		/**
 		 * @brief Process the node to compute its output value.
 		 */
 		virtual void process () = 0;
@@ -129,6 +134,16 @@ class NodeBase{
 		 * @brief `true` if the node play a role in the network, else `false`.
 		 */
 		bool is_useful;
+
+		/**
+		 * @brief Maximum recurrency of the node in the network.
+		 */
+		unsigned int max_depth_recu;
+		
+		/**
+		 * @brief Map's index of the first element.
+		 */
+		unsigned int iFirstElem;
 
 	template <typename... Args>
 	friend class Genome;

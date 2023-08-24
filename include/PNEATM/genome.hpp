@@ -772,6 +772,7 @@ void Genome<Types...>::OptimizeNetwork () {
 	for (std::pair<const unsigned int, std::unique_ptr<NodeBase>>& node : nodes) {
 		// reset state
 		node.second->is_useful = false;
+		node.second->max_depth_recu = 0;
 	}
 	for (unsigned int i = nbBias + nbInput; i < nbBias + nbInput + nbOutput; i++) {
 		// for each output nodes
@@ -812,6 +813,10 @@ void Genome<Types...>::OptimizeNetwork () {
 			&& conn.second.inNodeRecu > 0
 		) {	// if the connection still exist, is useful and is recurrent
 			optimize_operations_recu_waiting.insert (optimize_network_ope (nodes [conn.second.outNodeId].get (), nodes [conn.second.inNodeId].get (), conn.second.inNodeRecu, conn.second.weight));
+
+			if (nodes [conn.second.inNodeId]->max_depth_recu < conn.second.inNodeRecu) {
+				nodes [conn.second.inNodeId]->max_depth_recu = conn.second.inNodeRecu;
+			}
 		}
 	}
 
@@ -829,6 +834,9 @@ void Genome<Types...>::OptimizeNetwork () {
 				optimize_nodes_process.back ().push_back (node.second.get ());
 			}
 		}
+	}
+	for (std::pair<const unsigned int, std::unique_ptr<NodeBase>>& node : nodes) {
+		node.second->resetOutputs ();
 	}
 
 	network_is_optimized = true;

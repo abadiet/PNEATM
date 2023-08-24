@@ -10,6 +10,7 @@
 #include <cstring>
 #include <memory>
 #include <fstream>
+#include <unordered_map>
 
 /* HEADER */
 
@@ -71,6 +72,11 @@ class Node : public NodeBase {
 		void* getOutput (unsigned int depth = 0) override;
 
 		/**
+		 * @brief Reset the map's outputs.
+		 */
+		void resetOutputs () override; 
+
+		/**
 		 * @brief Process the node to compute its output value.
 		 */
 		void process () override;
@@ -114,9 +120,8 @@ class Node : public NodeBase {
 
 	private:
 		T_in input;
-		std::vector<T_out> outputs;
+		std::unordered_map<unsigned int, T_out> outputs;
 		std::unique_ptr<ActivationFn<T_in, T_out>> activation_fn;
-
 		T_in resetValue;
 };
 
@@ -132,6 +137,8 @@ Node<T_in, T_out>::Node () :
 	activation_fn (std::make_unique<ActivationFn<T_in, T_out>> ())
 {
 	is_useful = false;
+	max_depth_recu = 0;
+	iFirstElem = 0;
 }
 
 template <typename T_in, typename T_out>
@@ -156,13 +163,24 @@ void Node<T_in, T_out>::AddToInput (void* value, double scalar) {
 
 template <typename T_in, typename T_out>
 void* Node<T_in, T_out>::getOutput (unsigned int depth) {
-	// TODO optimize depth == 0 => using .back ()
-	return static_cast<void*> (&outputs [(unsigned int) outputs.size () - 1 - depth]);
+	if (iFirstElem < depth) {
+		return static_cast<void*> (&outputs [max_depth_recu + 1 + iFirstElem - depth]);
+	}
+	return static_cast<void*> (&outputs [iFirstElem - depth]);
+}
+
+template <typename T_in, typename T_out>
+void Node<T_in, T_out>::resetOutputs () {
+	iFirstElem = 0;
+	outputs.clear ();
+	outputs.reserve (max_depth_recu + 1);
 }
 
 template <typename T_in, typename T_out>
 void Node<T_in, T_out>::process () {
-	outputs.push_back (activation_fn->process (input));
+	iFirstElem ++;
+	if (iFirstElem > max_depth_recu) iFirstElem = 0;
+	outputs [iFirstElem] = activation_fn->process (input);
 }
 
 template <typename T_in, typename T_out>
@@ -174,7 +192,8 @@ template <typename T_in, typename T_out>
 void Node<T_in, T_out>::reset (bool resetMemory) {
 	input = resetValue;
 	if (resetMemory) {
-		outputs.clear ();
+		max_depth_recu = 0;
+		resetOutputs ();
 	}
 }
 
@@ -204,17 +223,8 @@ void Node<T_in, T_out>::print (const std::string& prefix) const {
 	std::cout << prefix << "Output Type ID: " << index_T_out << std::endl;
 	std::cout << prefix << "Activation Function ID: " << index_activation_fn << std::endl;
 	std::cout << prefix << "Is Useful in the Network: " << is_useful << std::endl;
+	std::cout << prefix << "Maximum Level of Recurrency in the Network: " << max_depth_recu << std::endl;
 	std::cout << prefix << "Current Input Value: " << input << std::endl;
-	std::cout << prefix << "Outputs Values (younger first): ";
-	for (unsigned int i = 0; i < outputs.size (); i++) {
-		std::cout << outputs [i];
-		if (i < outputs.size () - 1) {
-			std::cout << " ~ ";
-		} else {
-			std::cout << std::endl;
-		}
-	}
-	std::cout << std::endl;
 	std::cout << prefix << "Reset Value: " << resetValue << std::endl;
 	std::cout << prefix << "Activation Function Parameters: ";
 	activation_fn->print (prefix);
@@ -225,6 +235,7 @@ void Node<T_in, T_out>::serialize (std::ofstream& outFile) const {
 	Serialize (id, outFile);
 	Serialize (innovId, outFile);
 	Serialize (is_useful, outFile);
+	Serialize (max_depth_recu, outFile);
 	Serialize (layer, outFile);
 	Serialize (index_T_in, outFile);
 	Serialize (index_T_out, outFile);
@@ -240,6 +251,7 @@ void Node<T_in, T_out>::deserialize (std::ifstream& inFile, const std::vector<st
 	Deserialize (id, inFile);
 	Deserialize (innovId, inFile);
 	Deserialize (is_useful, inFile);
+	Deserialize (max_depth_recu, inFile);
 	Deserialize (layer, inFile);
 	Deserialize (index_T_in, inFile);
 	Deserialize (index_T_out, inFile);
