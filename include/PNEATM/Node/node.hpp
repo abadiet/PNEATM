@@ -10,7 +10,7 @@
 #include <cstring>
 #include <memory>
 #include <fstream>
-#include <unordered_map>
+#include <deque>
 
 /* HEADER */
 
@@ -72,9 +72,9 @@ class Node : public NodeBase {
 		void* getOutput (unsigned int depth = 0) override;
 
 		/**
-		 * @brief Reset the map's outputs.
+		 * @brief Setup the vector's outputs.
 		 */
-		void resetOutputs () override; 
+		void setupOutputs () override; 
 
 		/**
 		 * @brief Process the node to compute its output value.
@@ -120,7 +120,7 @@ class Node : public NodeBase {
 
 	private:
 		T_in input;
-		std::unordered_map<unsigned int, T_out> outputs;
+		std::deque<T_out> outputs;
 		std::unique_ptr<ActivationFn<T_in, T_out>> activation_fn;
 		T_in resetValue;
 };
@@ -138,7 +138,6 @@ Node<T_in, T_out>::Node () :
 {
 	is_useful = false;
 	max_depth_recu = 0;
-	iFirstElem = 0;
 }
 
 template <typename T_in, typename T_out>
@@ -163,24 +162,19 @@ void Node<T_in, T_out>::AddToInput (void* value, double scalar) {
 
 template <typename T_in, typename T_out>
 void* Node<T_in, T_out>::getOutput (unsigned int depth) {
-	if (iFirstElem < depth) {
-		return static_cast<void*> (&outputs [max_depth_recu + 1 + iFirstElem - depth]);
-	}
-	return static_cast<void*> (&outputs [iFirstElem - depth]);
+	return static_cast<void*> (&outputs [depth]);
 }
 
 template <typename T_in, typename T_out>
-void Node<T_in, T_out>::resetOutputs () {
-	iFirstElem = 0;
+void Node<T_in, T_out>::setupOutputs () {
 	outputs.clear ();
-	outputs.reserve (max_depth_recu + 1);
+	outputs.resize (max_depth_recu + 1);
 }
 
 template <typename T_in, typename T_out>
 void Node<T_in, T_out>::process () {
-	iFirstElem ++;
-	if (iFirstElem > max_depth_recu) iFirstElem = 0;
-	outputs [iFirstElem] = activation_fn->process (input);
+	outputs.pop_back ();
+	outputs.push_front (activation_fn->process (input));
 }
 
 template <typename T_in, typename T_out>
@@ -193,7 +187,7 @@ void Node<T_in, T_out>::reset (bool resetMemory) {
 	input = resetValue;
 	if (resetMemory) {
 		max_depth_recu = 0;
-		resetOutputs ();
+		outputs.clear ();
 	}
 }
 

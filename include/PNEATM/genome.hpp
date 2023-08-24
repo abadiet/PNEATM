@@ -836,7 +836,7 @@ void Genome<Types...>::OptimizeNetwork () {
 		}
 	}
 	for (std::pair<const unsigned int, std::unique_ptr<NodeBase>>& node : nodes) {
-		node.second->resetOutputs ();
+		node.second->setupOutputs ();
 	}
 
 	network_is_optimized = true;

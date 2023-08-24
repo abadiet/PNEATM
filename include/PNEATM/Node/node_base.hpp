@@ -53,9 +53,9 @@ class NodeBase{
 		virtual void* getOutput (unsigned int depth = 0) = 0;
 
 		/**
-		 * @brief Reset the map's outputs.
+		 * @brief Setup the vector's outputs.
 		 */
-		virtual void resetOutputs () = 0;
+		virtual void setupOutputs () = 0;
 
 		/**
 		 * @brief Process the node to compute its output value.
@@ -139,11 +139,6 @@ class NodeBase{
 		 * @brief Maximum recurrency of the node in the network.
 		 */
 		unsigned int max_depth_recu;
-		
-		/**
-		 * @brief Map's index of the first element.
-		 */
-		unsigned int iFirstElem;
 
 	template <typename... Args>
 	friend class Genome;
