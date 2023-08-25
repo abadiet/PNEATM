@@ -4,13 +4,13 @@
 #include <PNEATM/Node/node_base.hpp>
 #include <PNEATM/Node/Activation_Function/activation_function_base.hpp>
 #include <PNEATM/Node/Activation_Function/activation_function.hpp>
+#include <PNEATM/circular_buffer.hpp>
 #include <PNEATM/utils.hpp>
 #include <functional>
 #include <iostream>
 #include <cstring>
 #include <memory>
 #include <fstream>
-#include <deque>
 
 /* HEADER */
 
@@ -120,7 +120,7 @@ class Node : public NodeBase {
 
 	private:
 		T_in input;
-		std::deque<T_out> outputs;
+		CircularBuffer<T_out> outputs;
 		std::unique_ptr<ActivationFn<T_in, T_out>> activation_fn;
 		T_in resetValue;
 };
@@ -162,19 +162,17 @@ void Node<T_in, T_out>::AddToInput (void* value, double scalar) {
 
 template <typename T_in, typename T_out>
 void* Node<T_in, T_out>::getOutput (unsigned int depth) {
-	return static_cast<void*> (&outputs [depth]);
+	return static_cast<void*> (outputs.access_ptr (depth));
 }
 
 template <typename T_in, typename T_out>
 void Node<T_in, T_out>::setupOutputs () {
-	outputs.clear ();
-	outputs.resize (max_depth_recu + 1);
+	outputs = CircularBuffer<T_out> (max_depth_recu + 1);
 }
 
 template <typename T_in, typename T_out>
 void Node<T_in, T_out>::process () {
-	outputs.pop_back ();
-	outputs.push_front (activation_fn->process (input));
+	outputs.insert (activation_fn->process (input));
 }
 
 template <typename T_in, typename T_out>
@@ -187,7 +185,7 @@ void Node<T_in, T_out>::reset (bool resetMemory) {
 	input = resetValue;
 	if (resetMemory) {
 		max_depth_recu = 0;
-		outputs.clear ();
+		outputs = CircularBuffer<T_out> (0);
 	}
 }
 
