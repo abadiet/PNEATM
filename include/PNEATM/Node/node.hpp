@@ -102,8 +102,9 @@ class Node : public NodeBase {
 		/**
 		 * @brief Reset the node to its initial state.
 		 * @param resetMemory `true` to reset memory too, `false` else. (default is `true`)
+		 * @param resetBuffer `true` to reset the whole output's buffer too, `false` else. (default is `false`)
 		 */
-		void reset (bool resetMemory = true) override;
+		void reset (bool resetMemory = true, bool resetBuffer = false) override;
 
 		/**
 		 * @brief Create a clone of the node.
@@ -204,12 +205,14 @@ void Node<T_in, T_out>::mutate (double fitness) {
 }
 
 template <typename T_in, typename T_out>
-void Node<T_in, T_out>::reset (bool resetMemory) {
+void Node<T_in, T_out>::reset (bool resetMemory, bool resetBuffer) {
 	input = resetValue;
 	if (resetMemory) {
+		outputs_saved.clear ();
+	}
+	if (resetBuffer) {
 		max_depth_recu = 0;
 		outputs_buf = CircularBuffer<T_out> (0);
-		outputs_saved.clear ();
 	}
 }
 
