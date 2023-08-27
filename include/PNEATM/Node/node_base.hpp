@@ -58,6 +58,18 @@ class NodeBase{
 		virtual void setupOutputs () = 0;
 
 		/**
+		 * @brief Save the current output t othe saved set.
+		 * @param depth The output's depth (e.g 0 stands for the current output and 3 means 3 calls ro runNetwork later). (default is 0)
+		 */
+		virtual void saveOutput (unsigned int depth = 0) = 0;
+
+		/**
+		 * @brief Get the saved outputs.
+		 * @return A pointer to the saved outputs.
+		 */
+		virtual void* getSavedOutputs () = 0;
+
+		/**
 		 * @brief Process the node to compute its output value.
 		 */
 		virtual void process () = 0;

@@ -74,7 +74,19 @@ class Node : public NodeBase {
 		/**
 		 * @brief Setup the vector's outputs.
 		 */
-		void setupOutputs () override; 
+		void setupOutputs () override;
+
+		/**
+		 * @brief Save the current output t othe saved set.
+		 * @param depth The output's depth (e.g 0 stands for the current output and 3 means 3 calls ro runNetwork later). (default is 0)
+		 */
+		void saveOutput (unsigned int depth = 0) override;
+
+		/**
+		 * @brief Get the saved outputs.
+		 * @return A pointer to the saved outputs.
+		 */
+		void* getSavedOutputs () override;
 
 		/**
 		 * @brief Process the node to compute its output value.
@@ -120,7 +132,8 @@ class Node : public NodeBase {
 
 	private:
 		T_in input;
-		CircularBuffer<T_out> outputs;
+		CircularBuffer<T_out> outputs_buf;
+		std::vector<T_out> outputs_saved;
 		std::unique_ptr<ActivationFn<T_in, T_out>> activation_fn;
 		T_in resetValue;
 };
@@ -162,17 +175,27 @@ void Node<T_in, T_out>::AddToInput (void* value, double scalar) {
 
 template <typename T_in, typename T_out>
 void* Node<T_in, T_out>::getOutput (unsigned int depth) {
-	return static_cast<void*> (outputs.access_ptr (depth));
+	return static_cast<void*> (outputs_buf.access_ptr (depth));
+}
+
+template <typename T_in, typename T_out>
+void Node<T_in, T_out>::saveOutput (unsigned int depth) {
+	return outputs_saved.push_back (outputs_buf [depth]);
+}
+
+template <typename T_in, typename T_out>
+void* Node<T_in, T_out>::getSavedOutputs () {
+	return static_cast<void*> (&outputs_saved);
 }
 
 template <typename T_in, typename T_out>
 void Node<T_in, T_out>::setupOutputs () {
-	outputs = CircularBuffer<T_out> (max_depth_recu + 1);
+	outputs_buf = CircularBuffer<T_out> (max_depth_recu + 1);
 }
 
 template <typename T_in, typename T_out>
 void Node<T_in, T_out>::process () {
-	outputs.insert (activation_fn->process (input));
+	outputs_buf.insert (activation_fn->process (input));
 }
 
 template <typename T_in, typename T_out>
@@ -185,7 +208,8 @@ void Node<T_in, T_out>::reset (bool resetMemory) {
 	input = resetValue;
 	if (resetMemory) {
 		max_depth_recu = 0;
-		outputs = CircularBuffer<T_out> (0);
+		outputs_buf = CircularBuffer<T_out> (0);
+		outputs_saved.clear ();
 	}
 }
 
@@ -234,7 +258,8 @@ void Node<T_in, T_out>::serialize (std::ofstream& outFile) const {
 	Serialize (index_activation_fn, outFile);
 	activation_fn->serialize (outFile);
 	Serialize (input, outFile);
-	Serialize (outputs, outFile);
+	outputs_buf.serialize (outFile);
+	Serialize (outputs_saved, outFile);
 	Serialize (resetValue, outFile);
 }
 
@@ -251,7 +276,8 @@ void Node<T_in, T_out>::deserialize (std::ifstream& inFile, const std::vector<st
 	setActivationFn (activationFns [index_T_in][index_T_out][index_activation_fn]->clone (true));	// clone with parameters doesn't effect anything has we'll overwrite those parameters later
 	activation_fn->deserialize (inFile);	// overwrite parameters
 	Deserialize (input, inFile);
-	Deserialize (outputs, inFile);
+	outputs_buf.deserialize (inFile);
+	Deserialize (outputs_saved, inFile);
 	Deserialize (resetValue, inFile);
 }
 

@@ -1,8 +1,10 @@
 #ifndef UTILS_HPP
 #define UTILS_HPP
 
-#include <fstream>
 #include <vector>
+#include <iostream>
+#include <fstream>
+#include <cstdlib>
 #include <unordered_map>
 
 #define UNUSED(expr) do { (void) (expr); } while (0)
@@ -153,7 +155,6 @@ void Deserialize (std::unordered_map<unsigned int, T>& var, std::ifstream& inFil
         var.insert (std::make_pair (key, value));
     }
 }
-
 
 }
 

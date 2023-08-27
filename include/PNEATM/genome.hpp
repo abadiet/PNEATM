@@ -309,6 +309,16 @@ class Genome {
 		void runNetwork ();
 
 		/**
+		 * @brief Save an output.
+		 */
+		void saveOutput (int output_id);
+
+		/**
+		 * @brief Save the outputs.
+		 */
+		void saveOutputs ();
+
+		/**
 		 * @brief Get the outputs.
 		 * @tparam T_out The type of output data.
 		 * @return A vector containing the outputs.
@@ -326,8 +336,8 @@ class Genome {
 		T_out getOutput (int output_id);
 
 		/**
-		 * @brief Get the outputs.
-		 * @return A vector containing void pointer to the outputs.
+		 * @brief Get the saved outputs.
+		 * @return A void pointer to the ouput.
 		 */
 		std::vector<void*> getOutputs ();
 
@@ -337,6 +347,12 @@ class Genome {
 		 * @return A void pointer to the ouput.
 		 */
 		void* getOutput (int output_id);
+
+		/**
+		 * @brief Get the outputs.
+		 * @return A vector containing void pointer to a vector of outputs.
+		 */
+		std::vector<void*> getSavedOutputs ();
 
 		/**
 		 * @brief Perform mutation operations.
@@ -858,6 +874,18 @@ void Genome<Types...>::SetUsefulNodes_Recursive (const unsigned int nodeId) {
 }
 
 template <typename... Types>
+void Genome<Types...>::saveOutput (int output_id) {
+	nodes [nbBias + nbInput + output_id]->saveOutput ();
+}
+
+template <typename... Types>
+void Genome<Types...>::saveOutputs () {
+	for (unsigned int i = 0; i < nbOutput; i++) {
+		nodes [nbBias + nbInput + i]->saveOutput ();
+	}
+}
+
+template <typename... Types>
 template <typename T_out>
 std::vector<T_out> Genome<Types...>::getOutputs () {
 	std::vector<T_out> outputs;
@@ -885,6 +913,15 @@ std::vector<void*> Genome<Types...>::getOutputs () {
 template <typename... Types>
 void* Genome<Types...>::getOutput (int output_id) {
 	return nodes [nbBias + nbInput + output_id]->getOutput ();
+}
+
+template <typename... Types>
+std::vector<void*> Genome<Types...>::getSavedOutputs () {
+	std::vector<void*> outputs;
+	for (unsigned int i = 0; i < nbOutput; i++) {
+		outputs.push_back (nodes [nbBias + nbInput + i]->getSavedOutputs ());
+	}
+	return outputs;
 }
 
 template <typename... Types>

@@ -3,9 +3,6 @@
 
 #include <PNEATM/utils.hpp>
 #include <iostream>
-#include <cstring>
-#include <fstream>
-#include <unordered_map>
 
 namespace pneatm {
 
