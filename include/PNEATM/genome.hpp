@@ -729,11 +729,6 @@ void Genome<Types...>::runNetwork () {
 		node->reset (false);
 	}
 
-	// process output of input/bias nodes as we already know their input
-	for (NodeBase* node : optimize_nodes_process [0]) {
-		node->process ();
-	}
-
 	// recurent connections: we already know every input, so we don't care of layers
 	typename std::set<pneatm::Genome<Types...>::optimize_network_ope>::iterator it = optimize_operations_recu_waiting.begin ();
     while (it != optimize_operations_recu_waiting.end () && it->conn_inNodeRecu <= N_runNetwork) {
@@ -746,6 +741,11 @@ void Genome<Types...>::runNetwork () {
 			ope.node_getOutput->getOutput (ope.conn_inNodeRecu - 1),
 			ope.conn_weight
 		);
+	}
+
+	// process output of input/bias nodes as we already know their input
+	for (NodeBase* node : optimize_nodes_process [0]) {
+		node->process ();
 	}
 
 	unsigned int lastLayer = nodes [nbBias + nbInput]->layer;
