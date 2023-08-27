@@ -1,9 +1,8 @@
 #ifndef CIRCULAR_BUFFER_HPP
 #define CIRCULAR_BUFFER_HPP
 
-#include <iostream>
+#include <PNEATM/utils.hpp>
 #include <vector>
-#include <unordered_map>
 
 namespace pneatm {
 
@@ -44,6 +43,18 @@ public:
      */
     T* access_ptr (unsigned int n);
 
+    /**
+     * @brief Serialize the object to an output file stream.
+     * @param outFile The output file stream to which the CircularBuffer will be written.
+     */
+    void serialize (std::ofstream& outFile) const;
+
+    /**
+     * @brief Deserialize the object from an input file stream.
+     * @param inFile The input file stream from which the CircularBuffer will be read.
+     */
+    void deserialize (std::ifstream& inFile);
+
 private:
     unsigned int capacity;
     std::vector<T> buffer;
@@ -72,6 +83,20 @@ T CircularBuffer<T>::operator[] (unsigned int n) const {
 template <typename T>
 T* CircularBuffer<T>::access_ptr (unsigned int n) {
     return &buffer [(currentIndex - 1 - n + capacity) % capacity];
+}
+
+template <typename T>
+void CircularBuffer<T>::serialize (std::ofstream& outFile) const {
+    Serialize (capacity, outFile);
+    Serialize (buffer, outFile);
+    Serialize (currentIndex, outFile);
+}
+
+template <typename T>
+void CircularBuffer<T>::deserialize (std::ifstream& inFile) {
+    Deserialize (capacity, inFile);
+    Deserialize (buffer, inFile);
+    Deserialize (currentIndex, inFile);
 }
 
 }
