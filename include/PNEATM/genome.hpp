@@ -299,7 +299,7 @@ class Genome {
 		void loadInput (void* input, int input_id);
 
 		/**
-		 * @brief Reset the memory.
+		 * @brief Reset the saved outputs and buffer.
 		 */
 		void resetMemory ();
 
@@ -712,7 +712,7 @@ template <typename... Types>
 void Genome<Types...>::resetMemory () {
 	N_runNetwork = 0;
 	for (std::pair<const unsigned int, std::unique_ptr<NodeBase>>& node : nodes) {
-		node.second->reset (true);
+		node.second->reset (true, true);
 	}
 }
 
