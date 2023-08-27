@@ -178,7 +178,7 @@ class Population {
 		 * @param outputs Pointer to the outputs. (default is nullptr which doesn't track any output)
 		 * @param maxThreads Maximum number of threads. (default is 0 which default to the number of cores)
 		 */
-		void run (const std::vector<std::vector<void*>>& inputs, std::vector<std::vector<std::vector<void*>>>* outputs = nullptr, unsigned int maxThreads = 0);
+		void run (const std::vector<std::vector<void*>>& inputs, std::vector<std::vector<void*>>* outputs = nullptr, unsigned int maxThreads = 0);
 
 		/**
 		 * @brief Run multiple times the networks over the inputs. The inputs are different for each genomes.
@@ -186,7 +186,7 @@ class Population {
 		 * @param outputs Pointer to the outputs. (default is nullptr which doesn't track any output)
 		 * @param maxThreads Maximum number of threads. (default is 0 which default to the number of cores)
 		 */
-		void run (const std::vector<std::vector<std::vector<void*>>>& inputs, std::vector<std::vector<std::vector<void*>>>* outputs = nullptr, unsigned int maxThreads = 0);
+		void run (const std::vector<std::vector<std::vector<void*>>>& inputs, std::vector<std::vector<void*>>* outputs = nullptr, unsigned int maxThreads = 0);
 
 		/**
 		 * @brief Run multiple times the networks by looping the outputs and inputs e.g. the n-th outputs is the n+1-th inputs.
@@ -194,7 +194,7 @@ class Population {
 		 * @param outputs Pointer to the outputs. (default is nullptr which doesn't track any output)
 		 * @param maxThreads Maximum number of threads. (default is 0 which default to the number of cores)
 		 */
-		void run (const unsigned int N_runs, std::vector<std::vector<std::vector<void*>>>* outputs = nullptr, unsigned int maxThreads = 0);
+		void run (const unsigned int N_runs, std::vector<std::vector<void*>>* outputs = nullptr, unsigned int maxThreads = 0);
 
 		/**
 		 * @brief Run the network of the entire population.
@@ -512,43 +512,60 @@ void Population<Types...>::loadInput (void* input, unsigned int input_id, unsign
 }
 
 template <typename... Types>
-void Population<Types...>::run (const std::vector<std::vector<void*>>& inputs, std::vector<std::vector<std::vector<void*>>>* outputs, unsigned int maxThreads) {
-	ThreadPool<void> pool (maxThreads);
-
+void Population<Types...>::run (const std::vector<std::vector<void*>>& inputs, std::vector<std::vector<void*>>* outputs, unsigned int maxThreads) {
 	if (outputs != nullptr) {
 		// we do care of outputs
 
-		std::function<void (Genome<Types...>*, const std::vector<std::vector<void*>>&, std::vector<std::vector<void*>>*)> func = [&] (Genome<Types...>* genome, const std::vector<std::vector<void*>>& inputs, std::vector<std::vector<void*>>* outputs) -> void {
-			for (const std::vector<void*>& inputs_cur : inputs) {
+		ThreadPool<std::vector<void*>> pool (maxThreads);
+
+		// the task
+		std::function<std::vector<void*> (Genome<Types...>*, const std::vector<std::vector<void*>>&)> func = [&] (Genome<Types...>* genome, const std::vector<std::vector<void*>>& inputs_gen) -> std::vector<void*> {
+			for (const std::vector<void*>& inputs_cur : inputs_gen) {
 				genome->loadInputs (inputs_cur);
 				genome->runNetwork ();
-				outputs->push_back (genome->getOutputs ());
+				genome->saveOutputs ();
 			}
+			return genome->getSavedOutputs ();
 		};
 
-		// reset outputs
-		(*outputs) = std::vector<std::vector<std::vector<void*>>> (popSize, std::vector<std::vector<void*>> (0, std::vector<void*> {}));
-
+		// fill the thread pool
+		std::vector<std::future<std::vector<void*>>> results;
 		for (std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
 			// add the task to the pool
-			pool.enqueue (
-				func,
-				genome.second.get (),
-				inputs,
-				&(*outputs) [genome.second->id]
+			results.push_back (pool.enqueue (
+					func,
+					genome.second.get (),
+					inputs
+				)
 			);
 		}
+
+		// wait for tasks end
+		for (std::future<std::vector<void*>>& result : results) {
+			result.wait ();
+		}
+
+		// get results
+		outputs->clear ();
+		for (std::future<std::vector<void*>>& result : results) {
+			outputs->push_back (result.get ());
+		}
+
 	} else {
 		// we don't care of outputs
 		UNUSED (outputs);
 
-		std::function<void (Genome<Types...>*, const std::vector<std::vector<void*>>&)> func = [&] (Genome<Types...>* genome, const std::vector<std::vector<void*>>& inputs) -> void {
-			for (const std::vector<void*>& inputs_cur : inputs) {
+		ThreadPool<void> pool (maxThreads);
+
+		// the task
+		std::function<void (Genome<Types...>*, const std::vector<std::vector<void*>>&)> func = [&] (Genome<Types...>* genome, const std::vector<std::vector<void*>>& inputs_gen) -> void {
+			for (const std::vector<void*>& inputs_cur : inputs_gen) {
 				genome->loadInputs (inputs_cur);
 				genome->runNetwork ();
 			}
 		};
 
+		// fill the thread pool
 		for (std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
 			// add the task to the pool
 			pool.enqueue (
@@ -557,49 +574,67 @@ void Population<Types...>::run (const std::vector<std::vector<void*>>& inputs, s
 				inputs
 			);
 		}
-	}
 
-	// wait for the end of all tasks as ~ThreadPool () is called
+		// will wait for the end of all tasks as ~ThreadPool () will be called
+
+	}
 }
 
 template <typename... Types>
-void Population<Types...>::run (const std::vector<std::vector<std::vector<void*>>>& inputs, std::vector<std::vector<std::vector<void*>>>* outputs, unsigned int maxThreads) {
-	ThreadPool<void> pool (maxThreads);
-
+void Population<Types...>::run (const std::vector<std::vector<std::vector<void*>>>& inputs, std::vector<std::vector<void*>>* outputs, unsigned int maxThreads) {
 	if (outputs != nullptr) {
 		// we do care of outputs
 
-		std::function<void (Genome<Types...>*, const std::vector<std::vector<void*>>&, std::vector<std::vector<void*>>*)> func = [&] (Genome<Types...>* genome, const std::vector<std::vector<void*>>& inputs, std::vector<std::vector<void*>>* outputs) -> void {
-			for (const std::vector<void*>& inputs_cur : inputs) {
+		ThreadPool<std::vector<void*>> pool (maxThreads);
+
+		// the task
+		std::function<std::vector<void*> (Genome<Types...>*, const std::vector<std::vector<void*>>&)> func = [&] (Genome<Types...>* genome, const std::vector<std::vector<void*>>& inputs_gen) -> std::vector<void*> {
+			for (const std::vector<void*>& inputs_cur : inputs_gen) {
 				genome->loadInputs (inputs_cur);
 				genome->runNetwork ();
-				outputs->push_back (genome->getOutputs ());
+				genome->saveOutputs ();
 			}
+			return genome->getSavedOutputs ();
 		};
 
-		// reset outputs
-		(*outputs) = std::vector<std::vector<std::vector<void*>>> (popSize, std::vector<std::vector<void*>> (0, std::vector<void*> {}));
-
+		// fill the thread pool
+		std::vector<std::future<std::vector<void*>>> results;
 		for (std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
 			// add the task to the pool
-			pool.enqueue (
-				func,
-				genome.second.get (),
-				inputs [genome.second->id],
-				&(*outputs) [genome.second->id]
+			results.push_back (pool.enqueue (
+					func,
+					genome.second.get (),
+					inputs [genome.second->id]
+				)
 			);
 		}
+
+		// wait for tasks end
+		for (std::future<std::vector<void*>>& result : results) {
+			result.wait ();
+		}
+
+		// get results
+		outputs->clear ();
+		for (std::future<std::vector<void*>>& result : results) {
+			outputs->push_back (result.get ());
+		}
+
 	} else {
 		// we don't care of outputs
 		UNUSED (outputs);
 
-		std::function<void (Genome<Types...>*, const std::vector<std::vector<void*>>&)> func = [&] (Genome<Types...>* genome, const std::vector<std::vector<void*>>& inputs) -> void {
-			for (const std::vector<void*>& inputs_cur : inputs) {
-				genome->loadInputs (inputs_cur);
+		ThreadPool<void> pool (maxThreads);
+
+		// the task
+		std::function<void (Genome<Types...>*, const std::vector<std::vector<void*>>&)> func = [&] (Genome<Types...>* genome, const std::vector<std::vector<void*>>& inputs_gen) -> void {
+			for (const std::vector<void*>& inputs_cur : inputs_gen) {
+				genome->loadInputs (genome->getOutputs ());
 				genome->runNetwork ();
 			}
 		};
 
+		// fill the thread pool
 		for (std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
 			// add the task to the pool
 			pool.enqueue (
@@ -608,43 +643,58 @@ void Population<Types...>::run (const std::vector<std::vector<std::vector<void*>
 				inputs [genome.second->id]
 			);
 		}
+
+		// will wait for the end of all tasks as ~ThreadPool () will be called
+
 	}
-	
-	// wait for the end of all tasks as ~ThreadPool () is called
 }
 
 template <typename... Types>
-void Population<Types...>::run (const unsigned int N_runs, std::vector<std::vector<std::vector<void*>>>* outputs, unsigned int maxThreads) {
-	ThreadPool<void> pool (maxThreads);
-
+void Population<Types...>::run (const unsigned int N_runs, std::vector<std::vector<void*>>* outputs, unsigned int maxThreads) {
 	if (outputs != nullptr) {
 		// we do care of outputs
 
-		std::function<void (Genome<Types...>*, std::vector<std::vector<void*>>*)> func = [&] (Genome<Types...>* genome, std::vector<std::vector<void*>>* outputs) -> void {
-			std::vector<void*> outputs_cur = genome->getOutputs ();
+		ThreadPool<std::vector<void*>> pool (maxThreads);
+
+		// the task
+		std::function<std::vector<void*> (Genome<Types...>*)> func = [&] (Genome<Types...>* genome) -> std::vector<void*> {
 			for (unsigned int k = 0; k < N_runs; k++) {
-				genome->loadInputs (outputs_cur);
+				genome->loadInputs (genome->getOutputs ());
 				genome->runNetwork ();
-				outputs_cur = genome->getOutputs ();
-				(*outputs) [k] = outputs_cur;
+				genome->saveOutputs ();
 			}
+			return genome->getSavedOutputs ();
 		};
 
-		// reset outputs
-		(*outputs) = std::vector<std::vector<std::vector<void*>>> (popSize, std::vector<std::vector<void*>> (N_runs, std::vector<void*> {}));
-
+		// fill the thread pool
+		std::vector<std::future<std::vector<void*>>> results;
 		for (std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
 			// add the task to the pool
-			pool.enqueue (
-				func,
-				genome.second.get (),
-				&(*outputs) [genome.second->id]
+			results.push_back (pool.enqueue (
+					func,
+					genome.second.get ()
+				)
 			);
 		}
+
+		// wait for tasks end
+		for (std::future<std::vector<void*>>& result : results) {
+			result.wait ();
+		}
+
+		// get results
+		outputs->clear ();
+		for (std::future<std::vector<void*>>& result : results) {
+			outputs->push_back (result.get ());
+		}
+
 	} else {
 		// we don't care of outputs
 		UNUSED (outputs);
 
+		ThreadPool<void> pool (maxThreads);
+
+		// the task
 		std::function<void (Genome<Types...>*)> func = [&] (Genome<Types...>* genome) -> void {
 			for (unsigned int k = 0; k < N_runs; k++) {
 				genome->loadInputs (genome->getOutputs ());
@@ -652,6 +702,7 @@ void Population<Types...>::run (const unsigned int N_runs, std::vector<std::vect
 			}
 		};
 
+		// fill the thread pool
 		for (std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
 			// add the task to the pool
 			pool.enqueue (
@@ -659,9 +710,11 @@ void Population<Types...>::run (const unsigned int N_runs, std::vector<std::vect
 				genome.second.get ()
 			);
 		}
+
+		// will wait for the end of all tasks as ~ThreadPool () will be called
+
 	}
 
-	// wait for the end of all tasks as ~ThreadPool () is called
 }
 
 template <typename... Types>
