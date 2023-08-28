@@ -55,6 +55,9 @@ ThreadPool<T_Return>::ThreadPool (unsigned int numThreads) {
         // defaulting to the number of core
         numThreads = std::thread::hardware_concurrency ();
     }
+
+    workers.reserve (numThreads);
+
     for (unsigned int k = 0; k < numThreads; k++) {
         // add a worker
         workers.emplace_back ([&] () {
@@ -74,6 +77,8 @@ ThreadPool<T_Return>::ThreadPool (unsigned int numThreads) {
             }
         });
     }
+
+    workers.shrink_to_fit ();
 }
 
 template <typename T_Return>

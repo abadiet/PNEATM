@@ -855,6 +855,12 @@ void Genome<Types...>::OptimizeNetwork () {
 		node.second->setupOutputs ();
 	}
 
+	// optimize memory consumption
+	optimize_nodes_process.shrink_to_fit ();
+	optimize_nodes_reset.shrink_to_fit ();
+	optimize_operations_nonrecu.shrink_to_fit ();
+	optimize_operations_recu_active.reserve (optimize_operations_recu_waiting.size ());
+
 	network_is_optimized = true;
 }
 
@@ -903,7 +909,7 @@ T_out Genome<Types...>::getOutput (int output_id) {
 
 template <typename... Types>
 std::vector<void*> Genome<Types...>::getOutputs () {
-	std::vector<void*> outputs;
+	std::vector<void*> outputs (nbOutput);
 	for (unsigned int i = 0; i < nbOutput; i++) {
 		outputs.push_back (nodes [nbBias + nbInput + i]->getOutput ());
 	}
@@ -917,7 +923,7 @@ void* Genome<Types...>::getOutput (int output_id) {
 
 template <typename... Types>
 std::vector<void*> Genome<Types...>::getSavedOutputs () {
-	std::vector<void*> outputs;
+	std::vector<void*> outputs (nbOutput);
 	for (unsigned int i = 0; i < nbOutput; i++) {
 		outputs.push_back (nodes [nbBias + nbInput + i]->getSavedOutputs ());
 	}

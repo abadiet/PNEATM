@@ -67,7 +67,9 @@ CircularBuffer<T>::CircularBuffer (unsigned int capacity) :
     capacity (capacity),
     buffer (capacity),
     currentIndex (0)
-{}
+{
+    buffer.shrink_to_fit ();
+}
 
 template <typename T>
 void CircularBuffer<T>::insert (const T& elem) {
