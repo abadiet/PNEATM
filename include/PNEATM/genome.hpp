@@ -895,6 +895,7 @@ template <typename... Types>
 template <typename T_out>
 std::vector<T_out> Genome<Types...>::getOutputs () {
 	std::vector<T_out> outputs;
+	outputs.reserve (nbOutput);
 	for (unsigned int i = 0; i < nbOutput; i++) {
 		outputs.push_back (*static_cast<T_out*> (nodes [nbBias + nbInput + i]->getOutput ()));
 	}
@@ -909,7 +910,8 @@ T_out Genome<Types...>::getOutput (int output_id) {
 
 template <typename... Types>
 std::vector<void*> Genome<Types...>::getOutputs () {
-	std::vector<void*> outputs (nbOutput);
+	std::vector<void*> outputs;
+	outputs.reserve (nbOutput);
 	for (unsigned int i = 0; i < nbOutput; i++) {
 		outputs.push_back (nodes [nbBias + nbInput + i]->getOutput ());
 	}
@@ -923,7 +925,8 @@ void* Genome<Types...>::getOutput (int output_id) {
 
 template <typename... Types>
 std::vector<void*> Genome<Types...>::getSavedOutputs () {
-	std::vector<void*> outputs (nbOutput);
+	std::vector<void*> outputs;
+	outputs.reserve (nbOutput);
 	for (unsigned int i = 0; i < nbOutput; i++) {
 		outputs.push_back (nodes [nbBias + nbInput + i]->getSavedOutputs ());
 	}
