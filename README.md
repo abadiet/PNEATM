@@ -47,8 +47,8 @@ This project is currently under development and is provided as-is, without any g
 - [x] MultiThreading
 - [ ] GPU acceleration
 - [ ] Vectorization, SIMD?
-- [ ] Memory Management optimization
+- [x] Memory Management optimization
 - [x] Algo optimization: sort connections by calls and keep it in mind...
-- [ ] vector, unordered_map and map
+- [x] vector, unordered_map and map
 - [ ] connections key can be innovation id: better for distance processing, ...
 - [ ] Compiler optimizations (PGO, LTO ...)
