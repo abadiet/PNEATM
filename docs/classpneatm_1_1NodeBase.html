@@ -106,6 +106,16 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:aa241e0a92b025181cc3437fec1d93ebd"><td class="memItemLeft" align="right" valign="top">virtual void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1NodeBase.html#aa241e0a92b025181cc3437fec1d93ebd">getOutput</a> (unsigned int depth=0)=0</td></tr>
 <tr class="memdesc:aa241e0a92b025181cc3437fec1d93ebd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the output value of the node at a specific time.  <a href="classpneatm_1_1NodeBase.html#aa241e0a92b025181cc3437fec1d93ebd">More...</a><br /></td></tr>
 <tr class="separator:aa241e0a92b025181cc3437fec1d93ebd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a573c536c5a19cd27c56a69a9e49b76ca"><td class="memItemLeft" align="right" valign="top"><a id="a573c536c5a19cd27c56a69a9e49b76ca"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1NodeBase.html#a573c536c5a19cd27c56a69a9e49b76ca">setupOutputs</a> ()=0</td></tr>
+<tr class="memdesc:a573c536c5a19cd27c56a69a9e49b76ca"><td class="mdescLeft">&#160;</td><td class="mdescRight">Setup the vector's outputs. <br /></td></tr>
+<tr class="separator:a573c536c5a19cd27c56a69a9e49b76ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5a86d064ff49a24983ec3c350921af4a"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1NodeBase.html#a5a86d064ff49a24983ec3c350921af4a">saveOutput</a> (unsigned int depth=0)=0</td></tr>
+<tr class="memdesc:a5a86d064ff49a24983ec3c350921af4a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Save the current output t othe saved set.  <a href="classpneatm_1_1NodeBase.html#a5a86d064ff49a24983ec3c350921af4a">More...</a><br /></td></tr>
+<tr class="separator:a5a86d064ff49a24983ec3c350921af4a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0c6aabfdf20c88aedced6d481a6b04ea"><td class="memItemLeft" align="right" valign="top">virtual void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1NodeBase.html#a0c6aabfdf20c88aedced6d481a6b04ea">getSavedOutputs</a> ()=0</td></tr>
+<tr class="memdesc:a0c6aabfdf20c88aedced6d481a6b04ea"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the saved outputs.  <a href="classpneatm_1_1NodeBase.html#a0c6aabfdf20c88aedced6d481a6b04ea">More...</a><br /></td></tr>
+<tr class="separator:a0c6aabfdf20c88aedced6d481a6b04ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6e4365fcf96cd9eba8aec21c0fd25afa"><td class="memItemLeft" align="right" valign="top"><a id="a6e4365fcf96cd9eba8aec21c0fd25afa"></a>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1NodeBase.html#a6e4365fcf96cd9eba8aec21c0fd25afa">process</a> ()=0</td></tr>
 <tr class="memdesc:a6e4365fcf96cd9eba8aec21c0fd25afa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Process the node to compute its output value. <br /></td></tr>
@@ -113,9 +123,9 @@ virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hr
 <tr class="memitem:a487b80ba6e347de5858b6c5e15fe6f23"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1NodeBase.html#a487b80ba6e347de5858b6c5e15fe6f23">mutate</a> (double fitness)=0</td></tr>
 <tr class="memdesc:a487b80ba6e347de5858b6c5e15fe6f23"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mutate the activation function's parameters.  <a href="classpneatm_1_1NodeBase.html#a487b80ba6e347de5858b6c5e15fe6f23">More...</a><br /></td></tr>
 <tr class="separator:a487b80ba6e347de5858b6c5e15fe6f23"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1956dbcdd9c6139c8d2aa125bcd3427c"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1NodeBase.html#a1956dbcdd9c6139c8d2aa125bcd3427c">reset</a> (bool resetMemory=true)=0</td></tr>
-<tr class="memdesc:a1956dbcdd9c6139c8d2aa125bcd3427c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reset the node to its initial state.  <a href="classpneatm_1_1NodeBase.html#a1956dbcdd9c6139c8d2aa125bcd3427c">More...</a><br /></td></tr>
-<tr class="separator:a1956dbcdd9c6139c8d2aa125bcd3427c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a58825194aa1007cdc2f819780fa974be"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1NodeBase.html#a58825194aa1007cdc2f819780fa974be">reset</a> (bool resetMemory=true, bool resetBuffer=false)=0</td></tr>
+<tr class="memdesc:a58825194aa1007cdc2f819780fa974be"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reset the node to its initial state.  <a href="classpneatm_1_1NodeBase.html#a58825194aa1007cdc2f819780fa974be">More...</a><br /></td></tr>
+<tr class="separator:a58825194aa1007cdc2f819780fa974be"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0440c12a7a00ae7edb67ef639f1c3a4f"><td class="memItemLeft" align="right" valign="top">virtual std::unique_ptr&lt; <a class="el" href="classpneatm_1_1NodeBase.html">NodeBase</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1NodeBase.html#a0440c12a7a00ae7edb67ef639f1c3a4f">clone</a> ()=0</td></tr>
 <tr class="memdesc:a0440c12a7a00ae7edb67ef639f1c3a4f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a clone of the node.  <a href="classpneatm_1_1NodeBase.html#a0440c12a7a00ae7edb67ef639f1c3a4f">More...</a><br /></td></tr>
 <tr class="separator:a0440c12a7a00ae7edb67ef639f1c3a4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -159,6 +169,10 @@ unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hr
 bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1NodeBase.html#a2bb0c514901b1e29f713d6da7f309169">is_useful</a></td></tr>
 <tr class="memdesc:a2bb0c514901b1e29f713d6da7f309169"><td class="mdescLeft">&#160;</td><td class="mdescRight"><code>true</code> if the node play a role in the network, else <code>false</code>. <br /></td></tr>
 <tr class="separator:a2bb0c514901b1e29f713d6da7f309169"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4e3e55a8715083ade53f29ca99a9ad23"><td class="memItemLeft" align="right" valign="top"><a id="a4e3e55a8715083ade53f29ca99a9ad23"></a>
+unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1NodeBase.html#a4e3e55a8715083ade53f29ca99a9ad23">max_depth_recu</a></td></tr>
+<tr class="memdesc:a4e3e55a8715083ade53f29ca99a9ad23"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum recurrency of the node in the network. <br /></td></tr>
+<tr class="separator:a4e3e55a8715083ade53f29ca99a9ad23"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
 Friends</h2></td></tr>
@@ -336,6 +350,36 @@ template&lt;typename T_in , typename T_out &gt; </td></tr>
 
 </div>
 </div>
+<a id="a0c6aabfdf20c88aedced6d481a6b04ea"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0c6aabfdf20c88aedced6d481a6b04ea">&#9670;&nbsp;</a></span>getSavedOutputs()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void* pneatm::NodeBase::getSavedOutputs </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get the saved outputs. </p>
+<dl class="section return"><dt>Returns</dt><dd>A pointer to the saved outputs. </dd></dl>
+
+<p>Implemented in <a class="el" href="classpneatm_1_1Node.html#ae1b5eec8d9a2824fa3b10b142f0eb010">pneatm::Node&lt; T_in, T_out &gt;</a>.</p>
+
+</div>
+</div>
 <a id="a72b54e295acc5616fce93ee9da63efd9"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a72b54e295acc5616fce93ee9da63efd9">&#9670;&nbsp;</a></span>loadInput()</h2>
 
@@ -444,8 +488,8 @@ template&lt;typename T_in , typename T_out &gt; </td></tr>
 
 </div>
 </div>
-<a id="a1956dbcdd9c6139c8d2aa125bcd3427c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1956dbcdd9c6139c8d2aa125bcd3427c">&#9670;&nbsp;</a></span>reset()</h2>
+<a id="a58825194aa1007cdc2f819780fa974be"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a58825194aa1007cdc2f819780fa974be">&#9670;&nbsp;</a></span>reset()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -457,8 +501,18 @@ template&lt;typename T_in , typename T_out &gt; </td></tr>
           <td class="memname">virtual void pneatm::NodeBase::reset </td>
           <td>(</td>
           <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>resetMemory</em> = <code>true</code></td><td>)</td>
+          <td class="paramname"><em>resetMemory</em> = <code>true</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>resetBuffer</em> = <code>false</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
   </td>
@@ -472,11 +526,48 @@ template&lt;typename T_in , typename T_out &gt; </td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">resetMemory</td><td><code>true</code> to reset memory too, <code>false</code> else. (default is <code>true</code>) </td></tr>
+    <tr><td class="paramname">resetBuffer</td><td><code>true</code> to reset the whole output's buffer too, <code>false</code> else. (default is <code>false</code>) </td></tr>
   </table>
   </dd>
 </dl>
 
-<p>Implemented in <a class="el" href="classpneatm_1_1Node.html#a8f473031ec4bca38862ebf133b350ae4">pneatm::Node&lt; T_in, T_out &gt;</a>.</p>
+<p>Implemented in <a class="el" href="classpneatm_1_1Node.html#a22308eab2cf77691a02dd6d6cafa977d">pneatm::Node&lt; T_in, T_out &gt;</a>.</p>
+
+</div>
+</div>
+<a id="a5a86d064ff49a24983ec3c350921af4a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5a86d064ff49a24983ec3c350921af4a">&#9670;&nbsp;</a></span>saveOutput()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void pneatm::NodeBase::saveOutput </td>
+          <td>(</td>
+          <td class="paramtype">unsigned int&#160;</td>
+          <td class="paramname"><em>depth</em> = <code>0</code></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Save the current output t othe saved set. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">depth</td><td>The output's depth (e.g 0 stands for the current output and 3 means 3 calls ro runNetwork later). (default is 0) </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p>Implemented in <a class="el" href="classpneatm_1_1Node.html#aacf9d88a986cfa4cdad24b5bf700c306">pneatm::Node&lt; T_in, T_out &gt;</a>.</p>
 
 </div>
 </div>

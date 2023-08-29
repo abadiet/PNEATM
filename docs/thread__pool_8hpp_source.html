@@ -103,68 +103,73 @@ $(function() {
 <div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;        <span class="comment">// defaulting to the number of core</span></div>
 <div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;        numThreads = std::thread::hardware_concurrency ();</div>
 <div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    }</div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> k = 0; k &lt; numThreads; k++) {</div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;        <span class="comment">// add a worker</span></div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;        workers.emplace_back ([&amp;] () {</div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;            <span class="comment">// the worker repeatedly checks for tasks in the queue and executes them</span></div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;            <span class="keywordflow">while</span> (<span class="keyword">true</span>) {</div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;                std::packaged_task&lt;T_Return ()&gt; task;</div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;                {</div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;                    std::unique_lock&lt;std::mutex&gt; lock (queueMutex);</div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;                    condition.wait (lock, [&amp;] { <span class="keywordflow">return</span> !tasks.empty () || stop; });</div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;                    <span class="keywordflow">if</span> (stop &amp;&amp; tasks.empty ()) {</div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;                        <span class="keywordflow">return</span>;</div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;                    }</div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;                    task = std::move (tasks.front ());</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;                    tasks.pop ();</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;                }</div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;                task ();</div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;            }</div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;        });</div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;    }</div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;}</div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160; </div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> T_Return&gt;</div>
-<div class="line"><a name="l00080"></a><span class="lineno"><a class="line" href="classpneatm_1_1ThreadPool.html#a729f2cfee5dfbdd2011242edbe38c0ee">   80</a></span>&#160;<a class="code" href="classpneatm_1_1ThreadPool.html#a729f2cfee5dfbdd2011242edbe38c0ee">ThreadPool&lt;T_Return&gt;::~ThreadPool</a> () {</div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;    {</div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;        std::unique_lock&lt;std::mutex&gt; lock (queueMutex);</div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;        stop = <span class="keyword">true</span>;</div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;    }</div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;    condition.notify_all ();</div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;    <span class="keywordflow">for</span> (std::thread&amp; worker : workers) {</div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;        worker.join ();</div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;    }</div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;}</div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160; </div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> T_Return&gt;</div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Func, <span class="keyword">typename</span>... Args&gt;</div>
-<div class="line"><a name="l00093"></a><span class="lineno"><a class="line" href="classpneatm_1_1ThreadPool.html#a1cbb44394a08301f49c601a39b707f55">   93</a></span>&#160;std::future&lt;T_Return&gt; <a class="code" href="classpneatm_1_1ThreadPool.html#a1cbb44394a08301f49c601a39b707f55">ThreadPool&lt;T_Return&gt;::enqueue</a> (Func&amp;&amp; func, Args&amp;&amp;... args) {</div>
-<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;    <span class="comment">// create the package task</span></div>
-<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;    std::packaged_task&lt;T_Return ()&gt; task (</div>
-<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;        std::bind (std::forward&lt;Func&gt; (func), std::forward&lt;Args&gt; (args)...)</div>
-<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;    );</div>
-<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160; </div>
-<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;    <span class="comment">// get the future result</span></div>
-<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;    std::future&lt;T_Return&gt; result = task.get_future ();</div>
-<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160; </div>
-<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;    <span class="comment">// add the task</span></div>
-<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;    {</div>
-<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;        std::unique_lock&lt;std::mutex&gt; lock (queueMutex);</div>
-<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;        tasks.emplace (std::move (task));</div>
-<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;    }</div>
-<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160; </div>
-<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;    <span class="comment">// there is a new task</span></div>
-<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;    condition.notify_one ();</div>
-<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160; </div>
-<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;    <span class="keywordflow">return</span> result;</div>
-<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;}</div>
-<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160; </div>
-<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;}</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160; </div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;    workers.reserve (numThreads);</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160; </div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> k = 0; k &lt; numThreads; k++) {</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;        <span class="comment">// add a worker</span></div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;        workers.emplace_back ([&amp;] () {</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;            <span class="comment">// the worker repeatedly checks for tasks in the queue and executes them</span></div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;            <span class="keywordflow">while</span> (<span class="keyword">true</span>) {</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;                std::packaged_task&lt;T_Return ()&gt; task;</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;                {</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;                    std::unique_lock&lt;std::mutex&gt; lock (queueMutex);</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;                    condition.wait (lock, [&amp;] { <span class="keywordflow">return</span> !tasks.empty () || stop; });</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;                    <span class="keywordflow">if</span> (stop &amp;&amp; tasks.empty ()) {</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;                        <span class="keywordflow">return</span>;</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;                    }</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;                    task = std::move (tasks.front ());</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;                    tasks.pop ();</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;                }</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;                task ();</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;            }</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;        });</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;    }</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160; </div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;    workers.shrink_to_fit ();</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;}</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160; </div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> T_Return&gt;</div>
+<div class="line"><a name="l00085"></a><span class="lineno"><a class="line" href="classpneatm_1_1ThreadPool.html#a729f2cfee5dfbdd2011242edbe38c0ee">   85</a></span>&#160;<a class="code" href="classpneatm_1_1ThreadPool.html#a729f2cfee5dfbdd2011242edbe38c0ee">ThreadPool&lt;T_Return&gt;::~ThreadPool</a> () {</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;    {</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;        std::unique_lock&lt;std::mutex&gt; lock (queueMutex);</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;        stop = <span class="keyword">true</span>;</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;    }</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;    condition.notify_all ();</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;    <span class="keywordflow">for</span> (std::thread&amp; worker : workers) {</div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;        worker.join ();</div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;    }</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;}</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160; </div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> T_Return&gt;</div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Func, <span class="keyword">typename</span>... Args&gt;</div>
+<div class="line"><a name="l00098"></a><span class="lineno"><a class="line" href="classpneatm_1_1ThreadPool.html#a1cbb44394a08301f49c601a39b707f55">   98</a></span>&#160;std::future&lt;T_Return&gt; <a class="code" href="classpneatm_1_1ThreadPool.html#a1cbb44394a08301f49c601a39b707f55">ThreadPool&lt;T_Return&gt;::enqueue</a> (Func&amp;&amp; func, Args&amp;&amp;... args) {</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;    <span class="comment">// create the package task</span></div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;    std::packaged_task&lt;T_Return ()&gt; task (</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;        std::bind (std::forward&lt;Func&gt; (func), std::forward&lt;Args&gt; (args)...)</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;    );</div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160; </div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;    <span class="comment">// get the future result</span></div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;    std::future&lt;T_Return&gt; result = task.get_future ();</div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160; </div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;    <span class="comment">// add the task</span></div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;    {</div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;        std::unique_lock&lt;std::mutex&gt; lock (queueMutex);</div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;        tasks.emplace (std::move (task));</div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;    }</div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160; </div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;    <span class="comment">// there is a new task</span></div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;    condition.notify_one ();</div>
 <div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160; </div>
-<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;<span class="preprocessor">#endif  </span><span class="comment">// THREAD_POOL_HPP</span></div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;    <span class="keywordflow">return</span> result;</div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;}</div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160; </div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;}</div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160; </div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;<span class="preprocessor">#endif  </span><span class="comment">// THREAD_POOL_HPP</span></div>
 <div class="ttc" id="aclasspneatm_1_1ThreadPool_html"><div class="ttname"><a href="classpneatm_1_1ThreadPool.html">pneatm::ThreadPool</a></div><div class="ttdoc">A template class representing a thread pool.</div><div class="ttdef"><b>Definition:</b> thread_pool.hpp:19</div></div>
-<div class="ttc" id="aclasspneatm_1_1ThreadPool_html_a1cbb44394a08301f49c601a39b707f55"><div class="ttname"><a href="classpneatm_1_1ThreadPool.html#a1cbb44394a08301f49c601a39b707f55">pneatm::ThreadPool::enqueue</a></div><div class="ttdeci">std::future&lt; T_Return &gt; enqueue(Func &amp;&amp;func, Args &amp;&amp;... args)</div><div class="ttdoc">Add a task to the queue.</div><div class="ttdef"><b>Definition:</b> thread_pool.hpp:93</div></div>
-<div class="ttc" id="aclasspneatm_1_1ThreadPool_html_a729f2cfee5dfbdd2011242edbe38c0ee"><div class="ttname"><a href="classpneatm_1_1ThreadPool.html#a729f2cfee5dfbdd2011242edbe38c0ee">pneatm::ThreadPool::~ThreadPool</a></div><div class="ttdeci">~ThreadPool()</div><div class="ttdoc">Destructor for the ThreadPool class.</div><div class="ttdef"><b>Definition:</b> thread_pool.hpp:80</div></div>
+<div class="ttc" id="aclasspneatm_1_1ThreadPool_html_a1cbb44394a08301f49c601a39b707f55"><div class="ttname"><a href="classpneatm_1_1ThreadPool.html#a1cbb44394a08301f49c601a39b707f55">pneatm::ThreadPool::enqueue</a></div><div class="ttdeci">std::future&lt; T_Return &gt; enqueue(Func &amp;&amp;func, Args &amp;&amp;... args)</div><div class="ttdoc">Add a task to the queue.</div><div class="ttdef"><b>Definition:</b> thread_pool.hpp:98</div></div>
+<div class="ttc" id="aclasspneatm_1_1ThreadPool_html_a729f2cfee5dfbdd2011242edbe38c0ee"><div class="ttname"><a href="classpneatm_1_1ThreadPool.html#a729f2cfee5dfbdd2011242edbe38c0ee">pneatm::ThreadPool::~ThreadPool</a></div><div class="ttdeci">~ThreadPool()</div><div class="ttdoc">Destructor for the ThreadPool class.</div><div class="ttdef"><b>Definition:</b> thread_pool.hpp:85</div></div>
 <div class="ttc" id="aclasspneatm_1_1ThreadPool_html_af1375e467fd7eed4cfb97ebcd4a25657"><div class="ttname"><a href="classpneatm_1_1ThreadPool.html#af1375e467fd7eed4cfb97ebcd4a25657">pneatm::ThreadPool::ThreadPool</a></div><div class="ttdeci">ThreadPool(unsigned int numThreads=0)</div><div class="ttdoc">Constructor for the ThreadPool class.</div><div class="ttdef"><b>Definition:</b> thread_pool.hpp:53</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->

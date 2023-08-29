@@ -121,6 +121,16 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a7c6490c7af97466d38575bd637e88ceb"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Node.html#a7c6490c7af97466d38575bd637e88ceb">getOutput</a> (unsigned int depth=0) override</td></tr>
 <tr class="memdesc:a7c6490c7af97466d38575bd637e88ceb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the output value of the node at a specific time.  <a href="classpneatm_1_1Node.html#a7c6490c7af97466d38575bd637e88ceb">More...</a><br /></td></tr>
 <tr class="separator:a7c6490c7af97466d38575bd637e88ceb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a54a797067c85ae46f8fe7a29402bb703"><td class="memItemLeft" align="right" valign="top"><a id="a54a797067c85ae46f8fe7a29402bb703"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Node.html#a54a797067c85ae46f8fe7a29402bb703">setupOutputs</a> () override</td></tr>
+<tr class="memdesc:a54a797067c85ae46f8fe7a29402bb703"><td class="mdescLeft">&#160;</td><td class="mdescRight">Setup the vector's outputs. <br /></td></tr>
+<tr class="separator:a54a797067c85ae46f8fe7a29402bb703"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aacf9d88a986cfa4cdad24b5bf700c306"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Node.html#aacf9d88a986cfa4cdad24b5bf700c306">saveOutput</a> (unsigned int depth=0) override</td></tr>
+<tr class="memdesc:aacf9d88a986cfa4cdad24b5bf700c306"><td class="mdescLeft">&#160;</td><td class="mdescRight">Save the current output t othe saved set.  <a href="classpneatm_1_1Node.html#aacf9d88a986cfa4cdad24b5bf700c306">More...</a><br /></td></tr>
+<tr class="separator:aacf9d88a986cfa4cdad24b5bf700c306"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae1b5eec8d9a2824fa3b10b142f0eb010"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Node.html#ae1b5eec8d9a2824fa3b10b142f0eb010">getSavedOutputs</a> () override</td></tr>
+<tr class="memdesc:ae1b5eec8d9a2824fa3b10b142f0eb010"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the saved outputs.  <a href="classpneatm_1_1Node.html#ae1b5eec8d9a2824fa3b10b142f0eb010">More...</a><br /></td></tr>
+<tr class="separator:ae1b5eec8d9a2824fa3b10b142f0eb010"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9b58cd683694126cd2d7a811e7961d98"><td class="memItemLeft" align="right" valign="top"><a id="a9b58cd683694126cd2d7a811e7961d98"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Node.html#a9b58cd683694126cd2d7a811e7961d98">process</a> () override</td></tr>
 <tr class="memdesc:a9b58cd683694126cd2d7a811e7961d98"><td class="mdescLeft">&#160;</td><td class="mdescRight">Process the node to compute its output value. <br /></td></tr>
@@ -128,9 +138,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <tr class="memitem:af8b39f499eb615b2e31790fea252fa5c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Node.html#af8b39f499eb615b2e31790fea252fa5c">mutate</a> (double fitness) override</td></tr>
 <tr class="memdesc:af8b39f499eb615b2e31790fea252fa5c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mutate the activation function's parameters.  <a href="classpneatm_1_1Node.html#af8b39f499eb615b2e31790fea252fa5c">More...</a><br /></td></tr>
 <tr class="separator:af8b39f499eb615b2e31790fea252fa5c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8f473031ec4bca38862ebf133b350ae4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Node.html#a8f473031ec4bca38862ebf133b350ae4">reset</a> (bool resetMemory=true) override</td></tr>
-<tr class="memdesc:a8f473031ec4bca38862ebf133b350ae4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reset the node to its initial state.  <a href="classpneatm_1_1Node.html#a8f473031ec4bca38862ebf133b350ae4">More...</a><br /></td></tr>
-<tr class="separator:a8f473031ec4bca38862ebf133b350ae4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a22308eab2cf77691a02dd6d6cafa977d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Node.html#a22308eab2cf77691a02dd6d6cafa977d">reset</a> (bool resetMemory=true, bool resetBuffer=false) override</td></tr>
+<tr class="memdesc:a22308eab2cf77691a02dd6d6cafa977d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reset the node to its initial state.  <a href="classpneatm_1_1Node.html#a22308eab2cf77691a02dd6d6cafa977d">More...</a><br /></td></tr>
+<tr class="separator:a22308eab2cf77691a02dd6d6cafa977d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad0d398692f22c7b8bfc2b264bca7b40c"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; <a class="el" href="classpneatm_1_1NodeBase.html">NodeBase</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Node.html#ad0d398692f22c7b8bfc2b264bca7b40c">clone</a> () override</td></tr>
 <tr class="memdesc:ad0d398692f22c7b8bfc2b264bca7b40c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a clone of the node.  <a href="classpneatm_1_1Node.html#ad0d398692f22c7b8bfc2b264bca7b40c">More...</a><br /></td></tr>
 <tr class="separator:ad0d398692f22c7b8bfc2b264bca7b40c"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -175,6 +185,10 @@ unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hr
 bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1NodeBase.html#a2bb0c514901b1e29f713d6da7f309169">is_useful</a></td></tr>
 <tr class="memdesc:a2bb0c514901b1e29f713d6da7f309169 inherit pro_attribs_classpneatm_1_1NodeBase"><td class="mdescLeft">&#160;</td><td class="mdescRight"><code>true</code> if the node play a role in the network, else <code>false</code>. <br /></td></tr>
 <tr class="separator:a2bb0c514901b1e29f713d6da7f309169 inherit pro_attribs_classpneatm_1_1NodeBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4e3e55a8715083ade53f29ca99a9ad23 inherit pro_attribs_classpneatm_1_1NodeBase"><td class="memItemLeft" align="right" valign="top"><a id="a4e3e55a8715083ade53f29ca99a9ad23"></a>
+unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1NodeBase.html#a4e3e55a8715083ade53f29ca99a9ad23">max_depth_recu</a></td></tr>
+<tr class="memdesc:a4e3e55a8715083ade53f29ca99a9ad23 inherit pro_attribs_classpneatm_1_1NodeBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum recurrency of the node in the network. <br /></td></tr>
+<tr class="separator:a4e3e55a8715083ade53f29ca99a9ad23 inherit pro_attribs_classpneatm_1_1NodeBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><h3>template&lt;typename T_in, typename T_out&gt;<br />
@@ -356,6 +370,35 @@ template&lt;typename T_in , typename T_out &gt; </div>
 
 </div>
 </div>
+<a id="ae1b5eec8d9a2824fa3b10b142f0eb010"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae1b5eec8d9a2824fa3b10b142f0eb010">&#9670;&nbsp;</a></span>getSavedOutputs()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T_in , typename T_out &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void * Node::getSavedOutputs</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">override</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get the saved outputs. </p>
+<dl class="section return"><dt>Returns</dt><dd>A pointer to the saved outputs. </dd></dl>
+
+<p>Implements <a class="el" href="classpneatm_1_1NodeBase.html#a0c6aabfdf20c88aedced6d481a6b04ea">pneatm::NodeBase</a>.</p>
+
+</div>
+</div>
 <a id="a1e3de6161d02e3ca76e1fa387da77674"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a1e3de6161d02e3ca76e1fa387da77674">&#9670;&nbsp;</a></span>loadInput()</h2>
 
@@ -470,8 +513,8 @@ template&lt;typename T_in , typename T_out &gt; </div>
 
 </div>
 </div>
-<a id="a8f473031ec4bca38862ebf133b350ae4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8f473031ec4bca38862ebf133b350ae4">&#9670;&nbsp;</a></span>reset()</h2>
+<a id="a22308eab2cf77691a02dd6d6cafa977d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a22308eab2cf77691a02dd6d6cafa977d">&#9670;&nbsp;</a></span>reset()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -485,8 +528,18 @@ template&lt;typename T_in , typename T_out &gt; </div>
           <td class="memname">void Node::reset </td>
           <td>(</td>
           <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>resetMemory</em> = <code>true</code></td><td>)</td>
+          <td class="paramname"><em>resetMemory</em> = <code>true</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>resetBuffer</em> = <code>false</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
   </td>
@@ -500,11 +553,50 @@ template&lt;typename T_in , typename T_out &gt; </div>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">resetMemory</td><td><code>true</code> to reset memory too, <code>false</code> else. (default is <code>true</code>) </td></tr>
+    <tr><td class="paramname">resetBuffer</td><td><code>true</code> to reset the whole output's buffer too, <code>false</code> else. (default is <code>false</code>) </td></tr>
   </table>
   </dd>
 </dl>
 
-<p>Implements <a class="el" href="classpneatm_1_1NodeBase.html#a1956dbcdd9c6139c8d2aa125bcd3427c">pneatm::NodeBase</a>.</p>
+<p>Implements <a class="el" href="classpneatm_1_1NodeBase.html#a58825194aa1007cdc2f819780fa974be">pneatm::NodeBase</a>.</p>
+
+</div>
+</div>
+<a id="aacf9d88a986cfa4cdad24b5bf700c306"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aacf9d88a986cfa4cdad24b5bf700c306">&#9670;&nbsp;</a></span>saveOutput()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T_in , typename T_out &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Node::saveOutput </td>
+          <td>(</td>
+          <td class="paramtype">unsigned int&#160;</td>
+          <td class="paramname"><em>depth</em> = <code>0</code></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">override</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Save the current output t othe saved set. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">depth</td><td>The output's depth (e.g 0 stands for the current output and 3 means 3 calls ro runNetwork later). (default is 0) </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p>Implements <a class="el" href="classpneatm_1_1NodeBase.html#a5a86d064ff49a24983ec3c350921af4a">pneatm::NodeBase</a>.</p>
 
 </div>
 </div>
