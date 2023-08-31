@@ -629,7 +629,7 @@ void Population<Types...>::run (const std::vector<std::vector<std::vector<void*>
 		// the task
 		std::function<void (Genome<Types...>*, const std::vector<std::vector<void*>>&)> func = [&] (Genome<Types...>* genome, const std::vector<std::vector<void*>>& inputs_gen) -> void {
 			for (const std::vector<void*>& inputs_cur : inputs_gen) {
-				genome->loadInputs (genome->getOutputs ());
+				genome->loadInputs (inputs_cur);
 				genome->runNetwork ();
 			}
 		};
