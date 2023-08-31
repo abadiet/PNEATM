@@ -714,6 +714,7 @@ void Genome<Types...>::resetMemory () {
 	for (std::pair<const unsigned int, std::unique_ptr<NodeBase>>& node : nodes) {
 		node.second->reset (true, true);
 	}
+	network_is_optimized = false;	// node's buffer will have to be setup
 }
 
 template <typename... Types>
