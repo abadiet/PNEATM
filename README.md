@@ -25,6 +25,7 @@ To address these limitations, the primary goal of **PNEATM** is to provide a sub
 This code depends on both SFML (for graphics) and spdlog (for logs) libraries:
 - [SFML install](https://www.sfml-dev.org/download.php)
 - [spdlog install](https://github.com/gabime/spdlog)
+
 ⚠️ Please note that these dependencies introduce impurity to PNEATM. However, they are not necessary, so you can easily remove them to have a fully pure C++ library.
 
 ## Examples & Documentations
