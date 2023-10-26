@@ -1,5 +1,5 @@
 # Polymorphic NeuroEvolution of Augmenting Topologies with Memory (PNEATM)
-C++ library for evolving neural networks with a modified NEAT that allows any kind of data and that is able to access any previous data.
+Pure C++ library for evolving neural networks with a modified NEAT that allows any kind of data and that is able to access any previous data.
 
 <p align="center">
 	<img src="https://github.com/titofra/PNEATM/blob/main/resources/network.png">
@@ -25,6 +25,7 @@ To address these limitations, the primary goal of **PNEATM** is to provide a sub
 This code depends on both SFML (for graphics) and spdlog (for logs) libraries:
 - [SFML install](https://www.sfml-dev.org/download.php)
 - [spdlog install](https://github.com/gabime/spdlog)
+⚠️ Please note that these dependencies introduce impurity to PNEATM. However, they are not necessary, so you can easily remove them to have a fully pure C++ library.
 
 ## Examples & Documentations
 Documentation is available at [https://titofra.github.io/PNEATM/](https://titofra.github.io/PNEATM/). Moreover, a Snake AI powered by PNEATM is available on [/examples/snake/](https://github.com/titofra/PNEATM/tree/main/examples/snake).
