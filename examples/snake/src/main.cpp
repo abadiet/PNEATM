@@ -127,7 +127,7 @@ int main () {
     pop.getGenome (-1).draw ("/usr/share/fonts/OTF/SF-Pro-Rounded-Light.otf");
 
     // play a game by the fitter genome
-    //playGameFitter (pop.getGenome (-1), maxIterationThresh, false, {800, 600}, 0.12f, 8);
+    playGameFitter (pop.getGenome (-1), maxIterationThresh, false, {800, 600}, 0.12f, 8);
 
     return 0;
 }
