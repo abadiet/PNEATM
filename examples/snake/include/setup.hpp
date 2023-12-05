@@ -103,27 +103,19 @@ std::function<void (activationFnParams_t*, std::string)> printingFn = [] (activa
 
 // the mutation function
 std::function<void (activationFnParams_t*, double)> mutationFn = [] (activationFnParams_t* params, double fitness) -> void {
-    // Here is the mutation function is very basic: if the genome is pretty good, we just refine his network, else we explore new networks
-    if (fitness > 400.0) {
-        if (Random_Double (0.0, 1.0, true, false) < 0.3) {
-            // reset values
-            params->alpha = Random_Double (-10.0, 10.0);
-            params->beta = Random_Double (-10.0, 10.0);
-        } else {
-            // perturb values
-            params->alpha += params->alpha * Random_Double (-0.2, 0.2);
-            params->beta += params->beta * Random_Double (-0.2, 0.2);
-        }
+    // Here the mutation function reset or perturb the parameters, based on the fitness.
+    // The function used determine wether to perturb or reset the parameters is a progressive decreasing function from 80% chance when fitness = 0
+    // to 0% when fitness = +inf while the half, 40% chance, is dedicated to fitness = 400.
+    const double reset_prob = 0.8 / (1 + (fitness / 400) * (fitness / 400));
+
+    if (Random_Double (0.0, 1.0, true, false) < reset_prob) {
+        // reset values
+        params->alpha = Random_Double (-10.0, 10.0);
+        params->beta = Random_Double (-10.0, 10.0);
     } else {
-        if (Random_Double (0.0, 1.0, true, false) < 0.4) {
-            // reset values
-            params->alpha = Random_Double (-10.0, 10.0);
-            params->beta = Random_Double (-10.0, 10.0);
-        } else {
-            // perturb values
-            params->alpha += params->alpha * Random_Double (-0.2, 0.2);
-            params->beta += params->beta * Random_Double (-0.2, 0.2);
-        }
+        // perturb values
+        params->alpha += params->alpha * Random_Double (-0.2, 0.2);
+        params->beta += params->beta * Random_Double (-0.2, 0.2);
     }
 };
 
@@ -246,42 +238,25 @@ pneatm::Population<myInt, myFloat> LoadPopulation (const std::string& filename, 
 }
 
 std::function<pneatm::mutationParams_t (double)> SetupMutationParametersMaps () {
-    pneatm::mutationParams_t explorationSet;
-    explorationSet.nodes.rate = 0.06;
-    explorationSet.nodes.monotypedRate = 0.5;
-    explorationSet.nodes.monotyped.maxIterationsFindConnection = 100;
-    explorationSet.nodes.bityped.maxRecurrencyEntryConnection = 0;
-    explorationSet.nodes.bityped.maxIterationsFindNode = 100;
-    explorationSet.activation_functions.rate = 0.09;
-    explorationSet.connections.rate = 0.06;
-    explorationSet.connections.reactivateRate = 0.6;
-    explorationSet.connections.maxRecurrency = 0;
-    explorationSet.connections.maxIterations = 100;
-    explorationSet.connections.maxIterationsFindNode = 100;
-    explorationSet.weights.rate = 0.06;
-    explorationSet.weights.fullChangeRate = 0.4;
-    explorationSet.weights.perturbationFactor = 0.2;
-    pneatm::mutationParams_t refinementSet;
-    refinementSet.nodes.rate = 0.05;
-    refinementSet.nodes.monotypedRate = 0.5;
-    refinementSet.nodes.monotyped.maxIterationsFindConnection = 100;
-    refinementSet.nodes.bityped.maxRecurrencyEntryConnection = 0;
-    refinementSet.nodes.bityped.maxIterationsFindNode = 100;
-    refinementSet.activation_functions.rate = 0.08;
-    refinementSet.connections.rate = 0.05;
-    refinementSet.connections.reactivateRate = 0.6;
-    refinementSet.connections.maxRecurrency = 0;
-    refinementSet.connections.maxIterations = 100;
-    refinementSet.connections.maxIterationsFindNode = 100;
-    refinementSet.weights.rate = 0.05;
-    refinementSet.weights.fullChangeRate = 0.3;
-    refinementSet.weights.perturbationFactor = 0.2;
     return [=] (double fitness) -> pneatm::mutationParams_t {
-        // Here, the mutation map is very basic: if the genome is pretty good, we just refine his network, else we explore new networks
-        if (fitness > 400.0) {
-            return refinementSet;
-        }
-        return explorationSet;
+        const double exploration_factor = 2.0 / (1.0 + (fitness / 800.0) * (fitness / 800.0)) + 1.0;
+
+        pneatm::mutationParams_t params;
+        params.nodes.rate = exploration_factor * 0.05;
+        params.nodes.monotypedRate = 0.5;
+        params.nodes.monotyped.maxIterationsFindConnection = 100;
+        params.nodes.bityped.maxRecurrencyEntryConnection = 0;
+        params.nodes.bityped.maxIterationsFindNode = 100;
+        params.activation_functions.rate = exploration_factor * 0.08;
+        params.connections.rate = exploration_factor * 0.05;
+        params.connections.reactivateRate = exploration_factor * 0.6;
+        params.connections.maxRecurrency = 0;
+        params.connections.maxIterations = 100;
+        params.connections.maxIterationsFindNode = 100;
+        params.weights.rate = exploration_factor * 0.05;
+        params.weights.fullChangeRate = exploration_factor * 0.2;
+        params.weights.perturbationFactor = exploration_factor * 0.2;
+        return params;
     };
 }
 
