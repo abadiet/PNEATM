@@ -23,7 +23,7 @@ int main () {
     unsigned int maxIterationThresh = 500;
     int nbGame = 7;
     double bestFitness = 0.0;
-    while (bestFitness < 2500.0 && pop.getGeneration () < 360) { // while goal is not reach
+    while (bestFitness < 2500.0 && pop.getGeneration () < 300) { // while goal is not reach
         std::cout << "generation " << pop.getGeneration () << std::endl;
 
         for (unsigned int genomeId = 0; genomeId < popSize; genomeId ++) {
@@ -76,7 +76,7 @@ int main () {
         pop.crossover (true, 0.7);
 
         // mutation step
-        pop.mutate (paramsMap);
+        pop.mutate (paramsMap, false);
     }
 
     pop.save ("snakePneatm_save");

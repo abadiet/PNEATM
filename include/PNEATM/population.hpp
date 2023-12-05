@@ -924,8 +924,8 @@ std::unordered_map <unsigned int, Connection> Population<Types...>::GetWeightedC
 template <typename... Types>
 void Population<Types...>::UpdateFitnesses (double speciesSizeEvolutionLimit) {
 	fittergenome_id = 0;
-	avgFitness = 0;
-	avgFitnessAdjusted = 0;
+	avgFitness = 0.0;
+	avgFitnessAdjusted = 0.0;
 
 	// process avgFitness and found fittergenome_id
 	for (const std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
@@ -1005,6 +1005,27 @@ void Population<Types...>::crossover (bool elitism, double crossover_rate) {
 		genomeId++;
 	}
 
+	// scale the number of offsprings to the exact population's size
+	std::vector<unsigned int> species_alive;
+	int N_offsprings = 0; 
+	for (unsigned int iSpe = 0; iSpe < (unsigned int) species.size (); iSpe ++) {
+		if (!species [iSpe].isDead) {
+			N_offsprings += species [iSpe].allowedOffspring;
+			species_alive.push_back(iSpe);
+		}
+	}
+	for (int k = 0; k < (int) popSize - N_offsprings - (int) elitism; k++) {
+		// some offsprings are missing, let's help the weakest species
+		std::sort(species_alive.begin(), species_alive.end(), [&](const unsigned int& a, const unsigned int& b) {return species [a].allowedOffspring < species [b].allowedOffspring;});
+		species [species_alive [0]].allowedOffspring += 1;
+	}
+	for (int k = 0; k < (int) elitism + N_offsprings - (int) popSize; k++) {
+		// there is too meny offsprings, let's weaken the strongest species
+		std::sort(species_alive.begin(), species_alive.end(), [&](const unsigned int& a, const unsigned int& b) {return species [a].allowedOffspring > species [b].allowedOffspring;});
+		species [species_alive [0]].allowedOffspring -= 1;
+	}
+
+	// process offsprings
 	for (unsigned int iSpe = 0; iSpe < (unsigned int) species.size (); iSpe ++) {
 		if (!species [iSpe].isDead) {
 			for (int k = 0; k < species [iSpe].allowedOffspring; k++) {
@@ -1050,16 +1071,6 @@ void Population<Types...>::crossover (bool elitism, double crossover_rate) {
 				}
 			}
 		}
-	}
-
-	unsigned int previousSize = (unsigned int) newGenomes.size();
-	// add genomes if some are missing
-	for (unsigned int k = previousSize; k < popSize; k++) {
-		newGenomes.insert (std::make_pair (k, std::make_unique<Genome<Types...>> (k, bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_values, resetValues, activationFns, &conn_innov, &node_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger)));
-	}
-	// or remove some genomes if there is too many genomes
-	for (unsigned int k = previousSize - 1; k >= popSize; k--) {
-		newGenomes.erase (k);
 	}
 
 	// replace the current genomes by the new ones

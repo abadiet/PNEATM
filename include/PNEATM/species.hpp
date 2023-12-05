@@ -130,7 +130,7 @@ double Species<Types...>::distanceWith (const std::unique_ptr<Genome<Types...>>&
 			return Euclidian (genome);
 			break;
 	}
-	return 0.0;	// avoid compilation error
+	return 0.0;	// avoid compilator error
 }
 
 
@@ -256,7 +256,7 @@ double Species<Types...>::Euclidian (const std::unique_ptr<Genome<Types...>>& ge
 		}
 	}
 
-	return result;	// actualy the euclidian distance is equal to the squared root of result: but this has no effect as we are comparing values
+	return result;	// actualy the euclidian distance is the squared root of result: but this has no effect as we are comparing values
 }
 
 template <typename... Types>
