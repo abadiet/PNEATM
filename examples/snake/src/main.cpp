@@ -68,15 +68,15 @@ int main () {
 
         // speciation step
         pop.speciate (5, 100, 0.3);
-
         bestFitness = pop.getGenome ().getFitness ();
-        std::cout << "  - best fitness: " << bestFitness << std::endl;
+        const double avgFitness = pop.getAvgFitness ();
 
-        // crossover step
-        pop.crossover (true, 0.7);
+        // build the next generation
+        const double crossover_rate = 0.8 - 0.8 / (1.0 + (avgFitness / 350.0) * (avgFitness / 350.0));
+        pop.buildNextGen (paramsMap, true, crossover_rate);
 
-        // mutation step
-        pop.mutate (paramsMap);
+        std::cout << "best fitness: " << bestFitness << "      average fitness: " << avgFitness << "     crossover ratio: " << crossover_rate * 100 << "%" << std::endl;
+
     }
 
     pop.save ("snakePneatm_save");

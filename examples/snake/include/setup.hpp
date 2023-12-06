@@ -239,7 +239,7 @@ pneatm::Population<myInt, myFloat> LoadPopulation (const std::string& filename, 
 
 std::function<pneatm::mutationParams_t (double)> SetupMutationParametersMaps () {
     return [=] (double fitness) -> pneatm::mutationParams_t {
-        const double exploration_factor = 2.0 / (1.0 + (fitness / 800.0) * (fitness / 800.0)) + 1.0;
+        const double exploration_factor = 2.0 / (1.0 + (fitness / 2000.0) * (fitness / 2000.0)) + 1.0;
 
         pneatm::mutationParams_t params;
         params.nodes.rate = exploration_factor * 0.05;

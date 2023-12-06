@@ -287,6 +287,22 @@ class Population {
 		void mutate (const std::function<mutationParams_t (double)>& paramsMap);
 
 		/**
+		 * @brief Build the next generation. Actually, each new genome is the result of a crossover between two parents from the current generation or a mutation of a genome of the curretnt generation.
+		 * @param mutationParams Mutation parameters.
+		 * @param elitism Set to true to keep the fitter genome in the new generation. (default is false)
+		 * @param crossover_rate The probability of performing crossover for each new genome. (default is 0.9)
+		 */
+		void buildNextGen (const mutationParams_t& mutationParams, bool elitism = false, double crossover_rate = 0.9);
+
+		/**
+		 * @brief Build the next generation. Actually, each new genome is the result of a crossover between two parents from the current generation or a mutation of a genome of the curretnt generation.
+		 * @param mutationParamsMap A function that returns mutation parameters relative to the genome's fitness.
+		 * @param elitism Set to true to keep the fitter genome in the new generation. (default is false)
+		 * @param crossover_rate The probability of performing crossover for each new genome. (default is 0.9)
+		 */
+		void buildNextGen (const std::function<mutationParams_t (double)>& mutationParamsMap, bool elitism = false, double crossover_rate = 0.9);
+
+		/**
 		 * @brief Print information on the population.
 		 * @param prefix A prefix to print before each line. (default is an empty string)
 		 */
@@ -1134,6 +1150,223 @@ void Population<Types...>::mutate (const std::function<mutationParams_t (double)
 		genome.second->mutate (&conn_innov, &node_innov, paramsMap (genome.second->fitness));
 	}
 }
+
+
+template <typename... Types>
+void Population<Types...>::buildNextGen (const mutationParams_t& mutationParams, bool elitism, double crossover_rate)  {
+	logger->info ("Build the new generation");
+	std::unordered_map<unsigned int, std::unique_ptr<Genome<Types...>>> newGenomes;
+	newGenomes.reserve (popSize);
+
+	unsigned int genomeId = 0;
+
+	if (elitism) {	// elitism mode on = we conserve during generations the more fit genome
+		newGenomes.insert (std::make_pair (genomeId, genomes [fittergenome_id]->clone ()));
+		newGenomes [genomeId]->id = genomeId;
+		genomeId++;
+	}
+
+	// scale the number of offsprings to the exact population's size
+	std::vector<unsigned int> species_alive;
+	int N_offsprings = 0; 
+	for (unsigned int iSpe = 0; iSpe < (unsigned int) species.size (); iSpe ++) {
+		if (!species [iSpe].isDead) {
+			N_offsprings += species [iSpe].allowedOffspring;
+			species_alive.push_back(iSpe);
+		}
+	}
+	for (int k = 0; k < (int) popSize - N_offsprings - (int) elitism; k++) {
+		// some offsprings are missing, let's help the weakest species
+		std::sort(species_alive.begin(), species_alive.end(), [&](const unsigned int& a, const unsigned int& b) {return species [a].allowedOffspring < species [b].allowedOffspring;});
+		species [species_alive [0]].allowedOffspring += 1;
+	}
+	for (int k = 0; k < (int) elitism + N_offsprings - (int) popSize; k++) {
+		// there is too meny offsprings, let's weaken the strongest species
+		std::sort(species_alive.begin(), species_alive.end(), [&](const unsigned int& a, const unsigned int& b) {return species [a].allowedOffspring > species [b].allowedOffspring;});
+		species [species_alive [0]].allowedOffspring -= 1;
+	}
+
+	// process offsprings
+	for (unsigned int iSpe = 0; iSpe < (unsigned int) species.size (); iSpe ++) {
+		if (!species [iSpe].isDead) {
+			for (int k = 0; k < species [iSpe].allowedOffspring; k++) {
+
+				// choose pseudo-randomly a first parent
+				unsigned int iParent1 = SelectParent (iSpe);
+
+				if (Random_Double (0.0, 1.0, true, false) < crossover_rate && species [iSpe].members.size () > 1) {
+					// New genome comes from a crossover
+
+					// choose pseudo-randomly a second parent
+					unsigned int iParent2 = SelectParent (iSpe);	// TODO might be the same parent as iParent1: is that an issue?
+
+					// clone the more fit
+					unsigned int iMainParent;
+					unsigned int iSecondParent;
+					if (genomes [iParent1]->fitness > genomes [iParent2]->fitness) {
+						iMainParent = iParent1;
+						iSecondParent = iParent2;
+					} else {
+						iMainParent = iParent2;
+						iSecondParent = iParent1;
+					}
+
+					newGenomes.insert (std::make_pair (genomeId, genomes [iMainParent]->clone ()));
+					std::unique_ptr<Genome<Types...>>& genome = newGenomes [genomeId];
+					genome->id = genomeId;
+					genomeId++;
+
+					// connections shared by both of the parents must be randomly wheighted
+					for (const std::pair<const unsigned int, Connection>& connMainParent : genomes [iMainParent]->connections) {
+						for (const std::pair<const unsigned int, Connection>& connSecondParent : genomes [iSecondParent]->connections) {
+							if (connMainParent.second.innovId == connSecondParent.second.innovId) {
+								if (Random_Double (0.0, 1.0, true, false) < 0.5) {	// 50 % of chance for each parent, newGenome already have the wheight of MainParent
+									genome->connections [connMainParent.second.id].weight = connSecondParent.second.weight;
+								}
+							}
+						}
+					}
+				} else {
+					// New genome comes from a mutation
+
+					newGenomes.insert (std::make_pair (genomeId, genomes [iParent1]->clone ()));
+					newGenomes [genomeId]->mutate (&conn_innov, &node_innov, mutationParams);
+					newGenomes [genomeId]->id = genomeId;
+					genomeId++;
+				}
+			}
+		}
+	}
+
+	// replace the current genomes by the new ones
+	genomes.clear ();
+	genomes = std::move (newGenomes);
+
+	// reset species members
+	for (size_t i = 0; i < species.size (); i++) {
+		species [i].members.clear ();
+		species [i].isDead = true;
+	}
+	for (const std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
+		if (genome.second->speciesId > -1) {
+			species [genome.second->speciesId].members.push_back (genome.second->id);
+			species [genome.second->speciesId].isDead = false;	// empty species will stay to isDead = true
+		}
+	}
+
+	fittergenome_id = -1;	// avoid a missuse of fittergenome_id
+
+	generation ++;
+}
+
+
+template <typename... Types>
+void Population<Types...>::buildNextGen (const std::function<mutationParams_t (double)>& mutationParamsMap, bool elitism, double crossover_rate) {
+	logger->info ("Build the new generation");
+	std::unordered_map<unsigned int, std::unique_ptr<Genome<Types...>>> newGenomes;
+	newGenomes.reserve (popSize);
+
+	unsigned int genomeId = 0;
+
+	if (elitism) {	// elitism mode on = we conserve during generations the more fit genome
+		newGenomes.insert (std::make_pair (genomeId, genomes [fittergenome_id]->clone ()));
+		newGenomes [genomeId]->id = genomeId;
+		genomeId++;
+	}
+
+	// scale the number of offsprings to the exact population's size
+	std::vector<unsigned int> species_alive;
+	int N_offsprings = 0; 
+	for (unsigned int iSpe = 0; iSpe < (unsigned int) species.size (); iSpe ++) {
+		if (!species [iSpe].isDead) {
+			N_offsprings += species [iSpe].allowedOffspring;
+			species_alive.push_back(iSpe);
+		}
+	}
+	for (int k = 0; k < (int) popSize - N_offsprings - (int) elitism; k++) {
+		// some offsprings are missing, let's help the weakest species
+		std::sort(species_alive.begin(), species_alive.end(), [&](const unsigned int& a, const unsigned int& b) {return species [a].allowedOffspring < species [b].allowedOffspring;});
+		species [species_alive [0]].allowedOffspring += 1;
+	}
+	for (int k = 0; k < (int) elitism + N_offsprings - (int) popSize; k++) {
+		// there is too meny offsprings, let's weaken the strongest species
+		std::sort(species_alive.begin(), species_alive.end(), [&](const unsigned int& a, const unsigned int& b) {return species [a].allowedOffspring > species [b].allowedOffspring;});
+		species [species_alive [0]].allowedOffspring -= 1;
+	}
+
+	// process offsprings
+	for (unsigned int iSpe = 0; iSpe < (unsigned int) species.size (); iSpe ++) {
+		if (!species [iSpe].isDead) {
+			for (int k = 0; k < species [iSpe].allowedOffspring; k++) {
+
+				// choose pseudo-randomly a first parent
+				unsigned int iParent1 = SelectParent (iSpe);
+
+				if (Random_Double (0.0, 1.0, true, false) < crossover_rate && species [iSpe].members.size () > 1) {
+					// New genome comes from a crossover
+
+					// choose pseudo-randomly a second parent
+					unsigned int iParent2 = SelectParent (iSpe);	// TODO might be the same parent as iParent1: is that an issue?
+
+					// clone the more fit
+					unsigned int iMainParent;
+					unsigned int iSecondParent;
+					if (genomes [iParent1]->fitness > genomes [iParent2]->fitness) {
+						iMainParent = iParent1;
+						iSecondParent = iParent2;
+					} else {
+						iMainParent = iParent2;
+						iSecondParent = iParent1;
+					}
+
+					newGenomes.insert (std::make_pair (genomeId, genomes [iMainParent]->clone ()));
+					std::unique_ptr<Genome<Types...>>& genome = newGenomes [genomeId];
+					genome->id = genomeId;
+					genomeId++;
+
+					// connections shared by both of the parents must be randomly wheighted
+					for (const std::pair<const unsigned int, Connection>& connMainParent : genomes [iMainParent]->connections) {
+						for (const std::pair<const unsigned int, Connection>& connSecondParent : genomes [iSecondParent]->connections) {
+							if (connMainParent.second.innovId == connSecondParent.second.innovId) {
+								if (Random_Double (0.0, 1.0, true, false) < 0.5) {	// 50 % of chance for each parent, newGenome already have the wheight of MainParent
+									genome->connections [connMainParent.second.id].weight = connSecondParent.second.weight;
+								}
+							}
+						}
+					}
+				} else {
+					// New genome comes from a mutation
+
+					newGenomes.insert (std::make_pair (genomeId, genomes [iParent1]->clone ()));
+					newGenomes [genomeId]->mutate (&conn_innov, &node_innov, mutationParamsMap (newGenomes [genomeId]->fitness));
+					newGenomes [genomeId]->id = genomeId;
+					genomeId++;
+				}
+			}
+		}
+	}
+
+	// replace the current genomes by the new ones
+	genomes.clear ();
+	genomes = std::move (newGenomes);
+
+	// reset species members
+	for (size_t i = 0; i < species.size (); i++) {
+		species [i].members.clear ();
+		species [i].isDead = true;
+	}
+	for (const std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
+		if (genome.second->speciesId > -1) {
+			species [genome.second->speciesId].members.push_back (genome.second->id);
+			species [genome.second->speciesId].isDead = false;	// empty species will stay to isDead = true
+		}
+	}
+
+	fittergenome_id = -1;	// avoid a missuse of fittergenome_id
+
+	generation ++;
+}
+
 
 template <typename... Types>
 void Population<Types...>::print (const std::string& prefix) {
