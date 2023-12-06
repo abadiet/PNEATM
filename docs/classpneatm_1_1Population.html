@@ -181,6 +181,12 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <tr class="memitem:aed4c70a9d89898a1a9e88ad5421db8cc"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Population.html#aed4c70a9d89898a1a9e88ad5421db8cc">mutate</a> (const std::function&lt; <a class="el" href="structpneatm_1_1mutationParams.html">mutationParams_t</a>(double)&gt; &amp;paramsMap)</td></tr>
 <tr class="memdesc:aed4c70a9d89898a1a9e88ad5421db8cc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform mutation operations for the entire population.  <a href="classpneatm_1_1Population.html#aed4c70a9d89898a1a9e88ad5421db8cc">More...</a><br /></td></tr>
 <tr class="separator:aed4c70a9d89898a1a9e88ad5421db8cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a38bc0dd513a52c4e94a7edce544ddaf0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Population.html#a38bc0dd513a52c4e94a7edce544ddaf0">buildNextGen</a> (const <a class="el" href="structpneatm_1_1mutationParams.html">mutationParams_t</a> &amp;<a class="el" href="structpneatm_1_1mutationParams.html">mutationParams</a>, bool elitism=false, double crossover_rate=0.9)</td></tr>
+<tr class="memdesc:a38bc0dd513a52c4e94a7edce544ddaf0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Build the next generation. Actually, each new genome is the result of a crossover between two parents from the current generation or a mutation of a genome of the curretnt generation.  <a href="classpneatm_1_1Population.html#a38bc0dd513a52c4e94a7edce544ddaf0">More...</a><br /></td></tr>
+<tr class="separator:a38bc0dd513a52c4e94a7edce544ddaf0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0af5015dbf4f1c4395ebc8083e66d159"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Population.html#a0af5015dbf4f1c4395ebc8083e66d159">buildNextGen</a> (const std::function&lt; <a class="el" href="structpneatm_1_1mutationParams.html">mutationParams_t</a>(double)&gt; &amp;mutationParamsMap, bool elitism=false, double crossover_rate=0.9)</td></tr>
+<tr class="memdesc:a0af5015dbf4f1c4395ebc8083e66d159"><td class="mdescLeft">&#160;</td><td class="mdescRight">Build the next generation. Actually, each new genome is the result of a crossover between two parents from the current generation or a mutation of a genome of the curretnt generation.  <a href="classpneatm_1_1Population.html#a0af5015dbf4f1c4395ebc8083e66d159">More...</a><br /></td></tr>
+<tr class="separator:a0af5015dbf4f1c4395ebc8083e66d159"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4de9b65fe4c94f199eae400bc35164fe"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpneatm_1_1Population.html#a4de9b65fe4c94f199eae400bc35164fe">print</a> (const std::string &amp;prefix=&quot;&quot;)</td></tr>
 <tr class="memdesc:a4de9b65fe4c94f199eae400bc35164fe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Print information on the population.  <a href="classpneatm_1_1Population.html#a4de9b65fe4c94f199eae400bc35164fe">More...</a><br /></td></tr>
 <tr class="separator:a4de9b65fe4c94f199eae400bc35164fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -457,6 +463,98 @@ template&lt;typename... Types&gt; </div>
 
 <p>Iterator pointing to the beginning of the genomes. </p>
 <dl class="section return"><dt>Returns</dt><dd>The begin of genomes. </dd></dl>
+
+</div>
+</div>
+<a id="a38bc0dd513a52c4e94a7edce544ddaf0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a38bc0dd513a52c4e94a7edce544ddaf0">&#9670;&nbsp;</a></span>buildNextGen() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename... Types&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void Population::buildNextGen </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structpneatm_1_1mutationParams.html">mutationParams_t</a> &amp;&#160;</td>
+          <td class="paramname"><em>mutationParams</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>elitism</em> = <code>false</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>crossover_rate</em> = <code>0.9</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Build the next generation. Actually, each new genome is the result of a crossover between two parents from the current generation or a mutation of a genome of the curretnt generation. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname"><a class="el" href="structpneatm_1_1mutationParams.html" title="Mutation parameters used to control mutations.">mutationParams</a></td><td>Mutation parameters. </td></tr>
+    <tr><td class="paramname">elitism</td><td>Set to true to keep the fitter genome in the new generation. (default is false) </td></tr>
+    <tr><td class="paramname">crossover_rate</td><td>The probability of performing crossover for each new genome. (default is 0.9) </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a0af5015dbf4f1c4395ebc8083e66d159"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0af5015dbf4f1c4395ebc8083e66d159">&#9670;&nbsp;</a></span>buildNextGen() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename... Types&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void Population::buildNextGen </td>
+          <td>(</td>
+          <td class="paramtype">const std::function&lt; <a class="el" href="structpneatm_1_1mutationParams.html">mutationParams_t</a>(double)&gt; &amp;&#160;</td>
+          <td class="paramname"><em>mutationParamsMap</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>elitism</em> = <code>false</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>crossover_rate</em> = <code>0.9</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Build the next generation. Actually, each new genome is the result of a crossover between two parents from the current generation or a mutation of a genome of the curretnt generation. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">mutationParamsMap</td><td>A function that returns mutation parameters relative to the genome's fitness. </td></tr>
+    <tr><td class="paramname">elitism</td><td>Set to true to keep the fitter genome in the new generation. (default is false) </td></tr>
+    <tr><td class="paramname">crossover_rate</td><td>The probability of performing crossover for each new genome. (default is 0.9) </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
