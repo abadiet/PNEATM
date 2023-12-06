@@ -76,7 +76,7 @@ int main () {
         pop.crossover (true, 0.7);
 
         // mutation step
-        pop.mutate (paramsMap, false);
+        pop.mutate (paramsMap);
     }
 
     pop.save ("snakePneatm_save");
