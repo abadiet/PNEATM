@@ -34,9 +34,6 @@ Documentation is available at [https://titofra.github.io/PNEATM/](https://titofr
 <p align="center">
 	<img src="https://github.com/titofra/PNEATM/blob/main/examples/snake/resources/snakeGameplay.gif">
 </p>
-<p align="center">
-	<img src="https://github.com/titofra/PNEATM/blob/main/examples/snake/resources/snakeGameplay_staircaseSpecies.gif">
-</p>
 
 ## Warning
 
