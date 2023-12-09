@@ -747,7 +747,7 @@ void Population<Types...>::resetMemory (unsigned int genome_id) {
 
 template <typename... Types>
 void Population<Types...>::runNetworks (unsigned int maxThreads) {
-	ThreadPool pool (maxThreads);
+	ThreadPool<void> pool (maxThreads);
 
 	for (std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
 		// add the task to the pool
