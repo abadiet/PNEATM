@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.5)
 
 # Options
-option(PNEATM_BUILD_EXAMPLES "Build Examples" ON)
+cmake_policy(SET CMP0077 NEW)
+option(BUILD_EXAMPLES "Build Examples" ON)
 
 # Project
 project(pneatm)
@@ -31,7 +32,7 @@ target_link_libraries(${PROJECT_NAME}
 	PRIVATE sfml-window sfml-system sfml-graphics
 )
 
-if(PNEATM_BUILD_EXAMPLES)
+if(BUILD_EXAMPLES)
 	# SnakePNEATM
     add_subdirectory(examples/snake)
 endif()
