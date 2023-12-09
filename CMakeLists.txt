@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 
 # Options
-option(BUILD_EXAMPLES "Build Examples" ON)
+option(PNEATM_BUILD_EXAMPLES "Build Examples" ON)
 
 # Project
 project(pneatm)
@@ -13,9 +13,7 @@ file(GLOB_RECURSE SOURCES src/*.cpp)
 add_library(${PROJECT_NAME} STATIC ${SOURCES})
 
 # Includes
-target_include_directories(pneatm PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-)
+target_include_directories(pneatm PUBLIC include)
 
 # Flags
 target_compile_options(${PROJECT_NAME} PRIVATE
@@ -33,7 +31,7 @@ target_link_libraries(${PROJECT_NAME}
 	PRIVATE sfml-window sfml-system sfml-graphics
 )
 
-if(BUILD_EXAMPLES)
+if(PNEATM_BUILD_EXAMPLES)
 	# SnakePNEATM
     add_subdirectory(examples/snake)
 endif()
