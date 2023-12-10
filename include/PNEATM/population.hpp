@@ -103,7 +103,7 @@ class Population {
 		 * @param inputs A vector containing inputs to be loaded.
 		 */
 		template <typename T_in>
-		void loadInputs (const std::vector<T_in>& inputs);
+		void loadInputs (std::vector<T_in>& inputs);
 
 		/**
 		 * @brief Load a single input for the entire population.
@@ -121,7 +121,7 @@ class Population {
 		 * @param genome_id The ID of the genome for which to load the inputs.
 		 */
 		template <typename T_in>
-		void loadInputs (const std::vector<T_in>& inputs, unsigned int genome_id);
+		void loadInputs (std::vector<T_in>& inputs, unsigned int genome_id);
 
 		/**
 		 * @brief Load a single input data for a specific genome.
@@ -137,7 +137,7 @@ class Population {
 		 * @brief Load the inputs for the entire population.
 		 * @param inputs A vector containing inputs to be loaded.
 		 */
-		void loadInputs (const std::vector<void*>& inputs);
+		void loadInputs (std::vector<void*>& inputs);
 
 		/**
 		 * @brief Load a single input for the entire population.
@@ -151,7 +151,7 @@ class Population {
 		 * @param inputs A vector containing inputs to be loaded.
 		 * @param genome_id The ID of the genome for which to load the inputs.
 		 */
-		void loadInputs (const std::vector<void*>& inputs, unsigned int genome_id);
+		void loadInputs (std::vector<void*>& inputs, unsigned int genome_id);
 
 		/**
 		 * @brief Load a single input data for a specific genome.
@@ -476,7 +476,7 @@ Genome<Types...>& Population<Types...>::getGenome (int id) {
 
 template <typename... Types>
 template <typename T_in>
-void Population<Types...>::loadInputs (const std::vector<T_in>& inputs) {
+void Population<Types...>::loadInputs (std::vector<T_in>& inputs) {
 	for (int i = 0; i < popSize; i++) {
 		genomes [i]->template loadInputs<T_in> (inputs);
 	}
@@ -484,7 +484,7 @@ void Population<Types...>::loadInputs (const std::vector<T_in>& inputs) {
 
 template <typename... Types>
 template <typename T_in>
-void Population<Types...>::loadInputs (const std::vector<T_in>& inputs, unsigned int genome_id) {
+void Population<Types...>::loadInputs (std::vector<T_in>& inputs, unsigned int genome_id) {
 	genomes [genome_id]->template loadInputs<T_in> (inputs);
 }
 
@@ -504,14 +504,14 @@ void Population<Types...>::loadInput (T_in& input, unsigned int input_id, unsign
 
 
 template <typename... Types>
-void Population<Types...>::loadInputs (const std::vector<void*>& inputs) {
+void Population<Types...>::loadInputs (std::vector<void*>& inputs) {
 	for (int i = 0; i < popSize; i++) {
 		genomes [i]->loadInputs (inputs);
 	}
 }
 
 template <typename... Types>
-void Population<Types...>::loadInputs (const std::vector<void*>& inputs, unsigned int genome_id) {
+void Population<Types...>::loadInputs (std::vector<void*>& inputs, unsigned int genome_id) {
 	genomes [genome_id]->loadInputs (inputs);
 }
 
