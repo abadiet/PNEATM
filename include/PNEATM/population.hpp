@@ -545,14 +545,13 @@ void Population<Types...>::run (const std::vector<std::vector<void*>>& inputs, s
 		};
 
 		// fill the thread pool
-		std::vector<std::future<std::vector<void*>>> results;
+		std::vector<std::future<std::vector<void*>>> results (popSize, std::future<std::vector<void*>> ());
 		for (std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
 			// add the task to the pool
-			results.push_back (pool.enqueue (
-					func,
-					genome.second.get (),
-					inputs
-				)
+			results [genome.first] = pool.enqueue (
+				func,
+				genome.second.get (),
+				inputs
 			);
 		}
 
@@ -614,14 +613,13 @@ void Population<Types...>::run (const std::vector<std::vector<std::vector<void*>
 		};
 
 		// fill the thread pool
-		std::vector<std::future<std::vector<void*>>> results;
+		std::vector<std::future<std::vector<void*>>> results (popSize, std::future<std::vector<void*>> ());
 		for (std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
 			// add the task to the pool
-			results.push_back (pool.enqueue (
-					func,
-					genome.second.get (),
-					inputs [genome.second->id]
-				)
+			results [genome.first] = pool.enqueue (
+				func,
+				genome.second.get (),
+				inputs [genome.first]
 			);
 		}
 
@@ -656,7 +654,7 @@ void Population<Types...>::run (const std::vector<std::vector<std::vector<void*>
 			pool.enqueue (
 				func,
 				genome.second.get (),
-				inputs [genome.second->id]
+				inputs [genome.first]
 			);
 		}
 
@@ -683,13 +681,12 @@ void Population<Types...>::run (const unsigned int N_runs, std::vector<std::vect
 		};
 
 		// fill the thread pool
-		std::vector<std::future<std::vector<void*>>> results;
+		std::vector<std::future<std::vector<void*>>> results (popSize, std::future<std::vector<void*>> ());
 		for (std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
 			// add the task to the pool
-			results.push_back (pool.enqueue (
-					func,
-					genome.second.get ()
-				)
+			results [genome.first] = pool.enqueue (
+				func,
+				genome.second.get ()
 			);
 		}
 
@@ -948,7 +945,7 @@ void Population<Types...>::UpdateFitnesses (double speciesSizeEvolutionLimit) {
 		avgFitness += genome.second->fitness;
 
 		if (genome.second->fitness > genomes [fittergenome_id]->fitness) {
-			fittergenome_id = genome.second->id;
+			fittergenome_id = genome.first;
 		}
 	}
 	avgFitness /= (double) popSize;
@@ -1100,7 +1097,7 @@ void Population<Types...>::crossover (bool elitism, double crossover_rate) {
 	}
 	for (const std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
 		if (genome.second->speciesId > -1) {
-			species [genome.second->speciesId].members.push_back (genome.second->id);
+			species [genome.second->speciesId].members.push_back (genome.first);
 			species [genome.second->speciesId].isDead = false;	// empty species will stay to isDead = true
 		}
 	}
@@ -1249,7 +1246,7 @@ void Population<Types...>::buildNextGen (const mutationParams_t& mutationParams,
 	}
 	for (const std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
 		if (genome.second->speciesId > -1) {
-			species [genome.second->speciesId].members.push_back (genome.second->id);
+			species [genome.second->speciesId].members.push_back (genome.first);
 			species [genome.second->speciesId].isDead = false;	// empty species will stay to isDead = true
 		}
 	}
@@ -1357,7 +1354,7 @@ void Population<Types...>::buildNextGen (const std::function<mutationParams_t (d
 	}
 	for (const std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
 		if (genome.second->speciesId > -1) {
-			species [genome.second->speciesId].members.push_back (genome.second->id);
+			species [genome.second->speciesId].members.push_back (genome.first);
 			species [genome.second->speciesId].isDead = false;	// empty species will stay to isDead = true
 		}
 	}
