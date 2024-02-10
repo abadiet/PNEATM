@@ -98,6 +98,13 @@ class Population {
 		Genome<Types...>& getGenome (int id = -1);
 
 		/**
+		 * @brief Get a pointer to the Genome with the specified ID.
+		 * @param id The ID of the Genome to retrieve. If set to any negative number, the fitter genome will be returned. (default is -1)
+		 * @return A pointer to the Genome with the specified ID.
+		 */
+		Genome<Types...>* getpGenome (int id = -1);
+
+		/**
 		 * @brief Load the inputs for the entire population.
 		 * @tparam T_in The type of input data.
 		 * @param inputs A vector containing inputs to be loaded.
@@ -475,10 +482,23 @@ Genome<Types...>& Population<Types...>::getGenome (int id) {
 }
 
 template <typename... Types>
+Genome<Types...>* Population<Types...>::getpGenome (int id) {
+	if (id < 0 || id >= (int) popSize) {
+		if (fittergenome_id < 0) {
+			// fitter genome cannot be found
+			logger->warn ("Calling Population<Types...>::getGenome cannot determine which is the more fit genome: in order to know it, call Population<Types...>::speciate first. Returning the first genome.");
+			return genomes [0].get ();
+		}
+		return genomes [fittergenome_id].get ();
+	}
+	return genomes [id].get ();
+}
+
+template <typename... Types>
 template <typename T_in>
 void Population<Types...>::loadInputs (std::vector<T_in>& inputs) {
-	for (int i = 0; i < popSize; i++) {
-		genomes [i]->template loadInputs<T_in> (inputs);
+	for (std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
+		genome.second->template loadInputs<T_in> (inputs);
 	}
 }
 
@@ -505,8 +525,8 @@ void Population<Types...>::loadInput (T_in& input, unsigned int input_id, unsign
 
 template <typename... Types>
 void Population<Types...>::loadInputs (std::vector<void*>& inputs) {
-	for (int i = 0; i < popSize; i++) {
-		genomes [i]->loadInputs (inputs);
+	for (std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
+		genome.second->loadInputs (inputs);
 	}
 }
 
@@ -535,8 +555,8 @@ void Population<Types...>::run (const std::vector<std::vector<void*>>& inputs, s
 		ThreadPool<std::vector<void*>> pool (maxThreads);
 
 		// the task
-		std::function<std::vector<void*> (Genome<Types...>*, const std::vector<std::vector<void*>>&)> func = [&] (Genome<Types...>* genome, const std::vector<std::vector<void*>>& inputs_gen) -> std::vector<void*> {
-			for (const std::vector<void*>& inputs_cur : inputs_gen) {
+		std::function<std::vector<void*> (Genome<Types...>*, std::vector<std::vector<void*>>&)> func = [&] (Genome<Types...>* genome, std::vector<std::vector<void*>>& inputs_gen) -> std::vector<void*> {
+			for (std::vector<void*>& inputs_cur : inputs_gen) {
 				genome->loadInputs (inputs_cur);
 				genome->runNetwork ();
 				genome->saveOutputs ();
@@ -545,14 +565,15 @@ void Population<Types...>::run (const std::vector<std::vector<void*>>& inputs, s
 		};
 
 		// fill the thread pool
-		std::vector<std::future<std::vector<void*>>> results (popSize, std::future<std::vector<void*>> ());
-		for (std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
+		std::vector<std::future<std::vector<void*>>> results;
+		results.reserve (popSize);
+		for (unsigned int i = 0; i < popSize; i++) {
 			// add the task to the pool
-			results [genome.first] = pool.enqueue (
+			results.emplace_back (pool.enqueue (
 				func,
-				genome.second.get (),
+				genomes [i].get (),
 				inputs
-			);
+			));
 		}
 
 		// wait for tasks end
@@ -573,8 +594,8 @@ void Population<Types...>::run (const std::vector<std::vector<void*>>& inputs, s
 		ThreadPool<void> pool (maxThreads);
 
 		// the task
-		std::function<void (Genome<Types...>*, const std::vector<std::vector<void*>>&)> func = [&] (Genome<Types...>* genome, const std::vector<std::vector<void*>>& inputs_gen) -> void {
-			for (const std::vector<void*>& inputs_cur : inputs_gen) {
+		std::function<void (Genome<Types...>*, std::vector<std::vector<void*>>&)> func = [&] (Genome<Types...>* genome, std::vector<std::vector<void*>>& inputs_gen) -> void {
+			for (std::vector<void*>& inputs_cur : inputs_gen) {
 				genome->loadInputs (inputs_cur);
 				genome->runNetwork ();
 			}
@@ -603,8 +624,8 @@ void Population<Types...>::run (const std::vector<std::vector<std::vector<void*>
 		ThreadPool<std::vector<void*>> pool (maxThreads);
 
 		// the task
-		std::function<std::vector<void*> (Genome<Types...>*, const std::vector<std::vector<void*>>&)> func = [&] (Genome<Types...>* genome, const std::vector<std::vector<void*>>& inputs_gen) -> std::vector<void*> {
-			for (const std::vector<void*>& inputs_cur : inputs_gen) {
+		std::function<std::vector<void*> (Genome<Types...>*, std::vector<std::vector<void*>>&)> func = [&] (Genome<Types...>* genome, std::vector<std::vector<void*>>& inputs_gen) -> std::vector<void*> {
+			for (std::vector<void*>& inputs_cur : inputs_gen) {
 				genome->loadInputs (inputs_cur);
 				genome->runNetwork ();
 				genome->saveOutputs ();
@@ -613,14 +634,15 @@ void Population<Types...>::run (const std::vector<std::vector<std::vector<void*>
 		};
 
 		// fill the thread pool
-		std::vector<std::future<std::vector<void*>>> results (popSize, std::future<std::vector<void*>> ());
-		for (std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
+		std::vector<std::future<std::vector<void*>>> results;
+		results.reserve (popSize);
+		for (unsigned int i = 0; i < popSize; i++) {
 			// add the task to the pool
-			results [genome.first] = pool.enqueue (
+			results.emplace_back (pool.enqueue (
 				func,
-				genome.second.get (),
-				inputs [genome.first]
-			);
+				genomes [i].get (),
+				inputs [i]
+			));
 		}
 
 		// wait for tasks end
@@ -641,8 +663,8 @@ void Population<Types...>::run (const std::vector<std::vector<std::vector<void*>
 		ThreadPool<void> pool (maxThreads);
 
 		// the task
-		std::function<void (Genome<Types...>*, const std::vector<std::vector<void*>>&)> func = [&] (Genome<Types...>* genome, const std::vector<std::vector<void*>>& inputs_gen) -> void {
-			for (const std::vector<void*>& inputs_cur : inputs_gen) {
+		std::function<void (Genome<Types...>*, std::vector<std::vector<void*>>&)> func = [&] (Genome<Types...>* genome, std::vector<std::vector<void*>>& inputs_gen) -> void {
+			for (std::vector<void*>& inputs_cur : inputs_gen) {
 				genome->loadInputs (inputs_cur);
 				genome->runNetwork ();
 			}
@@ -681,13 +703,14 @@ void Population<Types...>::run (const unsigned int N_runs, std::vector<std::vect
 		};
 
 		// fill the thread pool
-		std::vector<std::future<std::vector<void*>>> results (popSize, std::future<std::vector<void*>> ());
-		for (std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
+		std::vector<std::future<std::vector<void*>>> results;
+		results.reserve (popSize);
+		for (unsigned int i = 0; i < popSize; i++) {
 			// add the task to the pool
-			results [genome.first] = pool.enqueue (
+			results.emplace_back (pool.enqueue (
 				func,
-				genome.second.get ()
-			);
+				genomes [i].get ()
+			));
 		}
 
 		// wait for tasks end
