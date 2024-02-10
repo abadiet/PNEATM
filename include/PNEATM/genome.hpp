@@ -269,6 +269,15 @@ class Genome {
 		void setFitness (double value);
 
 		/**
+		 * @brief Return if wether the genome is locked or not.
+		 * @return 'true' if locked, 'false' else.
+		 *
+		 * A genome may locked itself during the running of its network, for example if its get a NaN value.
+		 * To unlock it, you should reset its memory ('resetMemory' function) or clone to get a freshly new genome ('clone' function). 
+		 */
+		bool isLocked () {return locked;};
+
+		/**
 		 * @brief Get the species ID which belong the genome.
 		 * @return The species ID which belong the genome.
 		 */
@@ -445,7 +454,7 @@ class Genome {
 		bool network_is_optimized;
 
 		double fitness;
-		bool gotNaN;
+		bool locked;
 		int speciesId;
 		unsigned int N_runNetwork;
 
@@ -492,7 +501,7 @@ Genome<Types...>::Genome (const unsigned int id, const std::vector<size_t>& bias
 	N_types = (unsigned int) activationFns.size ();
 	speciesId = -1;
 	fitness = 0.0;
-	gotNaN = false;
+	locked = false;
 	N_runNetwork = 0;
 	network_is_optimized = false;
 
@@ -657,7 +666,7 @@ Genome<Types...>::Genome (const unsigned int id, unsigned int nbBias, unsigned i
 	logger->trace ("Genome initialization");
 	speciesId = -1;
 	fitness = 0.0;
-	gotNaN = false;
+	locked = false;
 	N_runNetwork = 0;
 	network_is_optimized = false;
 }
@@ -685,43 +694,59 @@ Genome<Types...>::~Genome () {
 
 template <typename... Types>
 void Genome<Types...>::setFitness (double value) {
-	if (!gotNaN) {
+	if (!locked) {
 		fitness = value;
 	} else {
-		logger->warn ("The genome had a NaN in its network, therefore you cannot set its fitness as it is null.");
+		logger->warn ("The genome is locked, therefore you cannot set its fitness.");
 	}
 };
 
 template <typename... Types>
 template <typename T_in>
 void Genome<Types...>::loadInputs (std::vector<T_in> inputs) {
-	for (unsigned int i = 0; i < nbInput; i++) {
-		nodes [i + nbBias]->loadInput (static_cast<void*> (&inputs [i]));
+	if (!locked) {
+		for (unsigned int i = 0; i < nbInput; i++) {
+			nodes [i + nbBias]->loadInput (static_cast<void*> (&inputs [i]));
+		}
+	} else {
+		logger->warn ("The genome is locked, therefore you cannot load any input.");
 	}
 }
 
 template <typename... Types>
 template <typename T_in>
 void Genome<Types...>::loadInput (T_in input, int input_id) {
-	nodes [input_id + nbBias]->loadInput (static_cast<void*> (&input));
+	if (!locked) {
+		nodes [input_id + nbBias]->loadInput (static_cast<void*> (&input));
+	} else {
+		logger->warn ("The genome is locked, therefore you cannot load any input.");
+	}
 }
 
 template <typename... Types>
 void Genome<Types...>::loadInputs (std::vector<void*> inputs) {
-	for (unsigned int i = 0; i < nbInput; i++) {
-		nodes [i + nbBias]->loadInput (inputs [i]);
+	if (!locked) {
+		for (unsigned int i = 0; i < nbInput; i++) {
+			nodes [i + nbBias]->loadInput (inputs [i]);
+		}
+	} else {
+		logger->warn ("The genome is locked, therefore you cannot load any input.");
 	}
 }
 
 template <typename... Types>
 void Genome<Types...>::loadInput (void* input, int input_id) {
-	nodes [input_id + nbBias]->loadInput (input);
+	if (!locked) {
+		nodes [input_id + nbBias]->loadInput (input);
+	} else {
+		logger->warn ("The genome is locked, therefore you cannot load any input.");
+	}
 }
 
 template <typename... Types>
 void Genome<Types...>::resetMemory () {
 	N_runNetwork = 0;
-	gotNaN = false;
+	locked = false;
 	for (std::pair<const unsigned int, std::unique_ptr<NodeBase>>& node : nodes) {
 		node.second->reset (true, true);
 	}
@@ -730,7 +755,10 @@ void Genome<Types...>::resetMemory () {
 
 template <typename... Types>
 bool Genome<Types...>::runNetwork () {
-	if (gotNaN) return false;
+	if (locked) {
+		logger->warn ("The genome is locked, therefore you cannot run its network.");
+		return false;
+	}
 
 	// optimize the network by sorting connections and dissociate useless nodes from useful ones
 	if (!network_is_optimized) {
@@ -760,7 +788,7 @@ bool Genome<Types...>::runNetwork () {
 	// process output of input/bias nodes as we already know their input
 	for (NodeBase* node : optimize_nodes_process [0]) {
 		if (!node->process ()) {
-			gotNaN = true;
+			locked = true;
 			setFitness (0.0);
 			return false;
 		}
@@ -779,7 +807,7 @@ bool Genome<Types...>::runNetwork () {
 		// process nodes's output
 		for (NodeBase* node : optimize_nodes_process [ilayer + 1]) {
 			if (!node->process ()) {
-				gotNaN = true;
+				locked = true;
 				setFitness (0.0);
 				return false;
 			}
@@ -799,7 +827,7 @@ bool Genome<Types...>::runNetwork () {
 	// process nodes's output
 	for (NodeBase* node : optimize_nodes_process.back ()) {
 		if (!node->process ()) {
-			gotNaN = true;
+			locked = true;
 			setFitness (0.0);
 			return false;
 		}
@@ -908,20 +936,31 @@ void Genome<Types...>::SetUsefulNodes_Recursive (const unsigned int nodeId) {
 
 template <typename... Types>
 void Genome<Types...>::saveOutput (int output_id) {
-	nodes [nbBias + nbInput + output_id]->saveOutput ();
+	if (!locked) {
+		nodes [nbBias + nbInput + output_id]->saveOutput ();
+	} else {
+		logger->warn ("The genome is locked, therefore you cannot save any output.");
+	}
 }
 
 template <typename... Types>
 void Genome<Types...>::saveOutputs () {
-	for (unsigned int i = 0; i < nbOutput; i++) {
-		nodes [nbBias + nbInput + i]->saveOutput ();
+	if (!locked) {
+		for (unsigned int i = 0; i < nbOutput; i++) {
+			nodes [nbBias + nbInput + i]->saveOutput ();
+		}
+	} else {
+		logger->warn ("The genome is locked, therefore you cannot save any output.");
 	}
 }
 
 template <typename... Types>
 template <typename T_out>
 std::vector<T_out> Genome<Types...>::getOutputs () {
-	if (gotNaN) return {};
+	if (locked) {
+		logger->warn ("The genome is locked, therefore you cannot get any output.");
+		return {};
+	}
 	std::vector<T_out> outputs;
 	outputs.reserve (nbOutput);
 	for (unsigned int i = 0; i < nbOutput; i++) {
@@ -933,13 +972,19 @@ std::vector<T_out> Genome<Types...>::getOutputs () {
 template <typename... Types>
 template <typename T_out>
 T_out Genome<Types...>::getOutput (int output_id) {
-	if (gotNaN) return T_out ();
+	if (locked) {
+		logger->warn ("The genome is locked, therefore you cannot get any output.");
+		return T_out ();
+	}
 	return *static_cast<T_out*> (nodes [nbBias + nbInput + output_id]->getOutput ());
 }
 
 template <typename... Types>
 std::vector<void*> Genome<Types...>::getOutputs () {
-	if (gotNaN) return {};
+	if (locked) {
+		logger->warn ("The genome is locked, therefore you cannot get any output.");
+		return {};
+	}
 	std::vector<void*> outputs;
 	outputs.reserve (nbOutput);
 	for (unsigned int i = 0; i < nbOutput; i++) {
@@ -950,12 +995,19 @@ std::vector<void*> Genome<Types...>::getOutputs () {
 
 template <typename... Types>
 void* Genome<Types...>::getOutput (int output_id) {
-	if (gotNaN) return nullptr;
+	if (locked) {
+		logger->warn ("The genome is locked, therefore you cannot get any output.");
+		return nullptr;
+	}
 	return nodes [nbBias + nbInput + output_id]->getOutput ();
 }
 
 template <typename... Types>
 std::vector<void*> Genome<Types...>::getSavedOutputs () {
+	if (locked) {
+		logger->warn ("The genome is locked, therefore you cannot get any output.");
+		return {};
+	}
 	std::vector<void*> outputs;
 	outputs.reserve (nbOutput);
 	for (unsigned int i = 0; i < nbOutput; i++) {
@@ -966,28 +1018,34 @@ std::vector<void*> Genome<Types...>::getSavedOutputs () {
 
 template <typename... Types>
 void Genome<Types...>::mutate (innovationConn_t* conn_innov, innovationNode_t* node_innov, const mutationParams_t& params) {
-	// WEIGHTS
-	MutateWeights (params.weights.rate, params.weights.fullChangeRate, params.weights.perturbationFactor);
+	if (!locked) {
 
-	// ACTIVATION FUNCTIONS
-	MutateActivationFn (params.activation_functions.rate);
+		// WEIGHTS
+		MutateWeights (params.weights.rate, params.weights.fullChangeRate, params.weights.perturbationFactor);
 
-	// NODES
-	if (Random_Double (0.0f, 1.0f, true, false) < params.nodes.rate) {
-		if (Random_Double (0.0f, 1.0f, true, false) < params.nodes.monotypedRate) {
-			AddMonotypedNode (conn_innov, node_innov, params.nodes.monotyped.maxIterationsFindConnection);
-		} else {
-			AddBitypedNode (conn_innov, node_innov, params.nodes.bityped.maxRecurrencyEntryConnection, params.nodes.bityped.maxIterationsFindNode);
+		// ACTIVATION FUNCTIONS
+		MutateActivationFn (params.activation_functions.rate);
+
+		// NODES
+		if (Random_Double (0.0f, 1.0f, true, false) < params.nodes.rate) {
+			if (Random_Double (0.0f, 1.0f, true, false) < params.nodes.monotypedRate) {
+				AddMonotypedNode (conn_innov, node_innov, params.nodes.monotyped.maxIterationsFindConnection);
+			} else {
+				AddBitypedNode (conn_innov, node_innov, params.nodes.bityped.maxRecurrencyEntryConnection, params.nodes.bityped.maxIterationsFindNode);
+			}
 		}
-	}
 
-	// CONNECTIONS
-	if (Random_Double (0.0f, 1.0f, true, false) < params.connections.rate) {
-		AddConnection (conn_innov, params.connections.maxRecurrency, params.connections.maxIterationsFindNode, params.connections.reactivateRate);
-	}
+		// CONNECTIONS
+		if (Random_Double (0.0f, 1.0f, true, false) < params.connections.rate) {
+			AddConnection (conn_innov, params.connections.maxRecurrency, params.connections.maxIterationsFindNode, params.connections.reactivateRate);
+		}
 
-	// reset optimizer as the network may have changed
-	network_is_optimized = false;
+		// reset optimizer as the network may have changed
+		network_is_optimized = false;
+
+	} else {
+		logger->warn ("The genome is locked, therefore you cannot mutate it.");
+	}
 }
 
 template <typename... Types>
@@ -1630,7 +1688,7 @@ void Genome<Types...>::serialize (std::ofstream& outFile) {
 	}
 
 	Serialize (fitness, outFile);
-	Serialize (gotNaN, outFile);
+	Serialize (locked, outFile);
 	Serialize (speciesId, outFile);
 	Serialize (N_runNetwork, outFile);
 }
@@ -1666,7 +1724,7 @@ void Genome<Types...>:: deserialize (std::ifstream& inFile) {
 	}
 
 	Deserialize (fitness, inFile);
-	Deserialize (gotNaN, inFile);
+	Deserialize (locked, inFile);
 	Deserialize (speciesId, inFile);
 	Deserialize (N_runNetwork, inFile);
 }
