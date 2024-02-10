@@ -274,7 +274,7 @@ class Genome {
 		 * @param inputs A vector containing inputs to be loaded.
 		 */
 		template <typename T_in>
-		void loadInputs (std::vector<T_in>& inputs);
+		void loadInputs (std::vector<T_in> inputs);
 
 		/**
 		 * @brief Load an input.
@@ -283,13 +283,13 @@ class Genome {
 		 * @param input_id The ID of the input to load.
 		 */
 		template <typename T_in>
-		void loadInput (T_in& input, int input_id);
+		void loadInput (T_in input, int input_id);
 
 		/**
 		 * @brief Load the inputs.
 		 * @param inputs A vector containing inputs to be loaded.
 		 */
-		void loadInputs (std::vector<void*>& inputs);
+		void loadInputs (std::vector<void*> inputs);
 
 		/**
 		 * @brief Load an input.
@@ -684,7 +684,7 @@ Genome<Types...>::~Genome () {
 
 template <typename... Types>
 template <typename T_in>
-void Genome<Types...>::loadInputs (std::vector<T_in>& inputs) {
+void Genome<Types...>::loadInputs (std::vector<T_in> inputs) {
 	for (unsigned int i = 0; i < nbInput; i++) {
 		nodes [i + nbBias]->loadInput (static_cast<void*> (&inputs [i]));
 	}
@@ -692,12 +692,12 @@ void Genome<Types...>::loadInputs (std::vector<T_in>& inputs) {
 
 template <typename... Types>
 template <typename T_in>
-void Genome<Types...>::loadInput (T_in& input, int input_id) {
+void Genome<Types...>::loadInput (T_in input, int input_id) {
 	nodes [input_id + nbBias]->loadInput (static_cast<void*> (&input));
 }
 
 template <typename... Types>
-void Genome<Types...>::loadInputs (std::vector<void*>& inputs) {
+void Genome<Types...>::loadInputs (std::vector<void*> inputs) {
 	for (unsigned int i = 0; i < nbInput; i++) {
 		nodes [i + nbBias]->loadInput (inputs [i]);
 	}
