@@ -49,7 +49,7 @@ int main () {
                     pop.runNetwork (genomeId);
 
                     // get output, the movement order to give to the snake
-                    myInt Snake_Inputs = pop.template getOutput<myInt> (0, genomeId);
+                    myFloat Snake_Inputs = pop.template getOutput<myFloat> (0, genomeId);
 
                     // move the snake
                     isFinished = snake.run (Snake_Inputs);
@@ -104,7 +104,7 @@ int main () {
                 pop.runNetwork (genomeId);
 
                 // get output, the movement order to give to the snake
-                myInt Snake_Inputs = pop.template getOutput<myInt> (0, genomeId);
+                myFloat Snake_Inputs = pop.template getOutput<myFloat> (0, genomeId);
 
                 // move the snake
                 isFinished = snake.run (Snake_Inputs);

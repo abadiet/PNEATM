@@ -42,6 +42,8 @@ class Population {
 		 * @param bias_values The initial biases values (e.g., k-th bias will have value bias_values[k]).
 		 * @param resetValues The biases reset values (e.g., k-th bias can be resetted to resetValues[k]).
 		 * @param activationFns The activation functions (e.g., activationFns[i][j] is a pointer to an activation function that takes an input of type of index i and return a type of index j output).
+		 * @param inputsActivationFns The activation functions of the bias & inputs nodes. The first functions are dedicated to the bias nodes and the other ones to the inputs ones.
+		 * @param outputsActivationFns The activation functions of the outputs nodes.
 		 * @param N_ConnInit The initial number of connections.
 		 * @param probRecuInit The initial probability of recurrence.
 		 * @param weightExtremumInit The initial weight extremum.
@@ -52,7 +54,7 @@ class Population {
 		 * @param threshGensSinceImproved The maximum number of generations without any improvement. (default is 15)
 		 * @param stats_filename The filename for statistics. (default is an empty string, which doesn't create any file)
 		 */
-		Population (unsigned int popSize, const std::vector<size_t>& bias_sch, const std::vector<size_t>& inputs_sch, const std::vector<size_t>& outputs_sch, const std::vector<std::vector<size_t>>& hiddens_sch_init, const std::vector<void*>& bias_values, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger, distanceFn dstType = CONVENTIONAL, double speciationThreshInit = 20.0, unsigned int threshGensSinceImproved = 15, const std::string& stats_filename = "");
+		Population (unsigned int popSize, const std::vector<size_t>& bias_sch, const std::vector<size_t>& inputs_sch, const std::vector<size_t>& outputs_sch, const std::vector<std::vector<size_t>>& hiddens_sch_init, const std::vector<void*>& bias_values, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, const std::vector<ActivationFnBase*> inputsActivationFns, const std::vector<ActivationFnBase*> outputsActivationFns, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger, distanceFn dstType = CONVENTIONAL, double speciationThreshInit = 20.0, unsigned int threshGensSinceImproved = 15, const std::string& stats_filename = "");
 
 		/**
 		 * @brief Constructor for the Population class from a file.
@@ -60,10 +62,12 @@ class Population {
 		 * @param bias_values The initial biases values (e.g., k-th bias will have value bias_values[k]).
 		 * @param resetValues The biases reset values (e.g., k-th bias can be resetted to resetValues[k]).
 		 * @param activationFns The activation functions (e.g., activationFns[i][j] is a pointer to an activation function that takes an input of type of index i and return a type of index j output).
+		 * @param inputsActivationFns The activation functions of the bias & inputs nodes. The first functions are dedicated to the bias nodes and the other ones to the inputs ones.
+		 * @param outputsActivationFns The activation functions of the outputs nodes.
 		 * @param logger A pointer to the logger for logging.
 		 * @param stats_filename The filename for statistics. (default is an empty string, which doesn't create any file)
 		 */
-		Population (const std::string& filename, const std::vector<void*>& bias_values, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, spdlog::logger* logger, const std::string& stats_filename = "");
+		Population (const std::string& filename, const std::vector<void*>& bias_values, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, const std::vector<ActivationFnBase*> inputsActivationFns, const std::vector<ActivationFnBase*> outputsActivationFns, spdlog::logger* logger, const std::string& stats_filename = "");
 
 		/**
 		 * @brief Destructor for the Population class.
@@ -387,6 +391,8 @@ class Population {
 		std::unordered_map <unsigned int, std::unique_ptr<Genome<Types...>>> genomes;
 		std::vector<Species<Types...>> species;
 		std::vector<std::vector<std::vector<ActivationFnBase*>>> activationFns;
+		std::vector<ActivationFnBase*> inputsActivationFns;
+		std::vector<ActivationFnBase*> outputsActivationFns;
 		innovationConn_t conn_innov;
 		innovationNode_t node_innov;	// node's innovation id is more like a global id to decerne two different nodes than something to track innovation
 
@@ -407,7 +413,7 @@ class Population {
 using namespace pneatm;
 
 template <typename... Types>
-Population<Types...>::Population(unsigned int popSize, const std::vector<size_t>& bias_sch, const std::vector<size_t>& inputs_sch, const std::vector<size_t>& outputs_sch, const std::vector<std::vector<size_t>>& hiddens_sch_init, const std::vector<void*>& bias_values, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger, distanceFn dstType, double speciationThreshInit, unsigned int threshGensSinceImproved, const std::string& stats_filename) :
+Population<Types...>::Population(unsigned int popSize, const std::vector<size_t>& bias_sch, const std::vector<size_t>& inputs_sch, const std::vector<size_t>& outputs_sch, const std::vector<std::vector<size_t>>& hiddens_sch_init, const std::vector<void*>& bias_values, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, const std::vector<ActivationFnBase*> inputsActivationFns, const std::vector<ActivationFnBase*> outputsActivationFns, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger, distanceFn dstType, double speciationThreshInit, unsigned int threshGensSinceImproved, const std::string& stats_filename) :
 	popSize (popSize),
 	speciationThresh (speciationThreshInit),
 	threshGensSinceImproved (threshGensSinceImproved),
@@ -423,6 +429,8 @@ Population<Types...>::Population(unsigned int popSize, const std::vector<size_t>
 	maxRecuInit (maxRecuInit),
 	dstType (dstType),
 	activationFns (activationFns),
+	inputsActivationFns (inputsActivationFns),
+	outputsActivationFns (outputsActivationFns),
 	logger (logger)
 {
 	logger->info ("Population initialization");
@@ -440,15 +448,17 @@ Population<Types...>::Population(unsigned int popSize, const std::vector<size_t>
 
 	genomes.reserve (popSize);
 	for (unsigned int i = 0; i < popSize; i++) {
-		genomes.insert (std::make_pair (i, std::make_unique<Genome<Types...>> (i, bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_values, resetValues, activationFns, &conn_innov, &node_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger)));
+		genomes.insert (std::make_pair (i, std::make_unique<Genome<Types...>> (i, bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_values, resetValues, activationFns, inputsActivationFns, outputsActivationFns, &conn_innov, &node_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger)));
 	}
 }
 
 template <typename... Types>
-Population<Types...>::Population (const std::string& filename, const std::vector<void*>& bias_values, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, spdlog::logger* logger, const std::string& stats_filename) :
+Population<Types...>::Population (const std::string& filename, const std::vector<void*>& bias_values, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, const std::vector<ActivationFnBase*> inputsActivationFns, const std::vector<ActivationFnBase*> outputsActivationFns, spdlog::logger* logger, const std::string& stats_filename) :
 	bias_values (bias_values),
 	resetValues (resetValues),
 	activationFns (activationFns),
+	inputsActivationFns (inputsActivationFns),
+	outputsActivationFns (outputsActivationFns),
 	logger (logger)
 {
 	logger->info ("Population loading");
@@ -1520,7 +1530,7 @@ void Population<Types...>::deserialize (std::ifstream& inFile) {
 	genomes.clear ();
 	genomes.reserve (sz);
 	for (unsigned int i = 0; i < (unsigned int) sz; i++) {
-		genomes.insert (std::make_pair (i, std::make_unique<Genome<Types...>> (inFile, resetValues, activationFns, logger)));
+		genomes.insert (std::make_pair (i, std::make_unique<Genome<Types...>> (inFile, resetValues, activationFns, inputsActivationFns, outputsActivationFns, logger)));
 	}
 
 	Deserialize (sz, inFile);

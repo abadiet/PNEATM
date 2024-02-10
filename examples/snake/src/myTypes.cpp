@@ -19,6 +19,7 @@ myInt::operator int() const {
 
 myInt::operator myFloat() const {
     std::cout << "ERROR: This function should not be used!" << std::endl;
+    throw 0;
     return myFloat();
 }
 
@@ -41,5 +42,6 @@ myFloat::operator float() const {
 
 myFloat::operator myInt() const {
     std::cout << "ERROR: This function should not be used!" << std::endl;
+    throw 0;
     return myInt();
 }

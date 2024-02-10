@@ -34,7 +34,7 @@ typedef struct innovationNode {
      * 
      */
     innovationNode () :
-        N_nodeId (0)
+        N_nodeId (1)    // 0 reserved for inputs & outputs
     {};
 
     /**
@@ -59,7 +59,7 @@ typedef struct innovationNode {
      * @param prefix A prefix to print before each line. (default is an empty string)
      */
     void print (const std::string& prefix = "") const {
-        std::cout << prefix << "Number of attributed innovation: " << N_nodeId - 1 << std::endl;
+        std::cout << prefix << "Number of attributed innovation: " << N_nodeId << std::endl;
     }
 
     /**

@@ -74,6 +74,21 @@ typedef struct activationFnParams {
 } activationFnParams_t;
 
 // process functions (the activation functions)
+std::function<myInt (myInt, activationFnParams_t*)> inputs_int_activation_fn = [] (myInt x, activationFnParams_t* params) -> myInt {
+    // identity function
+    return x;
+    UNUSED (params);
+};
+std::function<myFloat (myFloat, activationFnParams_t*)> inputs_float_activation_fn = [] (myFloat x, activationFnParams_t* params) -> myFloat {
+    // identity function
+    return x;
+    UNUSED (params);
+};
+std::function<myFloat (myFloat, activationFnParams_t*)> outputs_float_activation_fn = [] (myFloat x, activationFnParams_t* params) -> myFloat {
+    // sigmoid function
+    return myFloat ((float) (1.0 / (1.0 + exp(-1.0 * (double) x))));
+    UNUSED (params);
+};
 std::function<myFloat (myFloat, activationFnParams_t*)> identity_float2float = [] (myFloat x, activationFnParams_t* params) -> myFloat {
     return x;
     UNUSED (params);
@@ -96,9 +111,12 @@ std::function<myInt (myFloat, activationFnParams_t*)> sigmoid_float2int = [] (my
 };
 
 // the printing function
-std::function<void (activationFnParams_t*, std::string)> printingFn = [] (activationFnParams_t* params, std::string prefix) -> void {
-    std::cout << "alpha = " << params->alpha << "   beta = " << params->beta << std::endl;
+std::function<void (activationFnParams_t*, std::string)> noPrintingFn = [] (activationFnParams_t* params, std::string prefix) -> void {
+    UNUSED (params);
     UNUSED (prefix);
+};
+std::function<void (activationFnParams_t*, std::string)> printingFn = [] (activationFnParams_t* params, std::string prefix) -> void {
+    std::cout << prefix << "alpha = " << params->alpha << "   beta = " << params->beta << std::endl;
 };
 
 // the mutation function
@@ -126,7 +144,7 @@ pneatm::Population<myInt, myFloat> SetupPopulation (unsigned int popSize, spdlog
     // nodes scheme setup
     std::vector<size_t> bias_sch = {1, 1};
     std::vector<size_t> inputs_sch = {14, 1};
-    std::vector<size_t> outputs_sch = {1, 0};
+    std::vector<size_t> outputs_sch = {0, 1};
     std::vector<std::vector<size_t>> hiddens_sch_init = {{3, 1}, {1, 1}};
 
     // bias values
@@ -144,6 +162,28 @@ pneatm::Population<myInt, myFloat> SetupPopulation (unsigned int popSize, spdlog
     resetValues.push_back ((void*) nullValueFLOAT);
 
     // activation functions setup
+    // inputs
+    std::vector<ActivationFnBase*> inputsActivationFns;
+    inputsActivationFns.push_back (new ActivationFn<myInt, myInt> ());   //bias myInt
+    inputsActivationFns.back ()->setFunction ((void*) &inputs_int_activation_fn);
+    inputsActivationFns.back ()->setPrintingFunction (noPrintingFn);
+    inputsActivationFns.push_back (new ActivationFn<myFloat, myFloat> ());   //bias myFloat
+    inputsActivationFns.back ()->setFunction ((void*) &inputs_float_activation_fn);
+    inputsActivationFns.back ()->setPrintingFunction (noPrintingFn);
+    for (int k = 0; k < 14; k++) {
+        inputsActivationFns.push_back (new ActivationFn<myInt, myInt> ());   // 14 input nodes myInt
+        inputsActivationFns.back ()->setFunction ((void*) &inputs_int_activation_fn);
+        inputsActivationFns.back ()->setPrintingFunction (noPrintingFn);
+    }
+    inputsActivationFns.push_back (new ActivationFn<myFloat, myFloat> ());   // 1 input node myFloat
+    inputsActivationFns.back ()->setFunction ((void*) &inputs_float_activation_fn);
+    inputsActivationFns.back ()->setPrintingFunction (noPrintingFn);
+    // outputs
+    std::vector<ActivationFnBase*> outputsActivationFns;
+    outputsActivationFns.push_back (new ActivationFn<myFloat, myFloat> ());   //output myFloat
+    outputsActivationFns.back ()->setFunction ((void*) &outputs_float_activation_fn);
+    outputsActivationFns.back ()->setPrintingFunction (noPrintingFn);
+    // hiddens
     std::vector<std::vector<std::vector<ActivationFnBase*>>> activationFns;
     activationFns.push_back ({});
     activationFns.push_back ({});
@@ -183,7 +223,7 @@ pneatm::Population<myInt, myFloat> SetupPopulation (unsigned int popSize, spdlog
     double speciationThreshInit = 20.0;
     distanceFn dstType = CONVENTIONAL;
     unsigned int threshGensSinceImproved = 15;
-    return pneatm::Population<myInt, myFloat> (popSize, bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger, dstType, speciationThreshInit, threshGensSinceImproved, "stats.csv");
+    return pneatm::Population<myInt, myFloat> (popSize, bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, inputsActivationFns, outputsActivationFns, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger, dstType, speciationThreshInit, threshGensSinceImproved, "stats.csv");
 }
 
 pneatm::Population<myInt, myFloat> LoadPopulation (const std::string& filename, spdlog::logger* logger, const std::string& stats_filename) {
@@ -202,6 +242,28 @@ pneatm::Population<myInt, myFloat> LoadPopulation (const std::string& filename, 
     resetValues.push_back ((void*) nullValueFLOAT);
 
     // activation functions setup
+    // inputs
+    std::vector<ActivationFnBase*> inputsActivationFns;
+    inputsActivationFns.push_back (new ActivationFn<myInt, myInt> ());   //bias myInt
+    inputsActivationFns.back ()->setFunction ((void*) &inputs_int_activation_fn);
+    inputsActivationFns.back ()->setPrintingFunction (noPrintingFn);
+    inputsActivationFns.push_back (new ActivationFn<myFloat, myFloat> ());   //bias myFloat
+    inputsActivationFns.back ()->setFunction ((void*) &inputs_float_activation_fn);
+    inputsActivationFns.back ()->setPrintingFunction (noPrintingFn);
+    for (int k = 0; k < 14; k++) {
+        inputsActivationFns.push_back (new ActivationFn<myInt, myInt> ());   // 14 input nodes myInt
+        inputsActivationFns.back ()->setFunction ((void*) &inputs_int_activation_fn);
+        inputsActivationFns.back ()->setPrintingFunction (noPrintingFn);
+    }
+    inputsActivationFns.push_back (new ActivationFn<myFloat, myFloat> ());   // 1 input node myFloat
+    inputsActivationFns.back ()->setFunction ((void*) &inputs_float_activation_fn);
+    inputsActivationFns.back ()->setPrintingFunction (noPrintingFn);
+    // outputs
+    std::vector<ActivationFnBase*> outputsActivationFns;
+    outputsActivationFns.push_back (new ActivationFn<myFloat, myFloat> ());   //output myFloat
+    outputsActivationFns.back ()->setFunction ((void*) &outputs_float_activation_fn);
+    outputsActivationFns.back ()->setPrintingFunction (noPrintingFn);
+    // hiddens
     std::vector<std::vector<std::vector<ActivationFnBase*>>> activationFns;
     activationFns.push_back ({});
     activationFns.push_back ({});
@@ -234,7 +296,7 @@ pneatm::Population<myInt, myFloat> LoadPopulation (const std::string& filename, 
     activationFns [0][1][0]->setMutationFunction (mutationFn);
     activationFns [1][0][0]->setMutationFunction (mutationFn);
 
-    return pneatm::Population<myInt, myFloat> (filename, bias_init, resetValues, activationFns, logger, stats_filename);
+    return pneatm::Population<myInt, myFloat> (filename, bias_init, resetValues, activationFns, inputsActivationFns, outputsActivationFns, logger, stats_filename);
 }
 
 std::function<pneatm::mutationParams_t (double)> SetupMutationParametersMaps () {

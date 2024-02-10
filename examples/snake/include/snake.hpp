@@ -20,7 +20,7 @@ class Snake {
         float getScore () {return score;};
 
         std::vector<myInt> getAIInputs ();
-        bool run (myInt input);
+        bool run (myFloat input);
 
         void drawPlaygroundConsole ();
         void drawPlaygroundSFML (sf::RenderWindow* window, float timeUpsSeconds);

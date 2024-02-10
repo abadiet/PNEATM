@@ -206,6 +206,8 @@ class Genome {
 		 * @param bias_values The initial biases values (e.g., k-th bias will have value bias_values[k]).
 		 * @param resetValues The biases reset values (e.g., k-th bias can be resetted to resetValues[k]).
 		 * @param activationFns The activation functions (e.g., activationFns[i][j] is a pointer to an activation function that takes an input of type of index i and return a type of index j output).
+		 * @param inputsActivationFns The activation functions of the bias & inputs nodes. The first functions are dedicated to the bias nodes and the other ones to the inputs ones.
+		 * @param outputsActivationFns The activation functions of the outputs nodes.
 		 * @param conn_innov A pointer to the connections innovation tracker.
 		 * @param node_innov A pointer to the nodes innovation tracker.
 		 * @param N_ConnInit The initial number of connections.
@@ -214,7 +216,7 @@ class Genome {
 		 * @param maxRecuInit The maximum recurrence value.
 		 * @param logger A pointer to the logger for logging.
 		 */
-		Genome (const unsigned int id, const std::vector<size_t>& bias_sch, const std::vector<size_t>& inputs_sch, const std::vector<size_t>& outputs_sch, const std::vector<std::vector<size_t>>& hiddens_sch_init, const std::vector<void*>& bias_values, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, innovationConn_t* conn_innov, innovationNode_t* node_innov, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger);
+		Genome (const unsigned int id, const std::vector<size_t>& bias_sch, const std::vector<size_t>& inputs_sch, const std::vector<size_t>& outputs_sch, const std::vector<std::vector<size_t>>& hiddens_sch_init, const std::vector<void*>& bias_values, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, const std::vector<ActivationFnBase*> inputsActivationFns, const std::vector<ActivationFnBase*> outputsActivationFns, innovationConn_t* conn_innov, innovationNode_t* node_innov, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger);
 
 		/**
 		 * @brief Constructor for the Genome class. This constructor will not initialized any network.
@@ -225,19 +227,23 @@ class Genome {
 		 * @param N_types The number of types involved in the network (the number of types in the variadic template Types).
 		 * @param resetValues The biases reset values (e.g., k-th bias can be resetted to resetValues[k]).
 		 * @param activationFns The activation functions (e.g., activationFns[i][j] is a pointer to an activation function that takes an input of type of index i and return a type of index j output).
+		 * @param inputsActivationFns The activation functions of the bias & inputs nodes. The first functions are dedicated to the bias nodes and the other ones to the inputs ones.
+		 * @param outputsActivationFns The activation functions of the outputs nodes.
 		 * @param weightExtremumInit The initial weight extremum.
 		 * @param logger A pointer to the logger for logging.
 		 */
-		Genome (const unsigned int id, unsigned int nbBias, unsigned int nbInput, unsigned int nbOutput, unsigned int N_types, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, double weightExtremumInit, spdlog::logger* logger);
+		Genome (const unsigned int id, unsigned int nbBias, unsigned int nbInput, unsigned int nbOutput, unsigned int N_types, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, const std::vector<ActivationFnBase*> inputsActivationFns, const std::vector<ActivationFnBase*> outputsActivationFns, double weightExtremumInit, spdlog::logger* logger);
 
 		/**
 		 * @brief Constructor for the Genome class from an input file stream.
 		 * @param inFile The input file stream.
 		 * @param resetValues The biases reset values (e.g., k-th bias can be resetted to resetValues[k]).
 		 * @param activationFns The activation functions (e.g., activationFns[i][j] is a pointer to an activation function that takes an input of type of index i and return a type of index j output).
+		 * @param inputsActivationFns The activation functions of the bias & inputs nodes. The first functions are dedicated to the bias nodes and the other ones to the inputs ones.
+		 * @param outputsActivationFns The activation functions of the outputs nodes.
 		 * @param logger A pointer to the logger for logging.
 		 */
-		Genome (std::ifstream& inFile, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, spdlog::logger* logger);
+		Genome (std::ifstream& inFile, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, const std::vector<ActivationFnBase*> inputsActivationFns, const std::vector<ActivationFnBase*> outputsActivationFns, spdlog::logger* logger);
 
 		/**
 		 * @brief Destructor for the Genome class.
@@ -424,6 +430,8 @@ class Genome {
 		double weightExtremumInit;
 		unsigned int N_types;
 		std::vector<std::vector<std::vector<ActivationFnBase*>>> activationFns;
+		std::vector<ActivationFnBase*> inputsActivationFns;
+		std::vector<ActivationFnBase*> outputsActivationFns;
 		std::vector<void*> resetValues;
 
 		std::unordered_map <unsigned int, std::unique_ptr<NodeBase>> nodes;
@@ -468,10 +476,12 @@ class Genome {
 using namespace pneatm;
 
 template <typename... Types>
-Genome<Types...>::Genome (const unsigned int id, const std::vector<size_t>& bias_sch, const std::vector<size_t>& inputs_sch, const std::vector<size_t>& outputs_sch, const std::vector<std::vector<size_t>>& hiddens_sch_init, const std::vector<void*>& bias_values, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, innovationConn_t* conn_innov, innovationNode_t* node_innov, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger) :
+Genome<Types...>::Genome (const unsigned int id, const std::vector<size_t>& bias_sch, const std::vector<size_t>& inputs_sch, const std::vector<size_t>& outputs_sch, const std::vector<std::vector<size_t>>& hiddens_sch_init, const std::vector<void*>& bias_values, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, const std::vector<ActivationFnBase*> inputsActivationFns, const std::vector<ActivationFnBase*> outputsActivationFns, innovationConn_t* conn_innov, innovationNode_t* node_innov, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger) :
 	id (id),
 	weightExtremumInit (weightExtremumInit),
 	activationFns (activationFns),
+	inputsActivationFns (inputsActivationFns),
+	outputsActivationFns (outputsActivationFns),
 	resetValues (resetValues),
 	logger (logger)
 {
@@ -498,16 +508,10 @@ Genome<Types...>::Genome (const unsigned int id, const std::vector<size_t>& bias
 			node->layer = 0;
 			node->index_T_in = (unsigned int) i;
 			node->index_T_out = (unsigned int) i;
-			node->index_activation_fn = 0;	// identity function is set on the first position
 			node->setActivationFn (
-				activationFns [node->index_T_in][node->index_T_out][node->index_activation_fn]->clone (false)	//activation function with new fresh parameters
+				inputsActivationFns [nbBias]->clone (true)
 			);
-			node->innovId = node_innov->getInnovId (
-				node->index_T_in,
-				node->index_T_out,
-				node->index_activation_fn,
-				RepetitionNodeCheck (node->index_T_in, node->index_T_out, node->index_activation_fn) - 1
-			);
+			node->innovId = 0;
 			node->setResetValue (resetValues [i]);	// useless as bias nodes are never resetted
 			node->loadInput (bias_values [i]);	// load input now as it will always be the same
 
@@ -528,16 +532,10 @@ Genome<Types...>::Genome (const unsigned int id, const std::vector<size_t>& bias
 			node->layer = 0;
 			node->index_T_in = (unsigned int) i;
 			node->index_T_out = (unsigned int) i;
-			node->index_activation_fn = 0;	// identity function is set on the first position
 			node->setActivationFn (
-				activationFns [node->index_T_in][node->index_T_out][node->index_activation_fn]->clone (false)	//activation function with new fresh parameters
+				inputsActivationFns [nbBias + nbInput]->clone (true)
 			);
-			node->innovId = node_innov->getInnovId (
-				node->index_T_in,
-				node->index_T_out,
-				node->index_activation_fn,
-				RepetitionNodeCheck (node->index_T_in, node->index_T_out, node->index_activation_fn) - 1
-			);
+			node->innovId = 0;
 			node->setResetValue (resetValues [i]);
 
 			nbInput ++;
@@ -563,16 +561,10 @@ Genome<Types...>::Genome (const unsigned int id, const std::vector<size_t>& bias
 			node->layer = outputLayer;
 			node->index_T_in = (unsigned int) i;
 			node->index_T_out = (unsigned int) i;
-			node->index_activation_fn = 0;	// identity function is set on the first position
 			node->setActivationFn (
-				activationFns [node->index_T_in][node->index_T_out][node->index_activation_fn]->clone (false)	//activation function with new fresh parameters
+				outputsActivationFns [nbOutput]->clone (true)
 			);
-			node->innovId = node_innov->getInnovId (
-				node->index_T_in,
-				node->index_T_out,
-				node->index_activation_fn,
-				RepetitionNodeCheck (node->index_T_in, node->index_T_out, node->index_activation_fn) - 1
-			);
+			node->innovId = 0;
 			node->setResetValue (resetValues [i]);
 
 			nbOutput ++;
@@ -646,7 +638,7 @@ Genome<Types...>::Genome (const unsigned int id, const std::vector<size_t>& bias
 }
 
 template <typename... Types>
-Genome<Types...>::Genome (const unsigned int id, unsigned int nbBias, unsigned int nbInput, unsigned int nbOutput, unsigned int N_types, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, double weightExtremumInit, spdlog::logger* logger) :
+Genome<Types...>::Genome (const unsigned int id, unsigned int nbBias, unsigned int nbInput, unsigned int nbOutput, unsigned int N_types, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, const std::vector<ActivationFnBase*> inputsActivationFns, const std::vector<ActivationFnBase*> outputsActivationFns, double weightExtremumInit, spdlog::logger* logger) :
 	id (id),
 	nbBias (nbBias),
 	nbInput (nbInput),
@@ -654,6 +646,8 @@ Genome<Types...>::Genome (const unsigned int id, unsigned int nbBias, unsigned i
 	weightExtremumInit (weightExtremumInit),
 	N_types (N_types),
 	activationFns (activationFns),
+	inputsActivationFns (inputsActivationFns),
+	outputsActivationFns (outputsActivationFns),
 	resetValues (resetValues),
 	logger (logger)
 {
@@ -665,8 +659,10 @@ Genome<Types...>::Genome (const unsigned int id, unsigned int nbBias, unsigned i
 }
 
 template <typename... Types>
-Genome<Types...>::Genome (std::ifstream& inFile, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, spdlog::logger* logger) :
+Genome<Types...>::Genome (std::ifstream& inFile, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, const std::vector<ActivationFnBase*> inputsActivationFns, const std::vector<ActivationFnBase*> outputsActivationFns, spdlog::logger* logger) :
 	activationFns (activationFns),
+	inputsActivationFns (inputsActivationFns),
+	outputsActivationFns (outputsActivationFns),
 	resetValues (resetValues),
 	logger (logger)
 {
@@ -1050,7 +1046,8 @@ template <typename... Types>
 void Genome<Types...>::MutateActivationFn (double rate) {
 	logger->trace ("mutation of activation functions");
 	for (std::pair<const unsigned int, std::unique_ptr<NodeBase>>& node : nodes) {
-		if (Random_Double (0.0f, 1.0f, true, false) < rate) {
+		// we cannot mutate an input/output's activation function
+		if (node.first >= nbBias + nbInput + nbOutput && Random_Double (0.0f, 1.0f, true, false) < rate) {
 			node.second->mutate (fitness);
 		}
 	}
@@ -1357,7 +1354,7 @@ void Genome<Types...>::UpdateLayers (int nodeId) {
 
 template <typename... Types>
 std::unique_ptr<Genome<Types...>> Genome<Types...>::clone () {
-	std::unique_ptr<Genome<Types...>> genome =  std::make_unique<Genome<Types...>> (id, nbBias, nbInput, nbOutput, N_types, resetValues, activationFns, weightExtremumInit, logger);
+	std::unique_ptr<Genome<Types...>> genome =  std::make_unique<Genome<Types...>> (id, nbBias, nbInput, nbOutput, N_types, resetValues, activationFns, inputsActivationFns, outputsActivationFns, weightExtremumInit, logger);
 
 	genome->nodes.reserve (nodes.size ());
 	for (std::pair<const unsigned int, std::unique_ptr<NodeBase>>& node : nodes) {

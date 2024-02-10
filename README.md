@@ -54,3 +54,4 @@ This project is currently under development and is provided as-is, without any g
 - [x] vector, unordered_map and map
 - [ ] connections key can be innovation id: better for distance processing, ...
 - [ ] Compiler optimizations (PGO, LTO ...)
+- [ ] Node innovation tracker need improvements 

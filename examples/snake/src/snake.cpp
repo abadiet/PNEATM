@@ -47,31 +47,18 @@ std::vector<myInt> Snake::getAIInputs () {
     return AIinputs;
 }
 
-bool Snake::run (myInt input) {
+bool Snake::run (myFloat input) {
     /* The main function of the game: move the snake's part relatively to the inputs, refresh state, add fruits ... */
     // new Mvmt
 
-    if (input > 100) {
+    if (input > 0.75f) {
         curMvmt = (curMvmt + 1) % 4;
     } else {
-        if (input < -100) {
+        if (input < 0.25f) {
             curMvmt = (curMvmt - 1 + 4) % 4;
         }
     }
 
-/*
-    switch (input) {
-        case 1:
-            curMvmt = (curMvmt - 1 + 4) % 4;  // + 4 to avoid having negative curMvmt
-            break;
-        case 2:
-            curMvmt = (curMvmt + 1) % 4;
-            break;
-        default:
-            break;
-            // nothing to do
-    }
-*/
     // move snake
     vecXY_t newDot;
     newDot.x = snake.back ().x;
