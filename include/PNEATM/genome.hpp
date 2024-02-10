@@ -266,7 +266,7 @@ class Genome {
 		 * @brief Set the fitness.
 		 * @param value The value to be set.
 		 */
-		void setFitness (double value) {fitness = value;};
+		void setFitness (double value);
 
 		/**
 		 * @brief Get the species ID which belong the genome.
@@ -311,8 +311,9 @@ class Genome {
 
 		/**
 		 * @brief Run the network.
+		 * @return 'false' if the network raised a NaN, 'true' else.
 		 */
-		void runNetwork ();
+		bool runNetwork ();
 
 		/**
 		 * @brief Save an output.
@@ -327,7 +328,7 @@ class Genome {
 		/**
 		 * @brief Get the outputs.
 		 * @tparam T_out The type of output data.
-		 * @return A vector containing the outputs.
+		 * @return A vector containing the outputs. Return an empty vector if a NaN has been raised during the running. 
 		 */
 		template <typename T_out>
 		std::vector<T_out> getOutputs ();
@@ -336,21 +337,21 @@ class Genome {
 		 * @brief Get a specific output.
 		 * @tparam T_out The type of output data.
 		 * @param output_id The ID of the output to get.
-		 * @return The ouput.
+		 * @return The ouput. Return the default T_out's value if a NaN has been raised during the running.
 		 */
 		template <typename T_out>
 		T_out getOutput (int output_id);
 
 		/**
 		 * @brief Get the saved outputs.
-		 * @return A void pointer to the ouput.
+		 * @return A vector of void pointer to the ouputs. Return an empty vector if a NaN has been raised during the running.
 		 */
 		std::vector<void*> getOutputs ();
 
 		/**
 		 * @brief Get a specific output.
 		 * @param output_id The ID of the output to get.
-		 * @return A void pointer to the ouput.
+		 * @return A void pointer to the ouput. Return nullptr if a NaN has been raised during the running.
 		 */
 		void* getOutput (int output_id);
 
@@ -444,6 +445,7 @@ class Genome {
 		bool network_is_optimized;
 
 		double fitness;
+		bool gotNaN;
 		int speciesId;
 		unsigned int N_runNetwork;
 
@@ -490,6 +492,7 @@ Genome<Types...>::Genome (const unsigned int id, const std::vector<size_t>& bias
 	N_types = (unsigned int) activationFns.size ();
 	speciesId = -1;
 	fitness = 0.0;
+	gotNaN = false;
 	N_runNetwork = 0;
 	network_is_optimized = false;
 
@@ -654,6 +657,7 @@ Genome<Types...>::Genome (const unsigned int id, unsigned int nbBias, unsigned i
 	logger->trace ("Genome initialization");
 	speciesId = -1;
 	fitness = 0.0;
+	gotNaN = false;
 	N_runNetwork = 0;
 	network_is_optimized = false;
 }
@@ -677,6 +681,16 @@ template <typename... Types>
 Genome<Types...>::~Genome () {
 	logger->trace ("Genome destruction");
 }
+
+
+template <typename... Types>
+void Genome<Types...>::setFitness (double value) {
+	if (!gotNaN) {
+		fitness = value;
+	} else {
+		logger->warn ("The genome had a NaN in its network, therefore you cannot set its fitness as it is null.");
+	}
+};
 
 template <typename... Types>
 template <typename T_in>
@@ -707,6 +721,7 @@ void Genome<Types...>::loadInput (void* input, int input_id) {
 template <typename... Types>
 void Genome<Types...>::resetMemory () {
 	N_runNetwork = 0;
+	gotNaN = false;
 	for (std::pair<const unsigned int, std::unique_ptr<NodeBase>>& node : nodes) {
 		node.second->reset (true, true);
 	}
@@ -714,7 +729,9 @@ void Genome<Types...>::resetMemory () {
 }
 
 template <typename... Types>
-void Genome<Types...>::runNetwork () {
+bool Genome<Types...>::runNetwork () {
+	if (gotNaN) return false;
+
 	// optimize the network by sorting connections and dissociate useless nodes from useful ones
 	if (!network_is_optimized) {
 		// the function population::OptimizeNetwork has not been run
@@ -742,7 +759,11 @@ void Genome<Types...>::runNetwork () {
 
 	// process output of input/bias nodes as we already know their input
 	for (NodeBase* node : optimize_nodes_process [0]) {
-		node->process ();
+		if (!node->process ()) {
+			gotNaN = true;
+			setFitness (0.0);
+			return false;
+		}
 	}
 
 	unsigned int lastLayer = nodes [nbBias + nbInput]->layer;
@@ -757,7 +778,11 @@ void Genome<Types...>::runNetwork () {
 
 		// process nodes's output
 		for (NodeBase* node : optimize_nodes_process [ilayer + 1]) {
-			node->process ();
+			if (!node->process ()) {
+				gotNaN = true;
+				setFitness (0.0);
+				return false;
+			}
 		}
 	}
 
@@ -773,10 +798,15 @@ void Genome<Types...>::runNetwork () {
 	}
 	// process nodes's output
 	for (NodeBase* node : optimize_nodes_process.back ()) {
-		node->process ();
+		if (!node->process ()) {
+			gotNaN = true;
+			setFitness (0.0);
+			return false;
+		}
 	}
 
 	N_runNetwork++;
+	return true;
 }
 
 template <typename... Types>
@@ -891,6 +921,7 @@ void Genome<Types...>::saveOutputs () {
 template <typename... Types>
 template <typename T_out>
 std::vector<T_out> Genome<Types...>::getOutputs () {
+	if (gotNaN) return {};
 	std::vector<T_out> outputs;
 	outputs.reserve (nbOutput);
 	for (unsigned int i = 0; i < nbOutput; i++) {
@@ -902,11 +933,13 @@ std::vector<T_out> Genome<Types...>::getOutputs () {
 template <typename... Types>
 template <typename T_out>
 T_out Genome<Types...>::getOutput (int output_id) {
+	if (gotNaN) return T_out ();
 	return *static_cast<T_out*> (nodes [nbBias + nbInput + output_id]->getOutput ());
 }
 
 template <typename... Types>
 std::vector<void*> Genome<Types...>::getOutputs () {
+	if (gotNaN) return {};
 	std::vector<void*> outputs;
 	outputs.reserve (nbOutput);
 	for (unsigned int i = 0; i < nbOutput; i++) {
@@ -917,6 +950,7 @@ std::vector<void*> Genome<Types...>::getOutputs () {
 
 template <typename... Types>
 void* Genome<Types...>::getOutput (int output_id) {
+	if (gotNaN) return nullptr;
 	return nodes [nbBias + nbInput + output_id]->getOutput ();
 }
 
@@ -1596,6 +1630,7 @@ void Genome<Types...>::serialize (std::ofstream& outFile) {
 	}
 
 	Serialize (fitness, outFile);
+	Serialize (gotNaN, outFile);
 	Serialize (speciesId, outFile);
 	Serialize (N_runNetwork, outFile);
 }
@@ -1631,6 +1666,7 @@ void Genome<Types...>:: deserialize (std::ifstream& inFile) {
 	}
 
 	Deserialize (fitness, inFile);
+	Deserialize (gotNaN, inFile);
 	Deserialize (speciesId, inFile);
 	Deserialize (N_runNetwork, inFile);
 }

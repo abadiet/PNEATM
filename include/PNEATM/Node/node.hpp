@@ -90,8 +90,9 @@ class Node : public NodeBase {
 
 		/**
 		 * @brief Process the node to compute its output value.
+		 * @return 'false' if the result is NaN, 'true' else.
 		 */
-		void process () override;
+		bool process () override;
 
 		/**
 		 * @brief Mutate the activation function's parameters.
@@ -195,8 +196,11 @@ void Node<T_in, T_out>::setupOutputs () {
 }
 
 template <typename T_in, typename T_out>
-void Node<T_in, T_out>::process () {
-	outputs_buf.insert (activation_fn->process (input));
+bool Node<T_in, T_out>::process () {
+	const T_out output = activation_fn->process (input);
+	if (output != output) return false;
+	outputs_buf.insert (output);
+	return true;
 }
 
 template <typename T_in, typename T_out>

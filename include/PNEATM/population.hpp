@@ -219,11 +219,12 @@ class Population {
 		/**
 		 * @brief Run the network of a specific genome.
 		 * @param genome_id The ID of the genome for which to run the newtork.
+		 * @return 'false' if the network raised a NaN, 'true' else.
 		 *
 		 * Run the network of a specific genome. This means computing each node's input and output.
 		 * This function does not use multithreading and should be avoid. The use of `runNetwork ()` should be preferred
 		 */
-		void runNetwork (unsigned int genome_id);
+		bool runNetwork (unsigned int genome_id);
 
 		/**
 		 * @brief Get the outputs of a specific genome.
@@ -568,7 +569,7 @@ void Population<Types...>::run (const std::vector<std::vector<void*>>& inputs, s
 		std::function<std::vector<void*> (Genome<Types...>*, std::vector<std::vector<void*>>&)> func = [&] (Genome<Types...>* genome, std::vector<std::vector<void*>>& inputs_gen) -> std::vector<void*> {
 			for (std::vector<void*>& inputs_cur : inputs_gen) {
 				genome->loadInputs (inputs_cur);
-				genome->runNetwork ();
+				if (!genome->runNetwork ()) return {};
 				genome->saveOutputs ();
 			}
 			return genome->getSavedOutputs ();
@@ -607,7 +608,7 @@ void Population<Types...>::run (const std::vector<std::vector<void*>>& inputs, s
 		std::function<void (Genome<Types...>*, std::vector<std::vector<void*>>&)> func = [&] (Genome<Types...>* genome, std::vector<std::vector<void*>>& inputs_gen) -> void {
 			for (std::vector<void*>& inputs_cur : inputs_gen) {
 				genome->loadInputs (inputs_cur);
-				genome->runNetwork ();
+				if (!genome->runNetwork ()) return;
 			}
 		};
 
@@ -637,7 +638,7 @@ void Population<Types...>::run (const std::vector<std::vector<std::vector<void*>
 		std::function<std::vector<void*> (Genome<Types...>*, std::vector<std::vector<void*>>&)> func = [&] (Genome<Types...>* genome, std::vector<std::vector<void*>>& inputs_gen) -> std::vector<void*> {
 			for (std::vector<void*>& inputs_cur : inputs_gen) {
 				genome->loadInputs (inputs_cur);
-				genome->runNetwork ();
+				if (!genome->runNetwork ()) return {};
 				genome->saveOutputs ();
 			}
 			return genome->getSavedOutputs ();
@@ -676,7 +677,7 @@ void Population<Types...>::run (const std::vector<std::vector<std::vector<void*>
 		std::function<void (Genome<Types...>*, std::vector<std::vector<void*>>&)> func = [&] (Genome<Types...>* genome, std::vector<std::vector<void*>>& inputs_gen) -> void {
 			for (std::vector<void*>& inputs_cur : inputs_gen) {
 				genome->loadInputs (inputs_cur);
-				genome->runNetwork ();
+				if (!genome->runNetwork ()) return;
 			}
 		};
 
@@ -706,7 +707,7 @@ void Population<Types...>::run (const unsigned int N_runs, std::vector<std::vect
 		std::function<std::vector<void*> (Genome<Types...>*)> func = [&] (Genome<Types...>* genome) -> std::vector<void*> {
 			for (unsigned int k = 0; k < N_runs; k++) {
 				genome->loadInputs (genome->getOutputs ());
-				genome->runNetwork ();
+				if (!genome->runNetwork ()) return {};
 				genome->saveOutputs ();
 			}
 			return genome->getSavedOutputs ();
@@ -744,7 +745,7 @@ void Population<Types...>::run (const unsigned int N_runs, std::vector<std::vect
 		std::function<void (Genome<Types...>*)> func = [&] (Genome<Types...>* genome) -> void {
 			for (unsigned int k = 0; k < N_runs; k++) {
 				genome->loadInputs (genome->getOutputs ());
-				genome->runNetwork ();
+				if (genome->runNetwork ()) return;
 			}
 		};
 
@@ -792,8 +793,8 @@ void Population<Types...>::runNetworks (unsigned int maxThreads) {
 }
 
 template <typename... Types>
-void Population<Types...>::runNetwork(unsigned int genome_id) {
-	genomes [genome_id]->runNetwork ();
+bool Population<Types...>::runNetwork(unsigned int genome_id) {
+	return genomes [genome_id]->runNetwork ();
 }
 
 template <typename... Types>

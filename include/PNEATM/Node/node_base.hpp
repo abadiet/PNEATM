@@ -71,8 +71,9 @@ class NodeBase{
 
 		/**
 		 * @brief Process the node to compute its output value.
+		 * @return 'false' if the result is NaN, 'true' else.
 		 */
-		virtual void process () = 0;
+		virtual bool process () = 0;
 
 		/**
 		 * @brief Mutate the activation function's parameters.
