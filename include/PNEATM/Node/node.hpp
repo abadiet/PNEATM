@@ -128,9 +128,9 @@ class Node : public NodeBase {
 		/**
 		 * @brief Deserialize a Node instance from an input file stream.
 		 * @param inFile The input file stream from which the Node instance will be read.
-		 * @param activationFns The activation functions (e.g., activationFns[i][j] is a pointer to an activation function that takes an input of type of index i and return a type of index j output).
+		 * @param activationFn A pointer to the activation function.
 		 */
-		void deserialize (std::ifstream& inFile, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns) override;
+		void deserialize (std::ifstream& inFile, ActivationFnBase* activationFn) override;
 
 	private:
 		T_in input;
@@ -271,7 +271,7 @@ void Node<T_in, T_out>::serialize (std::ofstream& outFile) const {
 }
 
 template <typename T_in, typename T_out>
-void Node<T_in, T_out>::deserialize (std::ifstream& inFile, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns) {
+void Node<T_in, T_out>::deserialize (std::ifstream& inFile, ActivationFnBase* activationFn) {
 	Deserialize (id, inFile);
 	Deserialize (innovId, inFile);
 	Deserialize (is_useful, inFile);
@@ -280,7 +280,7 @@ void Node<T_in, T_out>::deserialize (std::ifstream& inFile, const std::vector<st
 	Deserialize (index_T_in, inFile);
 	Deserialize (index_T_out, inFile);
 	Deserialize (index_activation_fn, inFile);
-	setActivationFn (activationFns [index_T_in][index_T_out][index_activation_fn]->clone (true));	// clone with parameters doesn't effect anything has we'll overwrite those parameters later
+	setActivationFn (activationFn->clone (true));	// clone with parameters doesn't effect anything has we'll overwrite those parameters later
 	activation_fn->deserialize (inFile);	// overwrite parameters
 	Deserialize (input, inFile);
 	outputs_buf.deserialize (inFile);

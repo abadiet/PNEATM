@@ -1668,6 +1668,7 @@ void Genome<Types...>::serialize (std::ofstream& outFile) {
 		if (iNode < (unsigned int) nodes.size ()) {
 			Serialize (nodes [iNode]->index_T_in, outFile);
 			Serialize (nodes [iNode]->index_T_out, outFile);
+			Serialize (nodes [iNode]->index_activation_fn, outFile);
 			nodes [iNode]->serialize (outFile);
 		} else {
 			// impossible state
@@ -1709,11 +1710,20 @@ void Genome<Types...>:: deserialize (std::ifstream& inFile) {
 	nodes.clear ();
 	nodes.reserve (sz);
 	for (unsigned int k = 0; k < (unsigned int) sz; k++) {
-		unsigned int iT_in, iT_out;
+		unsigned int iT_in, iT_out, iActivation_fn;
 		Deserialize (iT_in, inFile);
 		Deserialize (iT_out, inFile);
+		Deserialize (iActivation_fn, inFile);
 		nodes.insert (std::make_pair (k, CreateNode::get<Types...> (iT_in, iT_out)));
-		nodes [k]->deserialize (inFile, activationFns);
+		if (k >= nbBias + nbInput + nbOutput) {
+			nodes [k]->deserialize (inFile, activationFns [iT_in][iT_out][iActivation_fn]);
+		} else {
+			if (k < nbBias + nbInput) {
+				nodes [k]->deserialize (inFile, inputsActivationFns [k]);
+			} else {
+				nodes [k]->deserialize (inFile, outputsActivationFns [k]);
+			}
+		}
 	}
 
 	Deserialize (sz, inFile);

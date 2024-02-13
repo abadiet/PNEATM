@@ -109,9 +109,9 @@ class NodeBase{
 		/**
 		 * @brief Deserialize a NodeBase instance from an input file stream.
 		 * @param inFile The input file stream from which the NodeBase instance will be read.
-		 * @param activationFns The activation functions (e.g., activationFns[i][j] is a pointer to an activation function that takes an input of type of index i and return a type of index j output).
+		 * @param activationFn A pointer to the activation function.
 		 */
-		virtual void deserialize (std::ifstream& inFile, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns) = 0;
+		virtual void deserialize (std::ifstream& inFile, ActivationFnBase* activationFn) = 0;
 
 	protected:
 		/**
