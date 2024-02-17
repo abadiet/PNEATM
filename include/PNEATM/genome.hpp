@@ -1721,7 +1721,7 @@ void Genome<Types...>:: deserialize (std::ifstream& inFile) {
 			if (k < nbBias + nbInput) {
 				nodes [k]->deserialize (inFile, inputsActivationFns [k]);
 			} else {
-				nodes [k]->deserialize (inFile, outputsActivationFns [k]);
+				nodes [k]->deserialize (inFile, outputsActivationFns [k - nbInput - nbBias]);
 			}
 		}
 	}
