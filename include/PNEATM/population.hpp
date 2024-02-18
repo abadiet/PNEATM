@@ -275,9 +275,10 @@ class Population {
 		 * @param a Coefficient for computing the excess genes contribution to the distance [for CONVENTIONAL distance only]. (default is 1.0)
 		 * @param b Coefficient for computing the disjoint genes contribution to the distance [for CONVENTIONAL distance only]. (default is 1.0)
 		 * @param c Coefficient for computing the average weight difference contribution to the distance [for CONVENTIONAL distance only]. (default is 0.4)
-		 * @param speciesSizeEvolutionLimit The limit for the evolution of species size. (default is 3.0)
+		 * @param speciesSizeEvolutionLimit The maximum factor of the species's size evolution. (default is 3.0)
+		 * @param speciesSizeLimit The maximum factor, relatively to the target size, of the species's size. (default is 1.75)
 		 */
-		void speciate (unsigned int target = 5, unsigned int maxIterationsReachTarget = 100, double stepThresh = 0.3, double a = 1.0, double b = 1.0, double c = 0.4, double speciesSizeEvolutionLimit = 3.0);
+		void speciate (unsigned int target = 5, unsigned int maxIterationsReachTarget = 100, double stepThresh = 0.3, double a = 1.0, double b = 1.0, double c = 0.4, double speciesSizeEvolutionLimit = 3.0, double speciesSizeLimit = 1.75);
 
 		/**
 		 * @brief Perform crossover operation to create the new generation.
@@ -401,7 +402,7 @@ class Population {
 		std::ofstream statsFile;
 
 		std::unordered_map <unsigned int, Connection> GetWeightedCentroid (unsigned int speciesId);
-		void UpdateFitnesses (double speciesSizeEvolutionLimit);
+		void UpdateFitnesses (double speciesSizeEvolutionLimit, double speciesSizeLimit);
 		int SelectParent (unsigned int iSpe);
 
 };
@@ -825,7 +826,7 @@ void Population<Types...>::setFitness (double fitness, unsigned int genome_id) {
 }
 
 template <typename... Types>
-void Population<Types...>::speciate (unsigned int target, unsigned int maxIterationsReachTarget, double stepThresh, double a, double b, double c, double speciesSizeEvolutionLimit) {
+void Population<Types...>::speciate (unsigned int target, unsigned int maxIterationsReachTarget, double stepThresh, double a, double b, double c, double speciesSizeEvolutionLimit, double speciesSizeLimit) {
 	logger->info ("Speciation");
 
 	std::vector<Species<Types...>> tmpspecies;
@@ -923,7 +924,7 @@ void Population<Types...>::speciate (unsigned int target, unsigned int maxIterat
 	}
 
 	// update all the fitness as we now know the species
-	UpdateFitnesses (speciesSizeEvolutionLimit);
+	UpdateFitnesses (speciesSizeEvolutionLimit, target);
 }
 
 template <typename... Types>
@@ -969,7 +970,7 @@ std::unordered_map <unsigned int, Connection> Population<Types...>::GetWeightedC
 }
 
 template <typename... Types>
-void Population<Types...>::UpdateFitnesses (double speciesSizeEvolutionLimit) {
+void Population<Types...>::UpdateFitnesses (double speciesSizeEvolutionLimit, double speciesSizeLimit, unsigned int NspeciesTarget) {
 	fittergenome_id = 0;
 	avgFitness = 0.0;
 	avgFitnessAdjusted = 0.0;
@@ -1018,8 +1019,12 @@ void Population<Types...>::UpdateFitnesses (double speciesSizeEvolutionLimit) {
 
 				double evolutionFactor = species [i].avgFitnessAdjusted / (avgFitnessAdjusted + std::numeric_limits<double>::min ());
 				if (evolutionFactor > speciesSizeEvolutionLimit) evolutionFactor = speciesSizeEvolutionLimit;	// we limit the species evolution factor: a species's size cannot skyrocket from few genomes
+				int allowedOffspring = (int) ((double) species [i].members.size () * evolutionFactor);	// note that (int) 0.9 == 0.0
 
-				species [i].allowedOffspring = (int) ((double) species [i].members.size () * evolutionFactor);	// note that (int) 0.9 == 0.0
+				const int sizelimit = (int) ((double) (popSize / NspeciesTarget) * speciesSizeLimit)
+				if (allowedOffspring > sizelimit) allowedOffspring = sizelimit;
+
+				species [i].allowedOffspring = allowedOffspring;
 			} else {
 				// the species cannot have offsprings it has not improved for a long time
 				species[i].allowedOffspring = 0;
