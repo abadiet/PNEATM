@@ -402,7 +402,7 @@ class Population {
 		std::ofstream statsFile;
 
 		std::unordered_map <unsigned int, Connection> GetWeightedCentroid (unsigned int speciesId);
-		void UpdateFitnesses (double speciesSizeEvolutionLimit, double speciesSizeLimit);
+		void UpdateFitnesses (double speciesSizeEvolutionLimit, double speciesSizeLimit, unsigned int NspeciesTarget);
 		int SelectParent (unsigned int iSpe);
 
 };
@@ -924,7 +924,7 @@ void Population<Types...>::speciate (unsigned int target, unsigned int maxIterat
 	}
 
 	// update all the fitness as we now know the species
-	UpdateFitnesses (speciesSizeEvolutionLimit, target);
+	UpdateFitnesses (speciesSizeEvolutionLimit, speciesSizeLimit, target);
 }
 
 template <typename... Types>
@@ -1021,7 +1021,7 @@ void Population<Types...>::UpdateFitnesses (double speciesSizeEvolutionLimit, do
 				if (evolutionFactor > speciesSizeEvolutionLimit) evolutionFactor = speciesSizeEvolutionLimit;	// we limit the species evolution factor: a species's size cannot skyrocket from few genomes
 				int allowedOffspring = (int) ((double) species [i].members.size () * evolutionFactor);	// note that (int) 0.9 == 0.0
 
-				const int sizelimit = (int) ((double) (popSize / NspeciesTarget) * speciesSizeLimit)
+				const int sizelimit = (int) ((double) (popSize / NspeciesTarget) * speciesSizeLimit);
 				if (allowedOffspring > sizelimit) allowedOffspring = sizelimit;
 
 				species [i].allowedOffspring = allowedOffspring;
