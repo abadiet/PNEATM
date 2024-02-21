@@ -124,7 +124,7 @@ int main () {
 
     // print info and draw genome's network
     pop.getGenome (-1).print ();
-    pop.getGenome (-1).draw ("/usr/share/fonts/OTF/SF-Pro-Rounded-Light.otf");
+    pop.getGenome (-1).draw ("/usr/share/fonts/opentype/SF/SF-Pro.ttf");
 
     // play a game by the fitter genome
     playGameFitter (pop.getGenome (-1), maxIterationThresh, false, {800, 600}, 0.12f, 8);

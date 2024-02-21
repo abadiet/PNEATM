@@ -165,16 +165,16 @@ double Species<Types...>::ConventionalNEAT (const std::unique_ptr<Genome<Types..
 	double sumDiffWeights = 0.0;
 	unsigned int nbCommonGenes = 0;
 
-	for (size_t i1 = 0; i1 < connEnabled1.size (); i1++) {
+	for (unsigned int conn1 : connEnabled1) {
 		// for each enabled connection of the first genome
-		if (genome->connections [connEnabled1 [i1]].innovId > maxInnovId2) {
+		if (genome->connections [conn1].innovId > maxInnovId2) {
 			// if connection's innovId is over the maximum one of second genome's connections
 			// it is an excess gene
 			excessGenes += 1;
 		} else {
 			size_t i2 = 0;
 
-			while (i2 < connEnabled2.size () && connections [connEnabled2 [i2]].innovId != genome->connections [connEnabled1 [i1]].innovId) {
+			while (i2 < connEnabled2.size () && connections [connEnabled2 [i2]].innovId != genome->connections [conn1].innovId) {
 				i2 ++;
 			}
 			if (i2 == connEnabled2.size ()) {
@@ -184,7 +184,7 @@ double Species<Types...>::ConventionalNEAT (const std::unique_ptr<Genome<Types..
 			} else {
 				// one connection has the same innovation id
 				nbCommonGenes += 1;
-				double diff = connections [connEnabled2 [i2]].weight - genome->connections [connEnabled1 [i1]].weight;
+				double diff = connections [connEnabled2 [i2]].weight - genome->connections [conn1].weight;
 				if (diff > 0) {
 					sumDiffWeights += diff;
 				} else {
@@ -194,15 +194,15 @@ double Species<Types...>::ConventionalNEAT (const std::unique_ptr<Genome<Types..
 		}
 	}
 
-	for (size_t i2 = 0; i2 < connEnabled2.size (); i2++) {
+	for (unsigned int conn2 : connEnabled2) {
 		// for each enabled connection of the second genome
-		if (connections [connEnabled2 [i2]].innovId > maxInnovId1) {
+		if (connections [conn2].innovId > maxInnovId1) {
 			// if connection's innovId is over the maximum one of first genome's connections
 			// it is an excess gene
 			excessGenes += 1;
 		} else {
 			size_t i1 = 0;
-			while (i1 < connEnabled1.size () && connections [connEnabled2 [i2]].innovId != genome->connections [connEnabled1 [i1]].innovId) {
+			while (i1 < connEnabled1.size () && connections [conn2].innovId != genome->connections [connEnabled1 [i1]].innovId) {
 				i1 ++;
 			}
 			if (i1 == connEnabled1.size ()) {

@@ -418,7 +418,7 @@ class Genome {
 			unsigned int conn_inNodeRecu;
 			double conn_weight;
 
-			optimize_network_ope (NodeBase* node_addToInput, NodeBase* node_getOutput, unsigned int& conn_inNodeRecu, double& conn_weight) :
+			optimize_network_ope (NodeBase* node_addToInput, NodeBase* node_getOutput, unsigned int conn_inNodeRecu, double conn_weight) :
 				node_addToInput (node_addToInput),
 				node_getOutput (node_getOutput),
 				conn_inNodeRecu (conn_inNodeRecu),
@@ -864,7 +864,7 @@ void Genome<Types...>::OptimizeNetwork () {
 	for (int ilayer = 0; ilayer <= lastLayer; ilayer++) {
 		optimize_operations_nonrecu.push_back ({});
 
-		for (std::pair<const unsigned int, Connection>& conn : connections) {
+		for (const std::pair<const unsigned int, Connection>& conn : connections) {
 			if (
 				conn.second.enabled
 				&& nodes [conn.second.outNodeId]->is_useful
@@ -877,7 +877,7 @@ void Genome<Types...>::OptimizeNetwork () {
 	}
 
 	// recurrent connections: sort them by recurrency level from the lower to the highest
-	for (std::pair<const unsigned int, Connection>& conn : connections) {
+	for (const std::pair<const unsigned int, Connection>& conn : connections) {
 		if (
 			conn.second.enabled
 			&& nodes [conn.second.outNodeId]->is_useful
@@ -1449,7 +1449,7 @@ std::unique_ptr<Genome<Types...>> Genome<Types...>::clone () {
 	std::unique_ptr<Genome<Types...>> genome =  std::make_unique<Genome<Types...>> (id, nbBias, nbInput, nbOutput, N_types, resetValues, activationFns, inputsActivationFns, outputsActivationFns, weightExtremumInit, logger);
 
 	genome->nodes.reserve (nodes.size ());
-	for (std::pair<const unsigned int, std::unique_ptr<NodeBase>>& node : nodes) {
+	for (const std::pair<const unsigned int, std::unique_ptr<NodeBase>>& node : nodes) {
 		genome->nodes.insert (std::make_pair (node.second->id, node.second->clone ()));
 	}
 	genome->connections.reserve (connections.size ());

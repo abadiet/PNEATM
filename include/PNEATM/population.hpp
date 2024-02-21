@@ -510,7 +510,7 @@ Genome<Types...>* Population<Types...>::getpGenome (int id) {
 template <typename... Types>
 template <typename T_in>
 void Population<Types...>::loadInputs (std::vector<T_in>& inputs) {
-	for (std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
+	for (const std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
 		genome.second->template loadInputs<T_in> (inputs);
 	}
 }
@@ -524,7 +524,7 @@ void Population<Types...>::loadInputs (std::vector<T_in>& inputs, unsigned int g
 template <typename... Types>
 template <typename T_in>
 void Population<Types...>::loadInput (T_in& input, unsigned int input_id) {
-	for (std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
+	for (const std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
 		genome.second->template loadInput<T_in> (input, input_id);
 	}
 }
@@ -538,7 +538,7 @@ void Population<Types...>::loadInput (T_in& input, unsigned int input_id, unsign
 
 template <typename... Types>
 void Population<Types...>::loadInputs (std::vector<void*>& inputs) {
-	for (std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
+	for (const std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
 		genome.second->loadInputs (inputs);
 	}
 }
@@ -550,7 +550,7 @@ void Population<Types...>::loadInputs (std::vector<void*>& inputs, unsigned int 
 
 template <typename... Types>
 void Population<Types...>::loadInput (void* input, unsigned int input_id) {
-	for (std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
+	for (const std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
 		genome.second->loadInput (input, input_id);
 	}
 }
@@ -569,7 +569,7 @@ void Population<Types...>::run (const std::vector<std::vector<void*>>& inputs, s
 
 		// the task
 		std::function<std::vector<void*> (Genome<Types...>*, std::vector<std::vector<void*>>&)> func = [&] (Genome<Types...>* genome, std::vector<std::vector<void*>>& inputs_gen) -> std::vector<void*> {
-			for (std::vector<void*>& inputs_cur : inputs_gen) {
+			for (const std::vector<void*>& inputs_cur : inputs_gen) {
 				genome->loadInputs (inputs_cur);
 				if (!genome->runNetwork ()) return {};
 				genome->saveOutputs ();
@@ -590,7 +590,7 @@ void Population<Types...>::run (const std::vector<std::vector<void*>>& inputs, s
 		}
 
 		// wait for tasks end
-		for (std::future<std::vector<void*>>& result : results) {
+		for (const std::future<std::vector<void*>>& result : results) {
 			result.wait ();
 		}
 
@@ -608,14 +608,14 @@ void Population<Types...>::run (const std::vector<std::vector<void*>>& inputs, s
 
 		// the task
 		std::function<void (Genome<Types...>*, std::vector<std::vector<void*>>&)> func = [&] (Genome<Types...>* genome, std::vector<std::vector<void*>>& inputs_gen) -> void {
-			for (std::vector<void*>& inputs_cur : inputs_gen) {
+			for (const std::vector<void*>& inputs_cur : inputs_gen) {
 				genome->loadInputs (inputs_cur);
 				if (!genome->runNetwork ()) return;
 			}
 		};
 
 		// fill the thread pool
-		for (std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
+		for (const std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
 			// add the task to the pool
 			pool.enqueue (
 				func,
@@ -638,7 +638,7 @@ void Population<Types...>::run (const std::vector<std::vector<std::vector<void*>
 
 		// the task
 		std::function<std::vector<void*> (Genome<Types...>*, std::vector<std::vector<void*>>&)> func = [&] (Genome<Types...>* genome, std::vector<std::vector<void*>>& inputs_gen) -> std::vector<void*> {
-			for (std::vector<void*>& inputs_cur : inputs_gen) {
+			for (const std::vector<void*>& inputs_cur : inputs_gen) {
 				genome->loadInputs (inputs_cur);
 				if (!genome->runNetwork ()) return {};
 				genome->saveOutputs ();
@@ -659,7 +659,7 @@ void Population<Types...>::run (const std::vector<std::vector<std::vector<void*>
 		}
 
 		// wait for tasks end
-		for (std::future<std::vector<void*>>& result : results) {
+		for (const std::future<std::vector<void*>>& result : results) {
 			result.wait ();
 		}
 
@@ -677,14 +677,14 @@ void Population<Types...>::run (const std::vector<std::vector<std::vector<void*>
 
 		// the task
 		std::function<void (Genome<Types...>*, std::vector<std::vector<void*>>&)> func = [&] (Genome<Types...>* genome, std::vector<std::vector<void*>>& inputs_gen) -> void {
-			for (std::vector<void*>& inputs_cur : inputs_gen) {
+			for (const std::vector<void*>& inputs_cur : inputs_gen) {
 				genome->loadInputs (inputs_cur);
 				if (!genome->runNetwork ()) return;
 			}
 		};
 
 		// fill the thread pool
-		for (std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
+		for (const std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
 			// add the task to the pool
 			pool.enqueue (
 				func,
@@ -727,7 +727,7 @@ void Population<Types...>::run (const unsigned int N_runs, std::vector<std::vect
 		}
 
 		// wait for tasks end
-		for (std::future<std::vector<void*>>& result : results) {
+		for (const std::future<std::vector<void*>>& result : results) {
 			result.wait ();
 		}
 
@@ -752,7 +752,7 @@ void Population<Types...>::run (const unsigned int N_runs, std::vector<std::vect
 		};
 
 		// fill the thread pool
-		for (std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
+		for (const std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
 			// add the task to the pool
 			pool.enqueue (
 				func,
@@ -768,7 +768,7 @@ void Population<Types...>::run (const unsigned int N_runs, std::vector<std::vect
 
 template <typename... Types>
 void Population<Types...>::resetMemory () {
-	for (std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
+	for (const std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
 		genome.second->resetMemory ();
 	}
 }
@@ -782,7 +782,7 @@ template <typename... Types>
 void Population<Types...>::runNetworks (unsigned int maxThreads) {
 	ThreadPool<void> pool (maxThreads);
 
-	for (std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
+	for (const std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
 		// add the task to the pool
 		pool.enqueue (
 			[&] () -> void {
@@ -842,24 +842,24 @@ void Population<Types...>::speciate (unsigned int target, unsigned int maxIterat
 		nbSpeciesAlive = 0;
 
 		// reset tmpspecies
-		for (size_t iSpe = 0; iSpe < tmpspecies.size (); iSpe++) {
-			if (!tmpspecies [iSpe].isDead) {	// if the species is still alive
-				tmpspecies [iSpe].members.clear ();
+		for (Species<Types...>& tmpspe : tmpspecies) {
+			if (!tmpspe.isDead) {	// if the species is still alive
+				tmpspe.members.clear ();
 			}
 		}
 
 		// speciation
-		for (unsigned int genome_id = 0; genome_id < popSize; genome_id++) {
+		for (const std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
 			size_t itmpspeciesBest;
 			double dstBest = std::numeric_limits<double>::max ();
 			if (tmpspecies.size () > 0) {	// if there is at least one species
 
 				// we search for the closest species
 				double dst;
-				for (size_t itmpspecies = 0; itmpspecies < tmpspecies.size (); itmpspecies++) {
-					if (!tmpspecies [itmpspecies].isDead && (dst = tmpspecies [itmpspecies].distanceWith (genomes [genome_id], a, b, c)) <= dstBest) {
+				for (Species<Types...>& tmpspe : tmpspecies) {
+					if (!tmpspe.isDead && (dst = tmpspe.distanceWith (genome.second, a, b, c)) <= dstBest) {
 						// we found a closer one
-						itmpspeciesBest = itmpspecies;
+						itmpspeciesBest = tmpspe.id;
 						dstBest = dst;
 					}
 				}
@@ -868,20 +868,20 @@ void Population<Types...>::speciate (unsigned int target, unsigned int maxIterat
 			if (dstBest >= speciationThresh) {
 				// the closest species is too far or there is no species: we create a new one
 				itmpspeciesBest = tmpspecies.size ();
-				tmpspecies.push_back (Species<Types...> ((unsigned int) itmpspeciesBest, genomes [genome_id]->connections, dstType));
+				tmpspecies.push_back (Species<Types...> ((unsigned int) itmpspeciesBest, genome.second->connections, dstType));
 			}
 
-			tmpspecies [itmpspeciesBest].members.push_back (genome_id);
-			genomes [genome_id]->speciesId = tmpspecies [itmpspeciesBest].id;
+			tmpspecies [itmpspeciesBest].members.push_back (genome.first);
+			genome.second->speciesId = tmpspecies [itmpspeciesBest].id;
 		}
 
 		// check how many species are still alive
-		for (size_t iSpe = 0; iSpe < tmpspecies.size (); iSpe++) {
-			if (tmpspecies [iSpe].members.size () == 0) {
+		for (Species<Types...>& tmpspe : tmpspecies) {
+			if (tmpspe.members.size () <= 0) {
 				// the species has no member, the species is dead
-				tmpspecies [iSpe].isDead = true;
+				tmpspe.isDead = true;
 			}
-			if (!tmpspecies [iSpe].isDead) {	// if the species is still alive
+			if (!tmpspe.isDead) {	// if the species is still alive
 				nbSpeciesAlive ++;
 			}
 		}
@@ -908,19 +908,19 @@ void Population<Types...>::speciate (unsigned int target, unsigned int maxIterat
 	}
 
 	// update species
-	for (size_t iSpe = 0; iSpe < species.size (); iSpe++) {
-		if (!species [iSpe].isDead) {	// if the species is still alive, this also ensure that there is at least one member
-			//species [iSpe].connections = GetWeightedCentroid ((unsigned int) iSpe);
+	for (Species<Types...>& spe : species) {
+		if (!spe.isDead) {	// if the species is still alive, this also ensure that there is at least one member
+			//spe.connections = GetWeightedCentroid (spe.id);
 
-			unsigned int leaderId = species [iSpe].members [0];
-			for (size_t i = 1; i < species [iSpe].members.size (); i++) {
-				if (genomes [species [iSpe].members [i]]->fitness >= genomes [leaderId]->fitness) {
-					if (genomes [species [iSpe].members [i]]->fitness > genomes [leaderId]->fitness || Random_Double (0.0, 1.0, true, false) < 0.5) {
-						leaderId = species [iSpe].members [i];
+			unsigned int leaderId = spe.members [0];
+			for (unsigned int genomeID : spe.members) {
+				if (genomes [genomeID]->fitness >= genomes [leaderId]->fitness) {
+					if (genomes [genomeID]->fitness > genomes [leaderId]->fitness || Random_Double (0.0, 1.0, true, false) < 0.5) {
+						leaderId = genomeID;
 					}
 				}
 			}
-			species [iSpe].connections = genomes [leaderId]->connections;	// species leader is the more fit genome
+			spe.connections = genomes [leaderId]->connections;	// species leader is the more fit genome
 		}
 	}
 
@@ -934,10 +934,10 @@ std::unordered_map <unsigned int, Connection> Population<Types...>::GetWeightedC
 
 	double sumFitness = 0.0;
 
-	for (size_t i = 0; i < species [speciesId].members.size (); i++) {	// for each genome in the species
-		double fitness = genomes [species [speciesId].members [i]]->fitness;
+	for (unsigned int genomeID : species [speciesId].members) {	// for each genome in the species
+		double fitness = genomes [genomeID]->fitness;
 
-		for (const Connection& conn : genomes [species [speciesId].members [i]]->connections) {	// for each of its connections
+		for (const Connection& conn : genomes [genomeID]->connections) {	// for each of its connections
 			if (conn.enabled) {	// only pay attention to active ones
 				size_t curResConn = 0;
 				size_t result_sz = result.size ();
@@ -962,7 +962,7 @@ std::unordered_map <unsigned int, Connection> Population<Types...>::GetWeightedC
 		}
 	} else {
 		// null sumFitness
-		for (std::pair<unsigned int, Connection>& conn : result) {
+		for (const std::pair<unsigned int, Connection>& conn : result) {
 			conn.second.weight = std::numeric_limits<double>::max ();
 		}
 	}
@@ -987,38 +987,38 @@ void Population<Types...>::UpdateFitnesses (double speciesSizeEvolutionMax, doub
 	avgFitness /= (double) popSize;
 
 	// process avgFitnessAdjusted
-	for (size_t i = 0; i < species.size (); i++) {
-		if (!species [i].isDead) {
+	for (Species<Types...>& spe : species) {
+		if (!spe.isDead) {
 			// process species' sumFitness
-			species [i].sumFitness = 0;
-			for (size_t j = 0; j < species [i].members.size (); j++) {
-				species [i].sumFitness += genomes [species [i].members [j]]->fitness;
+			spe.sumFitness = 0;
+			for (unsigned int genomeID : spe.members) {
+				spe.sumFitness += genomes [genomeID]->fitness;
 			}
 
 			// update species' gensSinceImproved
-			if (species [i].sumFitness / (double) species[i].members.size () > species [i].avgFitness) {
+			if (spe.sumFitness / (double) spe.members.size () > spe.avgFitness) {
 				// the avgFitness of the species has increased
-				species [i].gensSinceImproved  = 0;
+				spe.gensSinceImproved  = 0;
 			} else {
-				species [i].gensSinceImproved ++;
+				spe.gensSinceImproved ++;
 			}
 
 			// process species' avgFitness and avgFitnessAdjusted
-			species [i].avgFitness = species [i].sumFitness / (double) species [i].members.size ();
-			species [i].avgFitnessAdjusted = species [i].avgFitness / (double) species [i].members.size ();
+			spe.avgFitness = spe.sumFitness / (double) spe.members.size ();
+			spe.avgFitnessAdjusted = spe.avgFitness / (double) spe.members.size ();
 
-			avgFitnessAdjusted += species [i].avgFitness;
+			avgFitnessAdjusted += spe.avgFitness;
 		}
 	}
 	avgFitnessAdjusted /= (double) popSize;
 
 	// process offsprings
-	for (size_t i = 0; i < species.size (); i ++) {
-		if (!species [i].isDead) {
-			if (species [i].gensSinceImproved < threshGensSinceImproved) {
+	for (Species<Types...>& spe : species) {
+		if (!spe.isDead) {
+			if (spe.gensSinceImproved < threshGensSinceImproved) {
 				// the species can have offsprings
 
-				double evolutionFactor = species [i].avgFitnessAdjusted / (avgFitnessAdjusted + std::numeric_limits<double>::epsilon ());
+				double evolutionFactor = spe.avgFitnessAdjusted / (avgFitnessAdjusted + std::numeric_limits<double>::epsilon ());
 				if (evolutionFactor > speciesSizeEvolutionMax) {
 					evolutionFactor = speciesSizeEvolutionMax;	// we limit the species evolution factor: a species's size cannot skyrocket from few genomes
 				} else {
@@ -1026,31 +1026,31 @@ void Population<Types...>::UpdateFitnesses (double speciesSizeEvolutionMax, doub
 						evolutionFactor = speciesSizeEvolutionMin;	// we limit the species evolution factor: a species's size cannot be slashed
 					}
 				}
-				int allowedOffspring = (int) ((double) species [i].members.size () * evolutionFactor);	// note that (int) 0.9 == 0.0
+				int allowedOffspring = (int) ((double) spe.members.size () * evolutionFactor);	// note that (int) 0.9 == 0.0
 
 				const int sizelimit = (int) ((double) (popSize / NspeciesTarget) * speciesSizeLimit);
 				if (allowedOffspring > sizelimit) allowedOffspring = sizelimit;
 
-				species [i].allowedOffspring = allowedOffspring;
+				spe.allowedOffspring = allowedOffspring;
 			} else {
 				// the species cannot have offsprings it has not improved for a long time
-				species[i].allowedOffspring = 0;
+				spe.allowedOffspring = 0;
 			}
 		}
 	}
 
 	// update isDead boolean
-	for (size_t i = 0; i < species.size (); i ++) {
-		if (species [i].allowedOffspring <= 0) species [i].isDead = true;
+	for (Species<Types...>& spe : species) {
+		if (spe.allowedOffspring <= 0) spe.isDead = true;
 	}
 
 	// add satistics to the file
 	if (statsFile.is_open ()) {
 		statsFile << generation << "," << genomes [fittergenome_id]->fitness << "," << avgFitness << "," << avgFitnessAdjusted << ",";
-		for (size_t i = 0; i < species.size () - 1; i ++) {
-			statsFile << species [i].members.size () << ",";
+		for (const Species<Types...>& spe : species) {
+			statsFile << spe.members.size () << ",";
 		}
-		statsFile << species.back ().members.size () << "\n";
+		statsFile << "\n";
 		statsFile.flush ();
 	}
 }
@@ -1072,10 +1072,10 @@ void Population<Types...>::crossover (bool elitism, double crossover_rate) {
 	// scale the number of offsprings to the exact population's size
 	std::vector<unsigned int> species_alive;
 	int N_offsprings = 0; 
-	for (unsigned int iSpe = 0; iSpe < (unsigned int) species.size (); iSpe ++) {
-		if (!species [iSpe].isDead) {
-			N_offsprings += species [iSpe].allowedOffspring;
-			species_alive.push_back(iSpe);
+	for (const Species<Types...>& spe : species) {
+		if (!spe.isDead) {
+			N_offsprings += spe.allowedOffspring;
+			species_alive.push_back(spe.id);
 		}
 	}
 	for (int k = 0; k < (int) popSize - N_offsprings - (int) elitism; k++) {
@@ -1090,16 +1090,16 @@ void Population<Types...>::crossover (bool elitism, double crossover_rate) {
 	}
 
 	// process offsprings
-	for (unsigned int iSpe = 0; iSpe < (unsigned int) species.size (); iSpe ++) {
-		if (!species [iSpe].isDead) {
-			for (int k = 0; k < species [iSpe].allowedOffspring; k++) {
+	for (const Species<Types...>& spe : species) {
+		if (!spe.isDead) {
+			for (int k = 0; k < spe.allowedOffspring; k++) {
 
 				// choose pseudo-randomly a first parent
-				unsigned int iParent1 = SelectParent (iSpe);
+				unsigned int iParent1 = SelectParent (spe.id);
 
-				if (Random_Double (0.0, 1.0, true, false) < crossover_rate && species [iSpe].members.size () > 1) {
+				if (Random_Double (0.0, 1.0, true, false) < crossover_rate && spe.members.size () > 1) {
 					// choose pseudo-randomly a second parent
-					unsigned int iParent2 = SelectParent (iSpe);	// TODO might be the same parent as iParent1: is that an issue?
+					unsigned int iParent2 = SelectParent (spe.id);	// TODO might be the same parent as iParent1: is that an issue?
 
 					// clone the more fit
 					unsigned int iMainParent;
@@ -1142,9 +1142,9 @@ void Population<Types...>::crossover (bool elitism, double crossover_rate) {
 	genomes = std::move (newGenomes);
 
 	// reset species members
-	for (size_t i = 0; i < species.size (); i++) {
-		species [i].members.clear ();
-		species [i].isDead = true;
+	for (const Species<Types...>& spe : species) {
+		spe.members.clear ();
+		spe.isDead = true;
 	}
 	for (const std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
 		if (genome.second->speciesId > -1) {
@@ -1174,10 +1174,10 @@ int Population<Types...>::SelectParent (unsigned int iSpe) {
 
 	double randThresh = Random_Double (0.0, species [iSpe].sumFitness, true, false);
 	double runningSum = 0.0;
-	for (size_t i = 0; i < species [iSpe].members.size (); i++) {
-		runningSum += genomes [species [iSpe].members [i]]->fitness;
+	for (unsigned int genomeID : species [iSpe].members) {
+		runningSum += genomes [genomeID]->fitness;
 		if (runningSum > randThresh) {
-			return species [iSpe].members [i];
+			return genomeID;
 		}
 	}
 	return -1;	// impossible
@@ -1186,7 +1186,7 @@ int Population<Types...>::SelectParent (unsigned int iSpe) {
 template <typename... Types>
 void Population<Types...>::mutate (const mutationParams_t& params) {
 	logger->info ("Mutations");
-	for (std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
+	for (const std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
 		genome.second->mutate (&conn_innov, &node_innov, params);
 	}
 }
@@ -1194,7 +1194,7 @@ void Population<Types...>::mutate (const mutationParams_t& params) {
 template <typename... Types>
 void Population<Types...>::mutate (const std::function<mutationParams_t (double)>& paramsMap) {
 	logger->info ("Mutations");
-	for (std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
+	for (const std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
 		genome.second->mutate (&conn_innov, &node_innov, paramsMap (genome.second->fitness));
 	}
 }
@@ -1217,10 +1217,10 @@ void Population<Types...>::buildNextGen (const mutationParams_t& mutationParams,
 	// scale the number of offsprings to the exact population's size
 	std::vector<unsigned int> species_alive;
 	int N_offsprings = 0; 
-	for (unsigned int iSpe = 0; iSpe < (unsigned int) species.size (); iSpe ++) {
-		if (!species [iSpe].isDead) {
-			N_offsprings += species [iSpe].allowedOffspring;
-			species_alive.push_back(iSpe);
+	for (const Species<Types...>& spe : species) {
+		if (!spe.isDead) {
+			N_offsprings += spe.allowedOffspring;
+			species_alive.push_back(spe.id);
 		}
 	}
 	for (int k = 0; k < (int) popSize - N_offsprings - (int) elitism; k++) {
@@ -1235,18 +1235,18 @@ void Population<Types...>::buildNextGen (const mutationParams_t& mutationParams,
 	}
 
 	// process offsprings
-	for (unsigned int iSpe = 0; iSpe < (unsigned int) species.size (); iSpe ++) {
-		if (!species [iSpe].isDead) {
-			for (int k = 0; k < species [iSpe].allowedOffspring; k++) {
+	for (const Species<Types...>& spe : species) {
+		if (!spe.isDead) {
+			for (int k = 0; k < spe.allowedOffspring; k++) {
 
 				// choose pseudo-randomly a first parent
-				unsigned int iParent1 = SelectParent (iSpe);
+				unsigned int iParent1 = SelectParent (spe.id);
 
-				if (Random_Double (0.0, 1.0, true, false) < crossover_rate && species [iSpe].members.size () > 1) {
+				if (Random_Double (0.0, 1.0, true, false) < crossover_rate && spe.members.size () > 1) {
 					// New genome comes from a crossover
 
 					// choose pseudo-randomly a second parent
-					unsigned int iParent2 = SelectParent (iSpe);	// TODO might be the same parent as iParent1: is that an issue?
+					unsigned int iParent2 = SelectParent (spe.id);	// TODO might be the same parent as iParent1: is that an issue?
 
 					// clone the more fit
 					unsigned int iMainParent;
@@ -1291,9 +1291,9 @@ void Population<Types...>::buildNextGen (const mutationParams_t& mutationParams,
 	genomes = std::move (newGenomes);
 
 	// reset species members
-	for (size_t i = 0; i < species.size (); i++) {
-		species [i].members.clear ();
-		species [i].isDead = true;
+	for (const Species<Types...>& spe : species) {
+		spe.members.clear ();
+		spe.isDead = true;
 	}
 	for (const std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
 		if (genome.second->speciesId > -1) {
@@ -1325,10 +1325,10 @@ void Population<Types...>::buildNextGen (const std::function<mutationParams_t (d
 	// scale the number of offsprings to the exact population's size
 	std::vector<unsigned int> species_alive;
 	int N_offsprings = 0; 
-	for (unsigned int iSpe = 0; iSpe < (unsigned int) species.size (); iSpe ++) {
-		if (!species [iSpe].isDead) {
-			N_offsprings += species [iSpe].allowedOffspring;
-			species_alive.push_back(iSpe);
+	for (const Species<Types...>& spe : species) {
+		if (!spe.isDead) {
+			N_offsprings += spe.allowedOffspring;
+			species_alive.push_back(spe.id);
 		}
 	}
 	for (int k = 0; k < (int) popSize - N_offsprings - (int) elitism; k++) {
@@ -1343,18 +1343,18 @@ void Population<Types...>::buildNextGen (const std::function<mutationParams_t (d
 	}
 
 	// process offsprings
-	for (unsigned int iSpe = 0; iSpe < (unsigned int) species.size (); iSpe ++) {
-		if (!species [iSpe].isDead) {
-			for (int k = 0; k < species [iSpe].allowedOffspring; k++) {
+	for (const Species<Types...>& spe : species) {
+		if (!spe.isDead) {
+			for (int k = 0; k < spe.allowedOffspring; k++) {
 
 				// choose pseudo-randomly a first parent
-				unsigned int iParent1 = SelectParent (iSpe);
+				unsigned int iParent1 = SelectParent (spe.id);
 
-				if (Random_Double (0.0, 1.0, true, false) < crossover_rate && species [iSpe].members.size () > 1) {
+				if (Random_Double (0.0, 1.0, true, false) < crossover_rate && spe.members.size () > 1) {
 					// New genome comes from a crossover
 
 					// choose pseudo-randomly a second parent
-					unsigned int iParent2 = SelectParent (iSpe);	// TODO might be the same parent as iParent1: is that an issue?
+					unsigned int iParent2 = SelectParent (spe.id);	// TODO might be the same parent as iParent1: is that an issue?
 
 					// clone the more fit
 					unsigned int iMainParent;
@@ -1399,9 +1399,9 @@ void Population<Types...>::buildNextGen (const std::function<mutationParams_t (d
 	genomes = std::move (newGenomes);
 
 	// reset species members
-	for (size_t i = 0; i < species.size (); i++) {
-		species [i].members.clear ();
-		species [i].isDead = true;
+	for (Species<Types...>& spe : species) {
+		spe.members.clear ();
+		spe.isDead = true;
 	}
 	for (const std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
 		if (genome.second->speciesId > -1) {
