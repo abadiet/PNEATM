@@ -438,7 +438,7 @@ Population<Types...>::Population(unsigned int popSize, const std::vector<size_t>
 {
 	logger->info ("Population initialization");
 
-	if (stats_filename != "") statsFile.open (stats_filename);
+	if (stats_filename != "") statsFile.open (stats_filename, std::ios_base::app);
 	if (statsFile.is_open ()) {
 		statsFile << "Generation,Best Fitness,Average Fitness,Average Fitness (Adjusted),Species0,Species1\n";
 		statsFile.flush ();
@@ -466,7 +466,7 @@ Population<Types...>::Population (const std::string& filename, const std::vector
 {
 	logger->info ("Population loading");
 
-	if (stats_filename != "") statsFile.open (stats_filename);
+	if (stats_filename != "") statsFile.open (stats_filename, std::ios_base::app);
 	if (statsFile.is_open ()) {
 		statsFile << "Generation,Best Fitness,Average Fitness,Average Fitness (Adjusted),Species0,Species1\n";
 		statsFile.flush ();
