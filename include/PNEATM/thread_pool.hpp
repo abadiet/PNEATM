@@ -86,8 +86,9 @@ ThreadPool<T_Return>::~ThreadPool () {
     {
         std::unique_lock<std::mutex> lock (queueMutex);
         stop = true;
+
+        condition.notify_all ();
     }
-    condition.notify_all ();
     for (std::thread& worker : workers) {
         worker.join ();
     }
@@ -108,10 +109,10 @@ std::future<T_Return> ThreadPool<T_Return>::enqueue (Func&& func, Args&&... args
     {
         std::unique_lock<std::mutex> lock (queueMutex);
         tasks.emplace (std::move (task));
-    }
 
-    // there is a new task
-    condition.notify_one ();
+        // there is a new task
+        condition.notify_one ();
+    }
 
     return result;
 }
