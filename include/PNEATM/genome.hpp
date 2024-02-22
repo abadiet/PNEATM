@@ -1052,7 +1052,7 @@ template <typename... Types>
 unsigned int Genome<Types...>::RepetitionNodeCheck (unsigned int index_T_in, unsigned int index_T_out, unsigned int index_activation_fn) {
 	unsigned int c = 0;
 	for (const std::pair<const unsigned int, std::unique_ptr<NodeBase>>& node : nodes) {
-		if (node.second->index_T_in == index_T_in && node.second->index_T_out == index_T_out && node.second->index_activation_fn == index_activation_fn) {
+		if (node.first >= nbBias + nbInput + nbOutput && node.second->index_T_in == index_T_in && node.second->index_T_out == index_T_out && node.second->index_activation_fn == index_activation_fn) {
 			// the same node is in nodes
 			c++;
 		}
