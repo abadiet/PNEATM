@@ -43,6 +43,12 @@ class ActivationFnBase {
         virtual void setPrintingFunction (const std::function<void (activationFnParams_t*, std::string)>& func) = 0;
 
         /**
+         * @brief Sets the activation function's parameters.
+         * @param parameters The activation function's parameters.
+         */
+        virtual void setParameters (activationFnParams_t*& parameters) = 0;
+
+        /**
          * @brief Creates a clone of the activation function object.
          * @param preserveParameters Set to true if you want to copy the parameters of the current function to the new one, else they are set by the default constructor. (default is true)
          * @return A unique_ptr to the cloned ActivationFnBase object.

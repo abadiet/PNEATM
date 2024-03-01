@@ -23,8 +23,9 @@ class NodeBase{
 		/**
 		 * @brief Set the activation function for the node.
 		 * @param actfn A pointer to the activation function to be set.
+		 * @param parameters The activation function's parameters. (default is 'nullptr' which does not change the current parameters)
 		 */
-		virtual void setActivationFn (std::unique_ptr<ActivationFnBase> actfn) = 0;
+		virtual void setActivationFn (std::unique_ptr<ActivationFnBase> actfn, activationFnParams_t* parameters = nullptr) = 0;
 
 		/**
 		 * @brief Set the reset value for the node.

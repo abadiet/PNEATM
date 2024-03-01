@@ -42,8 +42,9 @@ class Node : public NodeBase {
 		/**
 		 * @brief Set the activation function for the node.
 		 * @param actfn A pointer to the activation function to be set.
+		 * @param parameters The activation function's parameters. (default is 'nullptr' which does not change the current parameters)
 		 */
-		void setActivationFn (std::unique_ptr<ActivationFnBase> actfn) override;
+		void setActivationFn (std::unique_ptr<ActivationFnBase> actfn, activationFnParams_t* parameters = nullptr) override;
 
 		/**
 		 * @brief Set the reset value for the node.
@@ -156,8 +157,12 @@ Node<T_in, T_out>::Node () :
 }
 
 template <typename T_in, typename T_out>
-void Node<T_in, T_out>::setActivationFn (std::unique_ptr<ActivationFnBase> actfn) {
+void Node<T_in, T_out>::setActivationFn (std::unique_ptr<ActivationFnBase> actfn, activationFnParams_t* parameters) {
 	activation_fn = std::unique_ptr<ActivationFn<T_in, T_out>> (static_cast<ActivationFn<T_in, T_out>*> (actfn.release ()));
+
+	if (parameters != nullptr) {
+		activation_fn->setParameters (parameters);
+	}
 }
 
 template <typename T_in, typename T_out>

@@ -38,7 +38,7 @@ class Connection {
 		 *
 		 * This constuctor should not be used. It is implemented to avoid warnings with calls to undordered_map<pneatm::Connection>::operator[].
 		 */
-		Connection () {std::cout << "[ERROR] The constructor pneatm::Connection::Connection() might not be used." << std::endl;};
+		Connection () {std::cout << "[ERROR] The constructor pneatm::Connection::Connection() should not be used." << std::endl;};
 
 		/**
 		 * @brief Assignment operator for the Connection class.

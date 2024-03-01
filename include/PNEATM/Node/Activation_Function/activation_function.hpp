@@ -62,6 +62,12 @@ class ActivationFn : public ActivationFnBase {
 		 */
         void setPrintingFunction (const std::function<void (activationFnParams_t*, std::string)>& func) override;
 
+        /**
+         * @brief Sets the activation function's parameters.
+         * @param parameters The activation function's parameters.
+         */
+        void setParameters (activationFnParams_t*& parameters) override;
+
 		/**
 		 * @brief Create a clone of the class: clone the activation function, the mutation function, the printing function and the parameters (optionally).
 		 * @param preserveParameters True if the parameters should be cloned, False else. (default is true)
@@ -140,6 +146,11 @@ void ActivationFn<T_in, T_out>::setMutationFunction (const std::function<void (a
 template <typename T_in, typename T_out>
 void ActivationFn<T_in, T_out>::setPrintingFunction (const std::function<void (activationFnParams_t*, std::string)>& func) {
 	printingFn = func;
+}
+
+template <typename T_in, typename T_out>
+void ActivationFn<T_in, T_out>::setParameters (activationFnParams_t*& parameters) {
+	params = std::make_unique<activationFnParams_t> (*parameters);
 }
 
 template <typename T_in, typename T_out>
