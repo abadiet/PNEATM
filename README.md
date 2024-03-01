@@ -55,3 +55,5 @@ This project is currently under development and is provided as-is, without any g
 - [ ] connections key can be innovation id: better for distance processing, ...
 - [ ] Compiler optimizations (PGO, LTO ...)
 - [ ] Node innovation tracker need improvements 
+- [ ] 1-declaration var + memory pool
+- [ ] std::vector explicit sz constructor
