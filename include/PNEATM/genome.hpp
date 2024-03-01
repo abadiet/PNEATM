@@ -189,6 +189,77 @@ typedef struct mutationParams {
 	struct Weights weights;
 } mutationParams_t;
 
+// Forward declarations
+typedef struct activationFnParams activationFnParams_t;
+
+/**
+ * @brief Parameters used to create a specific genome.
+ */
+typedef struct genomeStruct {
+
+	/**
+	 * @brief Parameters used to create a specific hidden node.
+	 */
+	typedef struct hiddenNode {
+		/**
+		 * @brief ID of the input's type.
+		 */
+		unsigned int index_T_in;
+
+		/**
+		 * @brief ID of the output's type.
+		 */
+		unsigned int index_T_out;
+
+		/**
+		 * @brief ID of the activation function.
+		 */
+		unsigned int index_activation_fn;
+
+		/**
+		 * @brief Pointer to the activation function's parameters. (default is 'nullptr' which init the parameters by the default constructor)
+		 */
+		activationFnParams_t* params = nullptr;
+
+	} hiddenNode_t;
+	
+	/**
+	 * @brief Collection of the hidden nodes of the genome.
+	 */
+	std::vector<hiddenNode_t> hiddenNodes;
+
+	/**
+	 * @brief Parameters used to create a specific connection.
+	 */
+	typedef struct connection {
+		/**
+		 * @brief ID of the input's node.
+		 */
+		unsigned int inNodeId;
+
+		/**
+		 * @brief ID of the output's node.
+		 */
+		unsigned int outNodeId;
+
+		/**
+		 * @brief Recurrency level of the input node.
+		 */
+		unsigned int inNodeRecu;
+
+		/**
+		 * @brief Connection's weight.
+		 */
+		double weight;
+	} connection_t;
+
+	/**
+	 * @brief Collection of the genome's connections.
+	 */
+	std::vector<connection_t> connections;
+
+} genomeStruct_t;
+
 /**
  * @brief A template class representing a genome.
  * @tparam Types Variadic template arguments that contains all the manipulated types.
@@ -218,6 +289,24 @@ class Genome {
 		 */
 		Genome (const unsigned int id, const std::vector<size_t>& bias_sch, const std::vector<size_t>& inputs_sch, const std::vector<size_t>& outputs_sch, const std::vector<std::vector<size_t>>& hiddens_sch_init, const std::vector<void*>& bias_values, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, const std::vector<ActivationFnBase*> inputsActivationFns, const std::vector<ActivationFnBase*> outputsActivationFns, innovationConn_t* conn_innov, innovationNode_t* node_innov, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger);
 
+		/**
+		 * @brief Constructor for the Genome class. This conctructor initialized a specific network, there is no use of randomness.
+		 * @param id The identifier of the genome
+		 * @param genome_struct The genome's structure.
+		 * @param bias_sch The biases scheme (e.g., there is bias_sch[k] biases for type of index k).
+		 * @param inputs_sch The inputs scheme (e.g., there is inputs_sch[k] inputs for type of index k).
+		 * @param outputs_sch The outputs scheme (e.g., there is outputs_sch[k] outputs for type of index k).
+		 * @param bias_values The initial biases values (e.g., k-th bias will have value bias_values[k]).
+		 * @param resetValues The biases reset values (e.g., k-th bias can be resetted to resetValues[k]).
+		 * @param activationFns The activation functions (e.g., activationFns[i][j] is a pointer to an activation function that takes an input of type of index i and return a type of index j output).
+		 * @param inputsActivationFns The activation functions of the bias & inputs nodes. The first functions are dedicated to the bias nodes and the other ones to the inputs ones.
+		 * @param outputsActivationFns The activation functions of the outputs nodes.
+		 * @param conn_innov A pointer to the connections innovation tracker.
+		 * @param node_innov A pointer to the nodes innovation tracker.
+		 * @param weightExtremumInit The initial weight extremum.
+		 * @param logger A pointer to the logger for logging.
+		 */
+		Genome (const unsigned int id, const genomeStruct_t& genome_struct, const std::vector<size_t>& bias_sch, const std::vector<size_t>& inputs_sch, const std::vector<size_t>& outputs_sch, const std::vector<void*>& bias_values, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, const std::vector<ActivationFnBase*> inputsActivationFns, const std::vector<ActivationFnBase*> outputsActivationFns, innovationConn_t* conn_innov, innovationNode_t* node_innov, double weightExtremumInit, spdlog::logger* logger);
 		/**
 		 * @brief Constructor for the Genome class. This constructor will not initialized any network.
 		 * @param id The identifier of the genome
@@ -650,6 +739,149 @@ Genome<Types...>::Genome (const unsigned int id, const std::vector<size_t>& bias
 }
 
 template <typename... Types>
+Genome<Types...>::Genome (const unsigned int id, const genomeStruct_t& genome_struct, const std::vector<size_t>& bias_sch, const std::vector<size_t>& inputs_sch, const std::vector<size_t>& outputs_sch, const std::vector<void*>& bias_values, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, const std::vector<ActivationFnBase*> inputsActivationFns, const std::vector<ActivationFnBase*> outputsActivationFns, innovationConn_t* conn_innov, innovationNode_t* node_innov, double weightExtremumInit, spdlog::logger* logger) :
+	id (id),
+	weightExtremumInit (weightExtremumInit),
+	activationFns (activationFns),
+	inputsActivationFns (inputsActivationFns),
+	outputsActivationFns (outputsActivationFns),
+	resetValues (resetValues),
+	logger (logger)
+{
+	logger->trace ("Genome initialization");
+
+	N_types = (unsigned int) activationFns.size ();
+	speciesId = -1;
+	fitness = 0.0;
+	locked = false;
+	N_runNetwork = 0;
+	network_is_optimized = false;
+
+	// NODES
+	// bias
+	nbBias = 0;
+	for (size_t i = 0; i < bias_sch.size (); i++) {
+		for (size_t k = 0; k < bias_sch [i]; k++) {
+			// get Node<T_in, T_out>
+			nodes.insert (std::make_pair (nbBias, CreateNode::get<Types...> (i, i)));
+
+			std::unique_ptr<NodeBase>& node = nodes [nbBias];
+
+			// setup the node
+			node->id = nbBias;
+			node->layer = 0;
+			node->index_T_in = (unsigned int) i;
+			node->index_T_out = (unsigned int) i;
+			node->setActivationFn (
+				inputsActivationFns [nbBias]->clone (true)
+			);
+			node->innovId = 0;
+			node->setResetValue (resetValues [i]);	// useless as bias nodes are never resetted
+			node->loadInput (bias_values [i]);	// load input now as it will always be the same
+
+			nbBias ++;
+		}
+	}
+	// input
+	nbInput = 0;
+	for (size_t i = 0; i < inputs_sch.size (); i++) {
+		for (size_t k = 0; k < inputs_sch [i]; k++) {
+			// get Node<T_in, T_out>
+			nodes.insert (std::make_pair (nbBias + nbInput, CreateNode::get<Types...> (i, i)));
+
+			std::unique_ptr<NodeBase>& node = nodes [nbBias + nbInput];
+
+			// setup the node
+			node->id = nbBias + nbInput;
+			node->layer = 0;
+			node->index_T_in = (unsigned int) i;
+			node->index_T_out = (unsigned int) i;
+			node->setActivationFn (
+				inputsActivationFns [nbBias + nbInput]->clone (true)
+			);
+			node->innovId = 0;
+			node->setResetValue (resetValues [i]);
+
+			nbInput ++;
+		}
+	}
+	// output
+	nbOutput = 0;
+	int outputLayer;
+	if (genome_struct.hiddenNodes.size () > 0) {
+		outputLayer = 2;
+	} else {
+		outputLayer = 1;
+	}
+	for (size_t i = 0; i < outputs_sch.size (); i++) {
+		for (size_t k = 0; k < outputs_sch [i]; k++) {
+			// get Node<T_in, T_out>
+			nodes.insert (std::make_pair (nbBias + nbInput + nbOutput, CreateNode::get<Types...> (i, i)));
+
+			std::unique_ptr<NodeBase>& node = nodes [nbBias + nbInput + nbOutput];
+
+			// setup the node
+			node->id = nbBias + nbInput + nbOutput;
+			node->layer = outputLayer;
+			node->index_T_in = (unsigned int) i;
+			node->index_T_out = (unsigned int) i;
+			node->setActivationFn (
+				outputsActivationFns [nbOutput]->clone (true)
+			);
+			node->innovId = 0;
+			node->setResetValue (resetValues [i]);
+
+			nbOutput ++;
+		}
+	}
+	// hidden
+	unsigned int nbHidden = 0;
+	for (const genomeStruct::hiddenNode_t& hidden_node : genome_struct.hiddenNodes) {
+		// get Node<T_in, T_out>
+		nodes.insert (std::make_pair (nbBias + nbInput + nbOutput + nbHidden, CreateNode::get<Types...> (hidden_node.index_T_in, hidden_node.index_T_out)));
+
+		std::unique_ptr<NodeBase>& node = nodes [nbBias + nbInput + nbOutput + nbHidden];
+
+		// setup the node
+		node->id = nbBias + nbInput + nbOutput + nbHidden;
+		node->layer = 1;
+		node->index_T_in = hidden_node.index_T_in;
+		node->index_T_out = hidden_node.index_T_out;
+		node->index_activation_fn = hidden_node.index_activation_fn;
+		node->setActivationFn (activationFns [node->index_T_in][node->index_T_out][node->index_activation_fn]->clone (false), hidden_node.params);
+		node->innovId = node_innov->getInnovId (
+			node->index_T_in,
+			node->index_T_out,
+			node->index_activation_fn,
+			RepetitionNodeCheck (node->index_T_in, node->index_T_out, node->index_activation_fn) - 1
+		);
+		node->setResetValue (resetValues [hidden_node.index_T_in]);
+
+		nbHidden ++;
+	}
+
+	// CONNECTIONS
+	unsigned int iConn = 0;
+	for (const genomeStruct::connection_t& conn : genome_struct.connections) {
+		if (CheckNewConnectionValidity (conn.inNodeId, conn.outNodeId, conn.inNodeRecu)) {	// we don't care of former connections as there is no disabled connection for now
+
+			const unsigned int innov_id = conn_innov->getInnovId (nodes [conn.inNodeId]->innovId, nodes [conn.outNodeId]->innovId, conn.inNodeRecu);
+			connections.insert (std::make_pair (iConn, Connection (iConn, innov_id, conn.inNodeId, conn.outNodeId, conn.inNodeRecu, conn.weight, true)));
+
+			// update layers if needed
+			if (conn.inNodeRecu == 0 && nodes [conn.outNodeId]->layer <= nodes [conn.inNodeId]->layer) {
+				nodes [conn.outNodeId]->layer = nodes [conn.inNodeId]->layer + 1;
+				UpdateLayers (conn.outNodeId);
+			}
+
+			iConn ++;
+		} else {
+			logger->error ("A connection cannot be created as specified in the genomeStruct_t structure. This connection is skipped.");
+		}
+	}
+}
+
+template <typename... Types>
 Genome<Types...>::Genome (const unsigned int id, unsigned int nbBias, unsigned int nbInput, unsigned int nbOutput, unsigned int N_types, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, const std::vector<ActivationFnBase*> inputsActivationFns, const std::vector<ActivationFnBase*> outputsActivationFns, double weightExtremumInit, spdlog::logger* logger) :
 	id (id),
 	nbBias (nbBias),
@@ -748,7 +980,7 @@ void Genome<Types...>::resetMemory () {
 	N_runNetwork = 0;
 	locked = false;
 	for (std::pair<const unsigned int, std::unique_ptr<NodeBase>>& node : nodes) {
-		node.second->reset (true, true);
+		node.second->reset (true, true, node.first >= nbBias);	// bias nodes are never resetted
 	}
 	network_is_optimized = false;	// node's buffer will have to be setup
 }
@@ -768,7 +1000,7 @@ bool Genome<Types...>::runNetwork () {
 
 	// reset input
 	for (NodeBase* node : optimize_nodes_reset) {
-		node->reset (false);
+		node->reset (false, false, true);
 	}
 
 	// recurent connections: we already know every input, so we don't care of layers
@@ -785,17 +1017,17 @@ bool Genome<Types...>::runNetwork () {
 		);
 	}
 
-	// process output of input/bias nodes as we already know their input
-	for (NodeBase* node : optimize_nodes_process [0]) {
-		if (!node->process ()) {
-			locked = true;
-			setFitness (0.0);
-			return false;
-		}
-	}
-
 	unsigned int lastLayer = nodes [nbBias + nbInput]->layer;
-	for (unsigned int ilayer = 0; ilayer <= lastLayer - 2; ilayer++) {
+	for (unsigned int ilayer = 0; ilayer < lastLayer; ilayer++) {
+		// process of the layer's nodes
+		for (NodeBase* node : optimize_nodes_process [ilayer]) {
+			if (!node->process ()) {
+				locked = true;
+				setFitness (0.0);
+				return false;
+			}
+		}
+
 		// non-recurrent connections: can depend on layers and so we processed them sequentially, layer per layer
 		for (optimize_network_ope& ope : optimize_operations_nonrecu [ilayer]) {
 			ope.node_addToInput->AddToInput (
@@ -803,28 +1035,9 @@ bool Genome<Types...>::runNetwork () {
 				ope.conn_weight
 			);
 		}
-
-		// process nodes's output
-		for (NodeBase* node : optimize_nodes_process [ilayer + 1]) {
-			if (!node->process ()) {
-				locked = true;
-				setFitness (0.0);
-				return false;
-			}
-		}
 	}
 
-	// we process the two last layer and then process the output layer 
-	for (unsigned int ilayer = lastLayer - 1; ilayer <= lastLayer; ilayer++) {
-		// non-recurrent connections
-		for (optimize_network_ope& ope : optimize_operations_nonrecu [ilayer]) {
-			ope.node_addToInput->AddToInput (
-				ope.node_getOutput->getOutput (0),
-				ope.conn_weight
-			);
-		}
-	}
-	// process nodes's output
+	// process outputs nodes
 	for (NodeBase* node : optimize_nodes_process.back ()) {
 		if (!node->process ()) {
 			locked = true;
@@ -876,7 +1089,7 @@ void Genome<Types...>::OptimizeNetwork () {
 		}
 	}
 
-	// recurrent connections: sort them by recurrency level from the lower to the highest
+	// recurrent connections: sort them by recurrency level from the lowest to the highest
 	for (const std::pair<const unsigned int, Connection>& conn : connections) {
 		if (
 			conn.second.enabled
@@ -893,7 +1106,7 @@ void Genome<Types...>::OptimizeNetwork () {
 
 	// nodes
 	for (unsigned int i = nbBias + nbInput; i < (unsigned int) nodes.size (); i++) {
-		if (nodes [i]->is_useful) {
+		if (nodes [i]->is_useful && nodes [i]->id >= nbBias) {	// bias nodes should not be resetted
 			optimize_nodes_reset.push_back (nodes [i].get ());
 		}
 	}

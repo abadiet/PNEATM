@@ -86,8 +86,9 @@ class NodeBase{
 		 * @brief Reset the node to its initial state.
 		 * @param resetMemory `true` to reset memory too, `false` else. (default is `true`)
 		 * @param resetBuffer `true` to reset the whole output's buffer too, `false` else. (default is `false`)
+		 * @param resetInput `true` to reset the input, `false` else. (default is `true`)
 		 */
-		virtual void reset (bool resetMemory = true, bool resetBuffer = false) = 0;
+		virtual void reset (bool resetMemory = true, bool resetBuffer = false, bool resetInput = true) = 0;
 
 		/**
 		 * @brief Create a clone of the node.
