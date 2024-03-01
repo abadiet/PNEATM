@@ -49,12 +49,13 @@ class Population {
 		 * @param weightExtremumInit The initial weight extremum.
 		 * @param maxRecuInit The maximum recurrence value.
 		 * @param logger A pointer to the logger for logging.
-		 * @param dstType The distance function.
+		 * @param specific_genomes Pre-fixed genomes taht should be injected in the population. (default is an empty vector)
+		 * @param dstType The distance function. (default is CONVENTIONAL)
 		 * @param speciationThreshInit The initial speciation threshold. (default is 20.0)
 		 * @param threshGensSinceImproved The maximum number of generations without any improvement. (default is 15)
 		 * @param stats_filename The filename for statistics. (default is an empty string, which doesn't create any file)
 		 */
-		Population (unsigned int popSize, const std::vector<size_t>& bias_sch, const std::vector<size_t>& inputs_sch, const std::vector<size_t>& outputs_sch, const std::vector<std::vector<size_t>>& hiddens_sch_init, const std::vector<void*>& bias_values, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, const std::vector<ActivationFnBase*> inputsActivationFns, const std::vector<ActivationFnBase*> outputsActivationFns, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger, distanceFn dstType = CONVENTIONAL, double speciationThreshInit = 20.0, unsigned int threshGensSinceImproved = 15, const std::string& stats_filename = "");
+		Population (unsigned int popSize, const std::vector<size_t>& bias_sch, const std::vector<size_t>& inputs_sch, const std::vector<size_t>& outputs_sch, const std::vector<std::vector<size_t>>& hiddens_sch_init, const std::vector<void*>& bias_values, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, const std::vector<ActivationFnBase*> inputsActivationFns, const std::vector<ActivationFnBase*> outputsActivationFns, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger, const std::vector<genomeStruct_t>& specific_genomes = {}, distanceFn dstType = CONVENTIONAL, double speciationThreshInit = 20.0, unsigned int threshGensSinceImproved = 15, const std::string& stats_filename = "");
 
 		/**
 		 * @brief Constructor for the Population class from a file.
@@ -416,7 +417,7 @@ class Population {
 using namespace pneatm;
 
 template <typename... Types>
-Population<Types...>::Population(unsigned int popSize, const std::vector<size_t>& bias_sch, const std::vector<size_t>& inputs_sch, const std::vector<size_t>& outputs_sch, const std::vector<std::vector<size_t>>& hiddens_sch_init, const std::vector<void*>& bias_values, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, const std::vector<ActivationFnBase*> inputsActivationFns, const std::vector<ActivationFnBase*> outputsActivationFns, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger, distanceFn dstType, double speciationThreshInit, unsigned int threshGensSinceImproved, const std::string& stats_filename) :
+Population<Types...>::Population (unsigned int popSize, const std::vector<size_t>& bias_sch, const std::vector<size_t>& inputs_sch, const std::vector<size_t>& outputs_sch, const std::vector<std::vector<size_t>>& hiddens_sch_init, const std::vector<void*>& bias_values, const std::vector<void*>& resetValues, const std::vector<std::vector<std::vector<ActivationFnBase*>>>& activationFns, const std::vector<ActivationFnBase*> inputsActivationFns, const std::vector<ActivationFnBase*> outputsActivationFns, unsigned int N_ConnInit, double probRecuInit, double weightExtremumInit, unsigned int maxRecuInit, spdlog::logger* logger, const std::vector<genomeStruct_t>& specific_genomes, distanceFn dstType, double speciationThreshInit, unsigned int threshGensSinceImproved, const std::string& stats_filename) :
 	popSize (popSize),
 	speciationThresh (speciationThreshInit),
 	threshGensSinceImproved (threshGensSinceImproved),
@@ -450,7 +451,11 @@ Population<Types...>::Population(unsigned int popSize, const std::vector<size_t>
 	avgFitnessAdjusted = 0.0;
 
 	genomes.reserve (popSize);
-	for (unsigned int i = 0; i < popSize; i++) {
+	unsigned int genome_id = 0;
+	for (const genomeStruct_t& genome_struct : specific_genomes) {
+		genomes.insert (std::make_pair (genome_id, std::make_unique<Genome<Types...>> (genome_id, genome_struct, bias_sch, inputs_sch, outputs_sch, bias_values, resetValues, activationFns, inputsActivationFns, outputsActivationFns, &conn_innov, &node_innov, weightExtremumInit, logger)));
+	}
+	for (unsigned int i = genome_id; i < popSize; i++) {
 		genomes.insert (std::make_pair (i, std::make_unique<Genome<Types...>> (i, bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_values, resetValues, activationFns, inputsActivationFns, outputsActivationFns, &conn_innov, &node_innov, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger)));
 	}
 }
