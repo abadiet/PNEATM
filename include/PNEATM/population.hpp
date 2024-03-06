@@ -1094,6 +1094,14 @@ void Population<Types...>::crossover (bool elitism, double crossover_rate) {
 			species_alive.push_back(spe.id);
 		}
 	}
+	if (species_alive.size () <= 0) {
+		for (Species<Types...>& spe : species) {
+			logger->warn ("all the species are dead. To be able to make crossover, they are now alive like they never disappeared...");
+			spe.isDead = false;
+			spe.allowedOffspring = 0;
+			species_alive.push_back(spe.id);
+		}
+	}
 	for (int k = 0; k < (int) popSize - N_offsprings - (int) elitism; k++) {
 		// some offsprings are missing, let's help the weakest species
 		std::sort(species_alive.begin(), species_alive.end(), [&](const unsigned int& a, const unsigned int& b) {return species [a].allowedOffspring < species [b].allowedOffspring;});
@@ -1158,7 +1166,7 @@ void Population<Types...>::crossover (bool elitism, double crossover_rate) {
 	genomes = std::move (newGenomes);
 
 	// reset species members
-	for (const Species<Types...>& spe : species) {
+	for (Species<Types...>& spe : species) {
 		spe.members.clear ();
 		spe.isDead = true;
 	}
@@ -1236,6 +1244,14 @@ void Population<Types...>::buildNextGen (const mutationParams_t& mutationParams,
 	for (const Species<Types...>& spe : species) {
 		if (!spe.isDead) {
 			N_offsprings += spe.allowedOffspring;
+			species_alive.push_back(spe.id);
+		}
+	}
+	if (species_alive.size () <= 0) {
+		for (Species<Types...>& spe : species) {
+			logger->warn ("all the species are dead. To be able to make crossover, they are now alive like they never disappeared...");
+			spe.isDead = false;
+			spe.allowedOffspring = 0;
 			species_alive.push_back(spe.id);
 		}
 	}
@@ -1344,6 +1360,14 @@ void Population<Types...>::buildNextGen (const std::function<mutationParams_t (d
 	for (const Species<Types...>& spe : species) {
 		if (!spe.isDead) {
 			N_offsprings += spe.allowedOffspring;
+			species_alive.push_back(spe.id);
+		}
+	}
+	if (species_alive.size () <= 0) {
+		for (Species<Types...>& spe : species) {
+			logger->warn ("all the species are dead. To be able to make crossover, they are now alive like they never disappeared...");
+			spe.isDead = false;
+			spe.allowedOffspring = 0;
 			species_alive.push_back(spe.id);
 		}
 	}
