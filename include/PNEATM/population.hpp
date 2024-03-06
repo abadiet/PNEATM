@@ -1080,7 +1080,7 @@ void Population<Types...>::crossover (bool elitism, double crossover_rate) {
 	unsigned int genomeId = 0;
 
 	if (elitism) {	// elitism mode on = we conserve during generations the more fit genome
-		newGenomes.insert (std::make_pair (genomeId, genomes [fittergenome_id]->clone ()));
+			newGenomes.insert (std::make_pair (genomeId, genomes [fittergenome_id]->clone ()));
 		newGenomes [genomeId]->id = genomeId;
 		genomeId++;
 	}
@@ -1323,7 +1323,7 @@ void Population<Types...>::buildNextGen (const mutationParams_t& mutationParams,
 	genomes = std::move (newGenomes);
 
 	// reset species members
-	for (const Species<Types...>& spe : species) {
+	for (Species<Types...>& spe : species) {
 		spe.members.clear ();
 		spe.isDead = true;
 	}
