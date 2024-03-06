@@ -174,22 +174,28 @@ class Population {
 		void loadInput (void* input, unsigned int input_id, unsigned int genome_id);
 
 		/**
-		 * @brief Reset the memory of the entire population.
+		 * @brief Reset the saved outputs, buffers and nodes's inputs of the whole population.
+		 * @param resetMemory `true` to reset memory too, `false` else. (default is `true`)
+		 * @param resetBuffer `true` to reset the whole output's buffer too, `false` else. (default is `true`)
+		 * @param resetInput `true` to reset the input, `false` else. (default is `true`)
 		 */
-		void resetMemory ();
+		void resetMemory (bool resetMemory = true, bool resetBuffer = true, bool resetInput = true);
 
 		/**
-		 * @brief Reset the memory of a specific genome.
+		 * @brief Reset the saved outputs, buffers and nodes's inputs of a specific genome.
 		 * @param genome_id The ID of the genome for which to reset the memory.
+		 * @param resetMemory `true` to reset memory too, `false` else. (default is `true`)
+		 * @param resetBuffer `true` to reset the whole output's buffer too, `false` else. (default is `true`)
+		 * @param resetInput `true` to reset the input, `false` else. (default is `true`)
 		 */
-		void resetMemory (unsigned int genome_id);
+		void resetMemory (unsigned int genome_id, bool resetMemory = true, bool resetBuffer = true, bool resetInput = true);
 
 		/**
 		 * @brief Run multiple times the networks over the inputs without taking care of the outputs. The inputs are shared among the genomes. 
 		 * @param inputs The inputs.
 		 * @param outputs Pointer to the outputs. (default is nullptr which doesn't track any output)
 		 * @param maxThreads Maximum number of threads. (default is 0 which default to the number of cores)
-		 */
+		 		 */
 		void run (const std::vector<std::vector<void*>>& inputs, std::vector<std::vector<void*>>* outputs = nullptr, unsigned int maxThreads = 0);
 
 		/**
@@ -197,7 +203,7 @@ class Population {
 		 * @param inputs The inputs.
 		 * @param outputs Pointer to the outputs. (default is nullptr which doesn't track any output)
 		 * @param maxThreads Maximum number of threads. (default is 0 which default to the number of cores)
-		 */
+		 		 */
 		void run (const std::vector<std::vector<std::vector<void*>>>& inputs, std::vector<std::vector<void*>>* outputs = nullptr, unsigned int maxThreads = 0);
 
 		/**
@@ -205,7 +211,7 @@ class Population {
 		 * @param N_runs The number of networks's runs e.g. the number of loop.
 		 * @param outputs Pointer to the outputs. (default is nullptr which doesn't track any output)
 		 * @param maxThreads Maximum number of threads. (default is 0 which default to the number of cores)
-		 */
+		 		 */
 		void run (const unsigned int N_runs, std::vector<std::vector<void*>>* outputs = nullptr, unsigned int maxThreads = 0);
 
 		/**
@@ -574,7 +580,7 @@ void Population<Types...>::run (const std::vector<std::vector<void*>>& inputs, s
 
 		// the task
 		std::function<std::vector<void*> (Genome<Types...>*, std::vector<std::vector<void*>>&)> func = [&] (Genome<Types...>* genome, std::vector<std::vector<void*>>& inputs_gen) -> std::vector<void*> {
-			for (const std::vector<void*>& inputs_cur : inputs_gen) {
+						for (const std::vector<void*>& inputs_cur : inputs_gen) {
 				genome->loadInputs (inputs_cur);
 				if (!genome->runNetwork ()) return {};
 				genome->saveOutputs ();
@@ -643,7 +649,7 @@ void Population<Types...>::run (const std::vector<std::vector<std::vector<void*>
 
 		// the task
 		std::function<std::vector<void*> (Genome<Types...>*, std::vector<std::vector<void*>>&)> func = [&] (Genome<Types...>* genome, std::vector<std::vector<void*>>& inputs_gen) -> std::vector<void*> {
-			for (const std::vector<void*>& inputs_cur : inputs_gen) {
+						for (const std::vector<void*>& inputs_cur : inputs_gen) {
 				genome->loadInputs (inputs_cur);
 				if (!genome->runNetwork ()) return {};
 				genome->saveOutputs ();
@@ -772,15 +778,15 @@ void Population<Types...>::run (const unsigned int N_runs, std::vector<std::vect
 }
 
 template <typename... Types>
-void Population<Types...>::resetMemory () {
+void Population<Types...>::resetMemory (bool resetMemory, bool resetBuffer, bool resetInput) {
 	for (const std::pair<const unsigned int, std::unique_ptr<Genome<Types...>>>& genome : genomes) {
-		genome.second->resetMemory ();
+		genome.second->resetMemory (resetMemory, resetBuffer, resetInput);
 	}
 }
 
 template <typename... Types>
-void Population<Types...>::resetMemory (unsigned int genome_id) {
-	genomes [genome_id]->resetMemory ();
+void Population<Types...>::resetMemory (unsigned int genome_id, bool resetMemory, bool resetBuffer, bool resetInput) {
+	genomes [genome_id]->resetMemory (resetMemory, resetBuffer, resetInput);
 }
 
 template <typename... Types>

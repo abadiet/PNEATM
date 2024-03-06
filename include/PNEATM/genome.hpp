@@ -403,9 +403,12 @@ class Genome {
 		void loadInput (void* input, int input_id);
 
 		/**
-		 * @brief Reset the saved outputs and buffer.
+		 * @brief Reset the saved outputs, buffers and nodes's inputs.
+		 * @param resetMemory `true` to reset memory too, `false` else. (default is `true`)
+		 * @param resetBuffer `true` to reset the whole output's buffer too, `false` else. (default is `true`)
+		 * @param resetInput `true` to reset the input, `false` else. (default is `true`)
 		 */
-		void resetMemory ();
+		void resetMemory (bool resetMemory = true, bool resetBuffer = true, bool resetInput = true);
 
 		/**
 		 * @brief Run the network.
@@ -976,11 +979,11 @@ void Genome<Types...>::loadInput (void* input, int input_id) {
 }
 
 template <typename... Types>
-void Genome<Types...>::resetMemory () {
+void Genome<Types...>::resetMemory (bool resetMemory, bool resetBuffer, bool resetInput) {
 	N_runNetwork = 0;
 	locked = false;
 	for (std::pair<const unsigned int, std::unique_ptr<NodeBase>>& node : nodes) {
-		node.second->reset (true, true, node.first >= nbBias);	// bias nodes are never resetted
+		node.second->reset (resetMemory, resetBuffer, resetInput && node.first >= nbBias);	// bias nodes are never resetted
 	}
 	network_is_optimized = false;	// node's buffer will have to be setup
 }
@@ -1226,7 +1229,7 @@ std::vector<void*> Genome<Types...>::getSavedOutputs () {
 	for (unsigned int i = 0; i < nbOutput; i++) {
 		outputs.push_back (nodes [nbBias + nbInput + i]->getSavedOutputs ());
 	}
-	return outputs;
+return outputs;
 }
 
 template <typename... Types>
