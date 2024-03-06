@@ -66,9 +66,9 @@ class NodeBase{
 
 		/**
 		 * @brief Get the saved outputs.
-		 * @return A pointer to the saved outputs.
+		 * @return Pointers to the saved outputs.
 		 */
-		virtual void* getSavedOutputs () = 0;
+		virtual std::vector<void*> getSavedOutputs () = 0;
 
 		/**
 		 * @brief Process the node to compute its output value.

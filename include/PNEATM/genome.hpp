@@ -458,9 +458,10 @@ class Genome {
 
 		/**
 		 * @brief Get the outputs.
-		 * @return A vector containing void pointer to a vector of outputs.
+		 * @param flip If `true`, the outputs looks like outputs[output_id][time], else it looks like outputs[time][output_id] (more computation). (default is `false`)
+		 * @return The outputs.
 		 */
-		std::vector<void*> getSavedOutputs ();
+		std::vector<std::vector<void*>> getSavedOutputs (bool flip = false);
 
 		/**
 		 * @brief Perform mutation operations.
@@ -1219,17 +1220,34 @@ void* Genome<Types...>::getOutput (int output_id) {
 }
 
 template <typename... Types>
-std::vector<void*> Genome<Types...>::getSavedOutputs () {
+std::vector<std::vector<void*>> Genome<Types...>::getSavedOutputs (bool flip) {
 	if (locked) {
 		logger->warn ("The genome is locked, therefore you cannot get any output.");
 		return {};
 	}
-	std::vector<void*> outputs;
-	outputs.reserve (nbOutput);
+	std::vector<std::vector<void*>> outputs_flipped;
+	outputs_flipped.reserve (nbOutput);
 	for (unsigned int i = 0; i < nbOutput; i++) {
-		outputs.push_back (nodes [nbBias + nbInput + i]->getSavedOutputs ());
+		outputs_flipped.push_back (nodes [nbBias + nbInput + i]->getSavedOutputs ());
 	}
-return outputs;
+
+	if (flip) return outputs_flipped;
+
+	// find the maximum number of occurences of an output
+	size_t N_time = 0;
+	for (const std::vector<void*>& output_flipped : outputs_flipped) {
+		if (output_flipped.size () > N_time) N_time = output_flipped.size ();
+	}
+
+	// flip the matrix
+	std::vector<std::vector<void*>> outputs_normal (N_time, std::vector<void*> (nbOutput));
+	for (unsigned int output_id = 0; output_id < nbOutput; output_id++) {
+		for (size_t time = 0; time < outputs_flipped [output_id].size (); time++) {	// missing values are not modified, e.g. are set to 0x0
+			outputs_normal [time][output_id] = outputs_flipped [output_id][time];
+		}
+	}
+
+	return outputs_normal;
 }
 
 template <typename... Types>

@@ -85,9 +85,9 @@ class Node : public NodeBase {
 
 		/**
 		 * @brief Get the saved outputs.
-		 * @return A pointer to the saved outputs.
+		 * @return Pointers to the saved outputs.
 		 */
-		void* getSavedOutputs () override;
+		std::vector<void*> getSavedOutputs () override;
 
 		/**
 		 * @brief Process the node to compute its output value.
@@ -192,8 +192,13 @@ void Node<T_in, T_out>::saveOutput (unsigned int depth) {
 }
 
 template <typename T_in, typename T_out>
-void* Node<T_in, T_out>::getSavedOutputs () {
-	return static_cast<void*> (&outputs_saved);
+std::vector<void*> Node<T_in, T_out>::getSavedOutputs () {
+	std::vector<void*> outputs_saved_void;
+	outputs_saved_void.reserve (outputs_saved.size ());
+	for (T_out& output_saved : outputs_saved) {
+		outputs_saved_void.push_back (static_cast<void*> (&output_saved));
+	}
+	return outputs_saved_void;
 }
 
 template <typename T_in, typename T_out>
