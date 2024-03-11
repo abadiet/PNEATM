@@ -220,10 +220,7 @@ pneatm::Population<myInt, myFloat> SetupPopulation (unsigned int popSize, spdlog
     double probRecuInit = 0.0;
     double weightExtremumInit = 20.0;
     unsigned int maxRecuInit = 0;
-    double speciationThreshInit = 20.0;
-    distanceFn dstType = CONVENTIONAL;
-    unsigned int threshGensSinceImproved = 15;
-    return pneatm::Population<myInt, myFloat> (popSize, bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, inputsActivationFns, outputsActivationFns, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger, dstType, speciationThreshInit, threshGensSinceImproved, "stats.csv");
+    return pneatm::Population<myInt, myFloat> (popSize, bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, inputsActivationFns, outputsActivationFns, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger);
 }
 
 pneatm::Population<myInt, myFloat> LoadPopulation (const std::string& filename, spdlog::logger* logger, const std::string& stats_filename) {
