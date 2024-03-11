@@ -850,11 +850,14 @@ void Population<Types...>::speciate (unsigned int target, unsigned int maxIterat
 	unsigned int nbSpeciesAlive = 0;
 	unsigned int ite = 0;
 
+	std::vector<std::vector<double>> distances (popSize, std::vector<double> (species.size (), -1.0));
+
 	while (ite < maxIterationsReachTarget && nbSpeciesAlive != target) {
 
 		// init tmpspecies
 		tmpspecies.clear ();
 		tmpspecies = species;
+		const unsigned int species_len = (unsigned int) species.size ();
 		nbSpeciesAlive = 0;
 
 		// reset tmpspecies
@@ -873,7 +876,17 @@ void Population<Types...>::speciate (unsigned int target, unsigned int maxIterat
 				// we search for the closest species
 				double dst;
 				for (Species<Types...>& tmpspe : tmpspecies) {
-					if (!tmpspe.isDead && (dst = tmpspe.distanceWith (genome.second, a, b, c)) <= dstBest) {
+					if (tmpspe.id < species_len && distances [genome.first][tmpspe.id] >= 0) {
+						//reuse of previously saved distance
+						dst = distances [genome.first][tmpspe.id];
+					} else {
+						dst = tmpspe.distanceWith (genome.second, a, b, c);
+						if (tmpspe.id < species_len) {
+							// this species has not been recently created and might be reused in a near future
+							distances [genome.first][tmpspe.id] = dst;
+						}
+					}
+					if (!tmpspe.isDead && dst <= dstBest) {
 						// we found a closer one
 						itmpspeciesBest = tmpspe.id;
 						dstBest = dst;
