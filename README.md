@@ -1,6 +1,8 @@
 # Polymorphic NeuroEvolution of Augmenting Topologies with Memory (PNEATM)
 Pure C++ library for evolving neural networks with a modified NEAT that allows any kind of data and that is able to access any previous data.
 
+![Lines of Code](https://tokei.rs/b1/github/titofra/PNEATM?category=code)](https://github.com/XAMPPRocky/tokei)
+
 <p align="center">
 	<img src="https://github.com/titofra/PNEATM/blob/main/resources/network.png">
 </p>
