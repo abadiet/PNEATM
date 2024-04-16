@@ -31,7 +31,7 @@ This code depends on both SFML (for graphics) and spdlog (for logs) libraries:
 ⚠️ Please note that these dependencies introduce impurity to PNEATM. However, they are not necessary, so you can easily remove them to have a fully pure C++ library.
 
 ## Examples & Documentations
-Documentation is available at [https://titofra.github.io/PNEATM/](https://titofra.github.io/PNEATM/). Moreover, a Snake AI powered by PNEATM is available on [/examples/snake/](https://github.com/titofra/PNEATM/tree/main/examples/snake).
+Documentation is available at [https://titofra.github.io/PNEATM/](https://titofra.github.io/PNEATM/). Moreover, a Snake AI powered by PNEATM is available on [/examples/snake/](https://github.com/titofra/PNEATM/tree/main/examples/snake) as POC.
 
 <p align="center">
 	<img src="https://github.com/titofra/PNEATM/blob/main/examples/snake/resources/snakeGameplay.gif">
