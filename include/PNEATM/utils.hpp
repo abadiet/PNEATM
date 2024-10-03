@@ -8,6 +8,7 @@
 #include <unordered_map>
 
 #define UNUSED(expr) do { (void) (expr); } while (0)
+#define UNUSED_PACK(...) do { (void) (sizeof...(__VA_ARGS__)); } while (0)
 
 namespace pneatm {
 
