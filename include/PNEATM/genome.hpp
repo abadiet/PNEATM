@@ -11,13 +11,17 @@
 #include <vector>
 #include <unordered_map>
 #include <set>
-#include <SFML/Graphics.hpp>
 #include <cmath>
 #include <iostream>
 #include <cstring>
-#include <spdlog/spdlog.h>
 #include <memory>
 #include <fstream>
+#ifndef PURE_CPP
+	#include <SFML/Graphics.hpp>
+	#include <spdlog/spdlog.h>
+#else
+	#include <PNEATM/fake_spdlog.hpp>
+#endif
 
 
 /* HEADER */
@@ -1725,7 +1729,8 @@ void Genome<Types...>::print (const std::string& prefix) {
 
 template <typename... Types>
 void Genome<Types...>::draw (const std::string& font_path, unsigned int windowWidth, unsigned int windowHeight, float dotsRadius) {
-	sf::RenderWindow window (sf::VideoMode (windowWidth, windowHeight), "PNEATM - https://github.com/titofra");
+#ifndef PURE_CPP
+	sf::RenderWindow window (sf::VideoMode (windowWidth, windowHeight), "PNEATM - https://github.com/abadiet");
 
     std::vector<sf::CircleShape> dots;
 	std::vector<sf::Text> dotsText;
@@ -1881,6 +1886,14 @@ void Genome<Types...>::draw (const std::string& font_path, unsigned int windowWi
 		window.draw (mainText);
         window.display ();
     }
+
+#else
+	std::cout << "Draw not available in pure C++ mode." << std::endl;
+	UNUSED(font_path);
+	UNUSED(windowWidth);
+	UNUSED(windowHeight);
+	UNUSED(dotsRadius);
+#endif
 }
 
 template <typename... Types>

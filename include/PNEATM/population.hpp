@@ -16,10 +16,14 @@
 #include <limits>
 #include <vector>
 #include <unordered_map>
-#include <spdlog/spdlog.h>
 #include <memory>
 #include <functional>
 #include <thread>
+#ifndef PURE_CPP
+	#include <spdlog/spdlog.h>
+#else
+	#include <PNEATM/fake_spdlog.hpp>
+#endif
 
 /* HEADER */
 
