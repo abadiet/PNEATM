@@ -8,8 +8,6 @@
 #include <memory>
 #include <fstream>
 
-#define UNUSED(expr) do { (void) (expr); } while (0)
-
 
 /* HEADER */
 
