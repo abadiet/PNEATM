@@ -28,9 +28,9 @@ This code depends on both SFML (for graphics) and spdlog (for logs) libraries:
 - [SFML install](https://www.sfml-dev.org/download.php)
 - [spdlog install](https://github.com/gabime/spdlog)
 
-⚠️ Please note that these dependencies introduce impurity to PNEATM.
-
-To fully have a pure C++ library, use `PURE_CPP` option flag. 
+> [!WARNING]
+> Please note that these dependencies introduce impurity to PNEATM.
+> **To fully have a pure C++ library, use `PURE_CPP` option flag**.
 
 ## Examples & Documentations
 Documentation is available at [https://titofra.github.io/PNEATM/](https://titofra.github.io/PNEATM/). Moreover, a Snake AI powered by PNEATM is available on [/examples/snake/](https://github.com/titofra/PNEATM/tree/main/examples/snake) as POC.
