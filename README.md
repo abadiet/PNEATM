@@ -1,10 +1,10 @@
 # Polymorphic NeuroEvolution of Augmenting Topologies with Memory (PNEATM)
 Pure C++ library for evolving neural networks with a modified NEAT that allows any kind of data and that is able to access any previous data.
 
-[![Lines of Code](https://tokei.rs/b1/github/titofra/PNEATM?category=code)](https://github.com/XAMPPRocky/tokei)
+[![Lines of Code](https://tokei.rs/b1/github/abadiet/PNEATM?category=code)](https://github.com/XAMPPRocky/tokei)
 
 <p align="center">
-	<img src="https://github.com/titofra/PNEATM/blob/main/resources/network.png">
+	<img src="https://github.com/abadiet/PNEATM/blob/main/resources/network.png">
 </p>
 
 ## Goals
@@ -33,17 +33,17 @@ This code depends on both SFML (for graphics) and spdlog (for logs) libraries:
 > **To fully have a pure C++ library, use `PURE_CPP` option flag**.
 
 ## Examples & Documentations
-Documentation is available at [https://titofra.github.io/PNEATM/](https://titofra.github.io/PNEATM/). Moreover, a Snake AI powered by PNEATM is available on [/examples/snake/](https://github.com/titofra/PNEATM/tree/main/examples/snake) as POC.
+Documentation is available at [https://abadiet.github.io/PNEATM/](https://abadiet.github.io/PNEATM/). Moreover, a Snake AI powered by PNEATM is available on [/examples/snake/](https://github.com/abadiet/PNEATM/tree/main/examples/snake) as POC.
 
 <p align="center">
-	<img src="https://github.com/titofra/PNEATM/blob/main/examples/snake/resources/snakeGameplay.gif">
+	<img src="https://github.com/abadiet/PNEATM/blob/main/examples/snake/resources/snakeGameplay.gif">
 </p>
 
 ## Warning
 
 This project is currently under development and is provided as-is, without any guarantees. There are several issues that still persist, such as slow convergence, too few optimizations, and the potential for an over-representation problem of a species.
 <p align="center">
-	<img src="https://github.com/titofra/PNEATM/blob/main/examples/snake/resources/over-representation_problem.png" alt="over-representation problem of the red species">
+	<img src="https://github.com/abadiet/PNEATM/blob/main/examples/snake/resources/over-representation_problem.png" alt="over-representation problem of the red species">
 </p>
 <p align="center">
 	<em> over-representation problem of the red species </em>
