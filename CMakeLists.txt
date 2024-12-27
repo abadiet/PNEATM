@@ -21,12 +21,14 @@ target_include_directories(pneatm PUBLIC include)
 if (PURE_CPP)
 	target_compile_options(${PROJECT_NAME} PRIVATE
 		$<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>
-		$<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-DPURE_CPP -O3 -Wall -Wextra -Werror -Wfloat-equal -Wundef -Wcast-align -Wwrite-strings -Wunreachable-code -Wconversion -Wno-error=maybe-uninitialized -Wpedantic>
+		$<$<CXX_COMPILER_ID:AppleClang>:-std=c++11>
+		$<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-DPURE_CPP -O3 -Wall -Wextra -Werror -Wfloat-equal -Wundef -Wcast-align -Wwrite-strings -Wunreachable-code -Wconversion -Wpedantic>
 	)
 else()
 	target_compile_options(${PROJECT_NAME} PRIVATE
 		$<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>
-		$<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-O3 -Wall -Wextra -Werror -Wfloat-equal -Wundef -Wcast-align -Wwrite-strings -Wunreachable-code -Wconversion -Wno-error=maybe-uninitialized -Wpedantic>
+		$<$<CXX_COMPILER_ID:AppleClang>:-std=c++11>
+		$<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-O3 -Wall -Wextra -Werror -Wfloat-equal -Wundef -Wcast-align -Wwrite-strings -Wunreachable-code -Wconversion -Wpedantic>
 	)
 endif()
 
