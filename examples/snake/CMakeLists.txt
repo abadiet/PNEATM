@@ -1,24 +1,30 @@
 cmake_minimum_required(VERSION 3.5)
 
-# Project
-project(SnakePNEATM)
+if (PURE_CPP)
+	message(SEND_ERROR "PURE_CPP is not supported for the snake example")
+else()
 
-# Sources
-file(GLOB_RECURSE SOURCES src/*.cpp)
-file(GLOB_RECURSE HEADERS include/*.hpp)
+	# Project
+	project(SnakePNEATM)
 
-# Executable
-add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
+	# Sources
+	file(GLOB_RECURSE SOURCES src/*.cpp)
+	file(GLOB_RECURSE HEADERS include/*.hpp)
 
-# Includes
-target_include_directories(${PROJECT_NAME} PRIVATE include)
+	# Executable
+	add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 
-# Flags
-target_compile_options(${PROJECT_NAME} PRIVATE
-	$<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>
+	# Includes
+	target_include_directories(${PROJECT_NAME} PRIVATE include)
+
+	# Flags
+	target_compile_options(${PROJECT_NAME} PRIVATE
+		$<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>
 		$<$<CXX_COMPILER_ID:AppleClang>:-std=c++11>
 		$<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-O3 -Wall -Wextra -Werror -Wfloat-equal -Wundef -Wcast-align -Wwrite-strings -Wunreachable-code -Wconversion -Wpedantic>
-)
+	)
 
-# Link Libraries
-target_link_libraries(${PROJECT_NAME} PRIVATE pneatm)
+	# Link Libraries
+	target_link_libraries(${PROJECT_NAME} PRIVATE pneatm)
+
+endif()

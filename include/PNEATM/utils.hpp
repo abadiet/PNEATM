@@ -63,7 +63,7 @@ inline double Random_Double (double a, double b, bool a_included = true, bool b_
  * @return A random unsigned integer within the specified range [a, b].
  */
 inline unsigned int Random_UInt (unsigned int a, unsigned int b) {
-    return rand () % (b - a + 1) + a;
+    return (unsigned int) rand () % (b - a + 1) + a;
 }
 
 /**
