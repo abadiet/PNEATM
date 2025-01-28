@@ -939,7 +939,7 @@ void Genome<Types...>::setFitness (double value) {
 	} else {
 		logger->warn ("The genome is locked, therefore you cannot set its fitness.");
 	}
-};
+}
 
 template <typename... Types>
 template <typename T_in>

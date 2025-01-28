@@ -140,7 +140,7 @@ std::function<void (activationFnParams_t*, double)> mutationFn = [] (activationF
 
 /* SETUP MAIN FUNCTIONS */
 
-pneatm::Population<myInt, myFloat> SetupPopulation (unsigned int popSize, spdlog::logger* logger) {
+pneatm::Population<myInt, myFloat>* SetupPopulation (unsigned int popSize, spdlog::logger* logger) {
     // nodes scheme setup
     std::vector<size_t> bias_sch = {1, 1};
     std::vector<size_t> inputs_sch = {14, 1};
@@ -220,10 +220,10 @@ pneatm::Population<myInt, myFloat> SetupPopulation (unsigned int popSize, spdlog
     double probRecuInit = 0.0;
     double weightExtremumInit = 20.0;
     unsigned int maxRecuInit = 0;
-    return pneatm::Population<myInt, myFloat> (popSize, bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, inputsActivationFns, outputsActivationFns, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger);
+    return new pneatm::Population<myInt, myFloat> (popSize, bias_sch, inputs_sch, outputs_sch, hiddens_sch_init, bias_init, resetValues, activationFns, inputsActivationFns, outputsActivationFns, N_ConnInit, probRecuInit, weightExtremumInit, maxRecuInit, logger);
 }
 
-pneatm::Population<myInt, myFloat> LoadPopulation (const std::string& filename, spdlog::logger* logger, const std::string& stats_filename) {
+pneatm::Population<myInt, myFloat>* LoadPopulation (const std::string& filename, spdlog::logger* logger, const std::string& stats_filename) {
     // bias values
     std::vector<void*> bias_init;
     myFloat* unitValueFLOAT = new myFloat (1.0f);
@@ -293,7 +293,7 @@ pneatm::Population<myInt, myFloat> LoadPopulation (const std::string& filename, 
     activationFns [0][1][0]->setMutationFunction (mutationFn);
     activationFns [1][0][0]->setMutationFunction (mutationFn);
 
-    return pneatm::Population<myInt, myFloat> (filename, bias_init, resetValues, activationFns, inputsActivationFns, outputsActivationFns, logger, stats_filename);
+    return new pneatm::Population<myInt, myFloat> (filename, bias_init, resetValues, activationFns, inputsActivationFns, outputsActivationFns, logger, stats_filename);
 }
 
 std::function<pneatm::mutationParams_t (double)> SetupMutationParametersMaps () {

@@ -11,8 +11,8 @@ int main () {
 
     // init population
     unsigned int popSize = 100;
-    pneatm::Population<myInt, myFloat> pop = SetupPopulation (popSize, logger.get ());
-    //pneatm::Population<myInt, myFloat> pop = LoadPopulation ("snakePneatm_save", logger.get (), "stats_new.csv");
+    pneatm::Population<myInt, myFloat>* pop = SetupPopulation (popSize, logger.get ());
+    //pneatm::Population<myInt, myFloat>* pop = LoadPopulation ("snakePneatm_save", logger.get (), "stats_new.csv");
 
     // init snake
     Snake snake (8);
@@ -23,8 +23,8 @@ int main () {
     unsigned int maxIterationThresh = 500;
     int nbGame = 7;
     double bestFitness = 0.0;
-    while (bestFitness < 2500.0 && pop.getGeneration () < 300) { // while goal is not reach
-        std::cout << "generation " << pop.getGeneration () << std::endl;
+    while (bestFitness < 2500.0 && pop->getGeneration () < 300) { // while goal is not reach
+        std::cout << "generation " << pop->getGeneration () << std::endl;
 
         for (unsigned int genomeId = 0; genomeId < popSize; genomeId ++) {
 
@@ -40,16 +40,16 @@ int main () {
 
                     // load inputs in the genome's network
                     for (unsigned int i = 0; i < 14; i++) {
-                        pop.template loadInput<myInt> (AI_Inputs [i], i, genomeId);
+                        pop->template loadInput<myInt> (AI_Inputs [i], i, genomeId);
                     }
                     myFloat score = snake.getScore ();
-                    pop.template loadInput<myFloat> (score, 14, genomeId);
+                    pop->template loadInput<myFloat> (score, 14, genomeId);
 
                     // run the network
-                    pop.runNetwork (genomeId);
+                    pop->runNetwork (genomeId);
 
                     // get output, the movement order to give to the snake
-                    myFloat Snake_Inputs = pop.template getOutput<myFloat> (0, genomeId);
+                    myFloat Snake_Inputs = pop->template getOutput<myFloat> (0, genomeId);
 
                     // move the snake
                     isFinished = snake.run (Snake_Inputs);
@@ -59,27 +59,27 @@ int main () {
 
                 score += snake.getScore ();
 
-                pop.resetMemory (genomeId);
+                pop->resetMemory (genomeId);
             }
 
             // game has ended, we set the score to the genome's fitness
-            pop.setFitness (score / (float) nbGame, genomeId);
+            pop->setFitness (score / (float) nbGame, genomeId);
         }
 
         // speciation step
-        pop.speciate (5, 100, 0.3);
-        bestFitness = pop.getGenome ().getFitness ();
-        const double avgFitness = pop.getAvgFitness ();
+        pop->speciate (5, 100, 0.3);
+        bestFitness = pop->getGenome ().getFitness ();
+        const double avgFitness = pop->getAvgFitness ();
 
         // build the next generation
         const double crossover_rate = 0.8 - 0.8 / (1.0 + (avgFitness / 350.0) * (avgFitness / 350.0));
-        pop.buildNextGen (paramsMap, true, crossover_rate);
+        pop->buildNextGen (paramsMap, true, crossover_rate);
 
         std::cout << "best fitness: " << bestFitness << "      average fitness: " << avgFitness << "     crossover ratio: " << crossover_rate * 100 << "%" << std::endl;
 
     }
 
-    pop.save ("snakePneatm_save");
+    pop->save ("snakePneatm_save");
 
     // we have to run once again the network to do a speciation to get the last fitter genome
     for (unsigned int genomeId = 0; genomeId < popSize; genomeId ++) {
@@ -95,16 +95,16 @@ int main () {
 
                 // load inputs in the genome's network
                 for (unsigned int i = 0; i < 14; i++) {
-                    pop.template loadInput<myInt> (AI_Inputs [i], i, genomeId);
+                    pop->template loadInput<myInt> (AI_Inputs [i], i, genomeId);
                 }
                 myFloat score = snake.getScore ();
-                pop.template loadInput<myFloat> (score, 14, genomeId);
+                pop->template loadInput<myFloat> (score, 14, genomeId);
 
                 // run the network
-                pop.runNetwork (genomeId);
+                pop->runNetwork (genomeId);
 
                 // get output, the movement order to give to the snake
-                myFloat Snake_Inputs = pop.template getOutput<myFloat> (0, genomeId);
+                myFloat Snake_Inputs = pop->template getOutput<myFloat> (0, genomeId);
 
                 // move the snake
                 isFinished = snake.run (Snake_Inputs);
@@ -114,20 +114,20 @@ int main () {
 
             score += snake.getScore ();
 
-            pop.resetMemory (genomeId);
+            pop->resetMemory (genomeId);
         }
 
         // game has ended, we set the score to the genome's fitness
-        pop.setFitness (score / (float) nbGame, genomeId);
+        pop->setFitness (score / (float) nbGame, genomeId);
     }
-    pop.speciate (5, 100, 0.3);
+    pop->speciate (5, 100, 0.3);
 
     // print info and draw genome's network
-    pop.getGenome (-1).print ();
-    pop.getGenome (-1).draw ("/usr/share/fonts/opentype/SF/SF-Pro.ttf");
+    pop->getGenome (-1).print ();
+    pop->getGenome (-1).draw ("/usr/share/fonts/opentype/SF/SF-Pro.ttf");
 
     // play a game by the fitter genome
-    playGameFitter (pop.getGenome (-1), maxIterationThresh, false, {800, 600}, 0.12f, 8);
+    playGameFitter (pop->getGenome (-1), maxIterationThresh, false, {800, 600}, 0.12f, 8);
 
     return 0;
 }
